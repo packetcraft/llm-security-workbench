@@ -1,7 +1,3 @@
-Here is the comprehensive, updated **README.md** for your repository. It covers the new Node.js proxy architecture, explicit OS-level configuration steps for Ollama, and a full testing protocol to verify both the AI and Security integrations.
-
----
-
 # 🛡️ Ollama Pro Workbench v2.2 (Security Proxy Edition)
 
 A professional, local-first web interface for interacting with Ollama LLMs. This version features real-time streaming, Markdown rendering, syntax highlighting, and an enterprise-grade **Palo Alto Networks Prisma AIRS** security integration via a local Node.js proxy.
