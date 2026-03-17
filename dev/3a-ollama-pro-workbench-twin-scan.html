@@ -593,6 +593,7 @@
             </span>
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
+            <button onclick="startNewSession()" title="Clear chat and start a new AIRS session">🔄 New Session</button>
             <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">◀ Sidebar</button>
             <button onclick="document.body.classList.toggle('dark')">🌓 Theme</button>
         </div>
@@ -1408,6 +1409,25 @@
             };
             botDiv.querySelector(".bot-label").appendChild(copyBtn);
             document.getElementById("send-btn").disabled = false;
+        }
+
+        function startNewSession() {
+            // Clear chat messages
+            const chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML = "";
+
+            // Reset all API Inspector panels
+            document.getElementById("debug-prompt-req").innerText = "Waiting for Phase 1...";
+            document.getElementById("debug-prompt-res").innerText = "Waiting for Phase 1...";
+            document.getElementById("debug-response-req").innerText = "Waiting for Phase 2...";
+            document.getElementById("debug-response-res").innerText = "Waiting for Phase 2...";
+            document.getElementById("debug-status").innerText = "Idle";
+
+            // Visual confirmation in chat
+            const notice = document.createElement("div");
+            notice.style.cssText = "text-align:center; font-size:12px; opacity:0.5; padding:10px;";
+            notice.textContent = "🔄 New session started";
+            chatBox.appendChild(notice);
         }
 
         // Initialize App

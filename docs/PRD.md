@@ -88,6 +88,16 @@ Runs **after** the LLM has generated its full response, before it is displayed.
 | **Audit Only (Twin-Scan)** | No — warn and continue | No — warn and show (or masked) |
 | **Off** | No scanning | No scanning |
 
+#### Session Management — New Session Button
+
+A **🔄 New Session** button in the header resets the workspace to a clean state:
+
+* Clears all chat messages from the UI.
+* Resets all four API Inspector panels (Phase 1 request/verdict, Phase 2 request/verdict) to idle.
+* Drops a `"🔄 New session started"` notice in the chat as visual confirmation.
+
+> **Note on session IDs:** The workbench generates a fresh `tr_id` (`"wb-" + Date.now()`) on every individual scan request rather than maintaining a persistent session ID across turns. This means each scan is independently traceable in the AIRS audit trail, but consecutive turns within one conversation are not grouped under a shared session ID in the AIRS console. The New Session button therefore acts as a UI/UX reset only — no session token is rotated on the AIRS side.
+
 #### Security Profile Management
 
 * Select the built-in `Default Profile` or add custom profiles by name/ID via `localStorage`.

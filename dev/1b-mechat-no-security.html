@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>meChat — No Security</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Courier New", Courier, monospace;
+            background: #0d0d0d;
+            color: #c8c8c8;
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 20px 20px 12px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            color: #00ff88;
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        #chat-box {
+            flex: 1;
+            min-height: 0;
+            border: 1px solid #2a2a2a;
+            background: #111;
+            overflow-y: scroll;
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        #chat-box p {
+            margin: 6px 0;
+            line-height: 1.6;
+        }
+
+        #user-input {
+            padding: 8px 12px;
+            background: #111;
+            border: 1px solid #333;
+            color: #c8c8c8;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #user-input:focus {
+            border-color: #00ff88;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #0d0d0d;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #00ff88;
+            color: #0d0d0d;
+        }
+
+        .user { color: #00aaff; font-weight: bold; }
+        .bot  { color: #00ff88; font-weight: bold; }
+
+        .inline-select {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #444;
+            color: #00ccff;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            outline: none;
+            padding: 0 2px;
+        }
+
+        .inline-select:focus { border-bottom-color: #00ccff; }
+
+        /* scrollbar */
+        #chat-box::-webkit-scrollbar { width: 4px; }
+        #chat-box::-webkit-scrollbar-track { background: #0d0d0d; }
+        #chat-box::-webkit-scrollbar-thumb { background: #333; }
+    </style>
+</head>
+
+<body>
+
+    <h2>meChat</h2>
+    <p style="color:#555; font-size:12px; margin-bottom:16px; line-height:2.2;">
+        i am a chat bot with <select id="persona-select" class="inline-select"></select> personality.<br>
+        powered by <select id="model-select" class="inline-select"></select>
+    </p>
+
+    <div id="chat-box"></div>
+    <div style="display:flex; gap:8px; margin-top:8px;">
+        <input type="text" id="user-input" placeholder="Type a prompt..." style="flex:1;" />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+
+        // ─────────────────────────────────────────────
+        // PERSONAS — name shown in chat, system prompt sent to LLM
+        // ─────────────────────────────────────────────
+        const PERSONAS = [
+            {
+                name: "Assistant",
+                system: "You are a helpful, concise assistant. Answer clearly and directly."
+            },
+            {
+                name: "Socrates",
+                system: "You are Socrates. Never give direct answers. Instead, guide the user to the answer through probing questions. Stay in character at all times."
+            },
+            {
+                name: "Pirate",
+                system: "You are a salty sea pirate. Respond entirely in pirate speak — arrr, matey, shiver me timbers. Keep answers helpful but fully in character."
+            },
+            {
+                name: "Security Analyst",
+                system: "You are a senior cybersecurity analyst. Answer all questions through a security lens — threat models, attack surfaces, mitigations. Be precise and technical."
+            },
+            {
+                name: "ELI5",
+                system: "Explain everything as if the user is five years old. Use simple words, short sentences, and fun analogies. Never use jargon."
+            }
+        ];
+
+        /*
+         * FLOW
+         * ─────────────────────────────────────────────────────────
+         * sendMessage()
+         *     └── POST to Ollama /api/generate → display response
+         * ─────────────────────────────────────────────────────────
+         */
+
+        // ─────────────────────────────────────────────
+        // HARDCODED CONFIG — edit these before running
+        // ─────────────────────────────────────────────
+        const OLLAMA_MODEL = "llama3.2:3b";
+        // ─────────────────────────────────────────────
+
+        // Populate persona dropdown
+        const sel = document.getElementById("persona-select");
+        PERSONAS.forEach((p, i) => {
+            const opt = document.createElement("option");
+            opt.value = i;
+            opt.textContent = p.name;
+            sel.appendChild(opt);
+        });
+
+        // Populate model dropdown
+        const MODELS = ["llama3.2:3b", "llama3.2:1b", "llama3:8b", "mistral:7b", "gemma2:2b"];
+        const modelSel = document.getElementById("model-select");
+        MODELS.forEach(m => {
+            const opt = document.createElement("option");
+            opt.value = m;
+            opt.textContent = m;
+            if (m === OLLAMA_MODEL) opt.selected = true;
+            modelSel.appendChild(opt);
+        });
+
+        async function sendMessage() {
+            const input   = document.getElementById("user-input");
+            const chatBox = document.getElementById("chat-box");
+            const prompt  = input.value.trim();
+            if (!prompt) return;
+
+            const persona = PERSONAS[document.getElementById("persona-select").value];
+            const model   = document.getElementById("model-select").value;
+
+            // Show user message
+            const msgEl = document.createElement("p");
+            msgEl.innerHTML = `<span class="user">You:</span> ${prompt}`;
+            chatBox.appendChild(msgEl);
+            input.value = "";
+
+            // ── Send prompt directly to Ollama ────────────────────────────────
+            try {
+                const llmRes = await fetch("http://localhost:11434/api/generate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: model,
+                        system: persona.system,
+                        prompt: prompt,
+                        stream: false
+                    })
+                });
+                const data = await llmRes.json();
+                chatBox.innerHTML += `<p><span class="bot">${persona.name}:</span> ${data.response}</p>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (err) {
+                chatBox.innerHTML += `<p style="color:red">LLM error: ${err.message}</p>`;
+            }
+        }
+
+    </script>
+</body>
+
+</html>

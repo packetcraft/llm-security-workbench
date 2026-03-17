@@ -4,7 +4,11 @@
 <head>
     <title>AIRS Teaching — Prompt Scan Gate</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: "Courier New", Courier, monospace;
@@ -45,7 +49,10 @@
             justify-content: flex-end;
         }
 
-        #chat-box p { margin: 6px 0; line-height: 1.6; }
+        #chat-box p {
+            margin: 6px 0;
+            line-height: 1.6;
+        }
 
         #user-input {
             padding: 8px 12px;
@@ -56,7 +63,10 @@
             font-size: 14px;
             outline: none;
         }
-        #user-input:focus { border-color: #00ff88; }
+
+        #user-input:focus {
+            border-color: #00ff88;
+        }
 
         button {
             padding: 8px 16px;
@@ -67,11 +77,26 @@
             font-size: 14px;
             cursor: pointer;
         }
-        button:hover { background: #00ff88; color: #0d0d0d; }
 
-        .user  { color: #00aaff; font-weight: bold; }
-        .bot   { color: #00ff88; font-weight: bold; }
-        .block { color: #ff4444; font-weight: bold; }
+        button:hover {
+            background: #00ff88;
+            color: #0d0d0d;
+        }
+
+        .user {
+            color: #00aaff;
+            font-weight: bold;
+        }
+
+        .bot {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .block {
+            color: #ff4444;
+            font-weight: bold;
+        }
 
         .airs-badge {
             font-size: 10px;
@@ -81,9 +106,24 @@
             vertical-align: middle;
             letter-spacing: 0.5px;
         }
-        .airs-badge.scanning { background: #1a1a1a; color: #555;    border: 1px solid #333; }
-        .airs-badge.allowed  { background: #0a1f0a; color: #00ff88; border: 1px solid #00ff88; }
-        .airs-badge.blocked  { background: #1f0a0a; color: #ff4444; border: 1px solid #ff4444; }
+
+        .airs-badge.scanning {
+            background: #1a1a1a;
+            color: #555;
+            border: 1px solid #333;
+        }
+
+        .airs-badge.allowed {
+            background: #0a1f0a;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+
+        .airs-badge.blocked {
+            background: #1f0a0a;
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
 
         .inline-select {
             background: transparent;
@@ -96,7 +136,10 @@
             outline: none;
             padding: 0 2px;
         }
-        .inline-select:focus { border-bottom-color: #00ccff; }
+
+        .inline-select:focus {
+            border-bottom-color: #00ccff;
+        }
 
         #airs-toggle {
             padding: 0;
@@ -107,12 +150,24 @@
             cursor: pointer;
             color: #00ccff;
         }
-        #airs-toggle:hover { background: transparent; color: #fff; }
+
+        #airs-toggle:hover {
+            background: transparent;
+            color: #fff;
+        }
 
         /* scrollbar */
-        #chat-box::-webkit-scrollbar { width: 4px; }
-        #chat-box::-webkit-scrollbar-track { background: #0d0d0d; }
-        #chat-box::-webkit-scrollbar-thumb { background: #333; }
+        #chat-box::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #chat-box::-webkit-scrollbar-track {
+            background: #0d0d0d;
+        }
+
+        #chat-box::-webkit-scrollbar-thumb {
+            background: #333;
+        }
     </style>
 </head>
 
@@ -253,13 +308,13 @@
          */
 
         async function sendMessage() {
-            const input   = document.getElementById("user-input");
+            const input = document.getElementById("user-input");
             const chatBox = document.getElementById("chat-box");
-            const prompt  = input.value.trim();
+            const prompt = input.value.trim();
             if (!prompt) return;
 
             const persona = PERSONAS[document.getElementById("persona-select").value];
-            const model   = document.getElementById("model-select").value;
+            const model = document.getElementById("model-select").value;
 
             // Show user message — badge only shown when AIRS is on
             const msgId = "msg-" + Date.now();
