@@ -28,6 +28,7 @@ npm -v
 ## 🟦 **Method 2: Install via Node Version Manager (NVM)**
 
 Best if you want to switch between multiple Node versions (common for dev workflows).
+Refer: https://nodejs.org/en/download
 
 ### **Steps**
 
