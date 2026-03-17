@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+    <head>
+        <title>My Custom Ollama Chat</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                max-width: 600px;
+                margin: 20px auto;
+            }
+            #chat-box {
+                height: 300px;
+                border: 1px solid #ccc;
+                overflow-y: scroll;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            #user-input {
+                width: 80%;
+                padding: 10px;
+            }
+            .user {
+                color: blue;
+                font-weight: bold;
+            }
+            .bot {
+                color: green;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Ollama Custom UI</h2>
+        <div id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Ask something..." />
+        <button onclick="sendMessage()">Send</button>
+
+        <script>
+            async function sendMessage() {
+                const input = document.getElementById("user-input");
+                const chatBox = document.getElementById("chat-box");
+                const prompt = input.value;
+                if (!prompt) return;
+
+                // Display user message
+                chatBox.innerHTML += `<div><span class="user">You:</span> ${prompt}</div>`;
+                input.value = "";
+
+                try {
+                    const response = await fetch(
+                        "http://localhost:11434/api/generate",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                model: "llama3.2:3b", // Ensure you have this model pulled
+                                prompt: prompt,
+                                stream: false, // Keep it simple for now
+                            }),
+                        },
+                    );
+
+                    const data = await response.json();
+                    chatBox.innerHTML += `<div><span class="bot">Ollama:</span> ${data.response}</div>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                } catch (error) {
+                    chatBox.innerHTML += `<div style="color:red">Error: ${error.message}. Make sure Ollama is running.</div>`;
+                }
+            }
+        </script>
+    </body>
+</html>
