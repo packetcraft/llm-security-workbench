@@ -231,6 +231,7 @@ cp dev/2a-mechat-airs-teaching-demo.html src/index.html
 | `1b-mechat-no-security.html` | **Bridge** — same meChat UI before introducing AIRS | ✗ | Personas, live model dropdown, terminal theme |
 | `2a-mechat-airs-teaching-demo.html` | **Teaching demo** — introduce AIRS as a prompt gate | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments |
 | `3a-ollama-pro-workbench-twin-scan.html` | **Full workbench** — production-grade twin-scan | ✓ | Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector |
+| `4a-ollama-pro-workbench-including-nativeguardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (toggle, judge model selector, confidence threshold, editable system prompt) |
 
 ### Recommended learning path
 
@@ -239,6 +240,7 @@ cp dev/2a-mechat-airs-teaching-demo.html src/index.html
 1b  →  add UI polish (personas, model selector) — still no security
 2a  →  introduce AIRS: one fetch → one verdict → gate the LLM
 3a  →  graduate to twin-scan: secure both ingress and egress
+4a  →  add Phase 0: local LLM-as-judge before any cloud call is made
 ```
 
 > **Config reminder:** `1b` and `2a` have a `HARDCODED CONFIG` block at the top of the `<script>` — fill in `AIRS_API_KEY` and `AIRS_PROFILE` before running. `3a` exposes these as UI fields.
