@@ -360,11 +360,17 @@
 
             const persona = PERSONAS[document.getElementById("persona-select").value];
             const model = document.getElementById("model-select").value;
-            const airsApiKey = document.getElementById("airs-api-key").value.trim();
-            const airsProfile = document.getElementById("airs-profile").value.trim();
+            const airsKeyInput   = document.getElementById("airs-api-key");
+            const airsKeyFromEnv = airsKeyInput.disabled;
+            const airsApiKey     = airsKeyFromEnv ? "" : airsKeyInput.value.trim();
+            const airsProfile    = document.getElementById("airs-profile").value.trim();
 
-            if (airsEnabled && (!airsApiKey || !airsProfile)) {
-                alert("AIRS is enabled — please enter an API key and profile name, or toggle AIRS off.");
+            if (airsEnabled && (!airsKeyFromEnv && !airsApiKey)) {
+                alert("AIRS is enabled — please enter an API key, or set AIRS_API_KEY in .env");
+                return;
+            }
+            if (airsEnabled && !airsProfile) {
+                alert("AIRS is enabled — please enter a profile name, or set AIRS_PROFILE in .env");
                 return;
             }
 
@@ -385,7 +391,7 @@
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "x-pan-token": airsApiKey
+                            ...(airsApiKey && { "x-pan-token": airsApiKey })
                         },
                         body: JSON.stringify({
                             tr_id: "teach-" + Date.now(),
@@ -395,9 +401,12 @@
                         })
                     });
                     verdict = await scanRes.json();
+                    if (!scanRes.ok) throw new Error(`AIRS ${scanRes.status}: ${verdict.error || scanRes.statusText}`);
                 } catch (err) {
                     badge.className = "airs-badge blocked";
                     badge.textContent = "⚠️ Scan error";
+                    chatBox.innerHTML += `<p style="color:#ff4444; font-size:12px;">⚠️ AIRS scan failed: ${err.message}</p>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
                     return;
                 }
 
