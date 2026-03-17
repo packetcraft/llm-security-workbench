@@ -104,7 +104,36 @@ Open **`http://localhost:3080`** in your browser.
 
 ---
 
-## 🧪 Step 4: Verification & Testing
+## 🗂️ Step 4: Choose Your Starting Point
+
+The `dev/` folder contains four HTML files that represent a progressive build-up from a bare chat to a fully secured workbench. Copy the one that matches your use case to `src/index.html` to serve it via the proxy.
+
+```bash
+# Example — copy the teaching demo to the server
+cp dev/2a-mechat-airs-teaching-demo.html src/index.html
+```
+
+| File | Use Case | AIRS? | Key Features |
+| :--- | :--- | :---: | :--- |
+| `1a-ollama-chat-no-security.html` | **Baseline** — understand Ollama chat with zero security | ✗ | Single `fetch` to Ollama, no frills |
+| `1b-mechat-no-security.html` | **Bridge** — same meChat UI before introducing AIRS | ✗ | Personas, live model dropdown, terminal theme |
+| `2a-mechat-airs-teaching-demo.html` | **Teaching demo** — introduce AIRS as a prompt gate | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments |
+| `3a-ollama-pro-workbench-twin-scan.html` | **Full workbench** — production-grade twin-scan | ✓ | Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector |
+
+### Recommended learning path
+
+```
+1a  →  understand the LLM call with no security
+1b  →  add UI polish (personas, model selector) — still no security
+2a  →  introduce AIRS: one fetch → one verdict → gate the LLM
+3a  →  graduate to twin-scan: secure both ingress and egress
+```
+
+> **Config reminder:** `1b` and `2a` have a `HARDCODED CONFIG` block at the top of the `<script>` — fill in `AIRS_API_KEY` and `AIRS_PROFILE` before running. `3a` exposes these as UI fields.
+
+---
+
+## 🧪 Step 5: Verification & Testing
 
 ### Test 1 — Verify Ollama
 ```bash
@@ -143,7 +172,7 @@ Click the **🛠️ API Inspector** bar at the bottom. You'll see three columns:
 
 ---
 
-## ⚠️ Troubleshooting
+## ⚠️ Step 6: Troubleshooting
 
 | Issue | Cause | Fix |
 | :--- | :--- | :--- |
@@ -155,7 +184,7 @@ Click the **🛠️ API Inspector** bar at the bottom. You'll see three columns:
 
 ---
 
-## 🛠️ Usage Tips
+## 🛠️ Step 7: Usage Tips
 
 * **Sidebar:** Click **◀ Sidebar** to collapse the left panel and give chat full width.
 * **Keyboard hint:** `Shift + Enter` for a new line in the prompt box.
