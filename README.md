@@ -243,7 +243,7 @@ cp dev/2a-mechat-airs-teaching-demo.html src/index.html
 4a  →  add Phase 0: local LLM-as-judge before any cloud call is made
 ```
 
-> **Config reminder:** `1b` and `2a` have a `HARDCODED CONFIG` block at the top of the `<script>` — fill in `AIRS_API_KEY` and `AIRS_PROFILE` before running. `3a` exposes these as UI fields.
+> **Config reminder:** `2a` has a `HARDCODED CONFIG` block at the top of the `<script>` — fill in `AIRS_API_KEY` and `AIRS_PROFILE` before running. `3a` and `4a` expose these as UI fields — no hardcoded values needed.
 
 ---
 
