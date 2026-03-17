@@ -62,7 +62,7 @@ Simple GUI installer.
 
 ### **Steps**
 
-1. Go to: https://nodejs.org
+1. Go to: https://nodejs.org/en/download
 
 2. Download **macOS Installer (.pkg)** → choose **LTS** version.
 
