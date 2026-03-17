@@ -1,92 +1,232 @@
-Here is the updated and finalized **Product Requirements Document (PRD)**, incorporating the ability for users to define custom Prisma AIRS security profiles and expanding the API Inspector to show both the outgoing and incoming Prisma AIRS payloads.
+# 📄 Product Requirements Document: Ollama Pro Workbench
+
+**Version:** 2.3 (Twin-Scan Edition)
+**Date:** March 2026
+**Status:** Feature Complete / Stable Release
 
 ---
 
-# 📄 Product Requirements Document: Ollama Ultimate Workbench
-**Version:** 2.1 (Security & Enterprise Edition)  
-**Date:** March 2026  
-**Status:** Feature Complete / Stable Release  
-
 ## 1. Product Overview
-The **Ollama Ultimate Workbench** is a lightweight, zero-dependency, single-file browser environment designed to interface directly with local Ollama instances. It bridges the gap between rapid prompt engineering and enterprise-grade security testing. By integrating simulated Palo Alto Prisma AIRS capabilities, it allows developers and security teams to test LLMs locally while enforcing strict Data Loss Prevention (DLP) and payload inspection policies.
+
+The **Ollama Pro Workbench** is a lightweight, browser-based environment for interfacing with local Ollama LLM instances, secured end-to-end by **Palo Alto Networks Prisma AIRS**. It bridges rapid prompt engineering with enterprise-grade AI security testing by implementing a full two-phase scanning pipeline — scanning both the user prompt before it reaches the LLM, and the LLM response before it reaches the user.
+
+---
 
 ## 2. Target Audience
-* **Prompt Engineers:** Requiring a categorized library to test system instructions and custom personas.
-* **Cybersecurity Teams (Red/Blue Teams):** Testing local models for prompt injection vulnerabilities and configuring pre-flight DLP blockers.
-* **Developers:** Needing a distraction-free, syntax-highlighted environment for code generation and API payload debugging.
+
+| Audience | Use Case |
+| :--- | :--- |
+| **Prompt Engineers** | Test system instructions and personas with a categorised threat library |
+| **Security Teams (Red/Blue)** | Test local models for prompt injection, DLP leakage, and response-side threats |
+| **Developers** | Debug LLM payloads with a real-time API inspector showing all scan phases |
 
 ---
 
 ## 3. Functional Requirements
 
 ### 3.1 Core LLM Interaction
-* **Dynamic Model Discovery:** Automatically fetches available models via the `/api/tags` endpoint and pre-selects default models (e.g., matching `llama3.2` or `3b`).
-* **Real-time Streaming:** Processes chunked responses using `ReadableStream` and the `/api/chat` endpoint.
-* **Abort Generation:** A dedicated "Stop" button utilizes an `AbortController` to immediately halt API calls and free up local compute resources.
-* **Robust JSON Parsing:** Incorporates a rolling buffer to prevent `Unterminated string` errors caused by split JSON chunks during high-speed streams.
 
-### 3.2 Advanced UI/UX & Formatting
-* **Markdown & Syntax Highlighting:** Live parsing of Markdown via `Marked.js` and automatic language detection/highlighting for code blocks via `Highlight.js` (GitHub Dark theme).
-* **Identity Stamping:** AI response headers dynamically display the configuration used for that specific response (e.g., `AI (llama3.2:latest — PII Shield (DLP Filter))`), enabling comparative testing.
-* **Smart Input:** The user prompt `textarea` auto-expands vertically based on content volume and supports `Shift + Enter` for line breaks.
-* **Dark Mode:** A toggleable, persistent Dark/Light theme UI.
+* **Dynamic Model Discovery:** Fetches available models via `/api/tags` and auto-selects defaults (e.g. `llama3.2`, `3b`).
+* **Real-Time Streaming:** Processes chunked responses via `ReadableStream` on `/api/chat`, with rolling buffer to prevent split-JSON parse errors.
+* **Abort Generation:** Stop button uses `AbortController` to immediately halt streaming. Phase 2 scan is skipped for incomplete responses.
+* **Identity Stamping:** Each AI response header shows the model and persona used for that turn.
+
+### 3.2 UI/UX & Formatting
+
+* **Two-Column Layout:** Left sidebar (settings + API Inspector) and right column (chat + prompt), collapsible via header toggle.
+* **Markdown & Syntax Highlighting:** `Marked.js` for rendering, `Highlight.js` (GitHub Dark) for code blocks.
+* **Dynamic Prompt Input:** Auto-expanding `textarea` with live character counter and `Shift+Enter` hint.
+* **Message Metadata:** Timestamps and AIRS scan badges on every user and bot message.
+* **Dark/Light Mode:** Toggleable theme with CSS variable theming.
+* **Scroll-to-Bottom:** Floating button appears when chat is scrolled up.
 
 ### 3.3 Persona Library & Management
-* **Categorized Dropdown:** Uses `<optgroup>` to organize personas into logical tiers:
-    * *Standard:* Code Architect, ELI5
-    * *Security & Compliance:* PII Shield, Cyber Security Auditor
-    * *Creative & Logic:* Professional Editor, Database Guru, Storyteller, Socratic Tutor
-* **Custom Persistence:** Users can write custom system prompts, save them via a "Save as Custom Persona" button, and have them persist across browser sessions via `localStorage`. Custom personas populate dynamically in the "Custom" `<optgroup>`.
 
-### 3.4 Prisma AIRS Integration (Security Middleware)
-* **Pre-Flight Hook (Strategy 2):** Integrates a mockable middleware function (`mockPrismaAIRS`) that intercepts the user prompt before it reaches Ollama.
-* **Enforcement Modes:**
-    * **Strict (Block):** If sensitive data (e.g., passwords, SSNs) is detected, the UI throws a red security alert, halts execution, and prevents the payload from reaching the LLM.
-    * **Audit Only (Twin-Scan):** If sensitive data is detected, the UI throws a yellow warning flag but permits the request to proceed to the LLM for visibility/auditing purposes.
-    * **Off:** Bypasses security checks completely.
-* **Settings UI:** A dedicated 3rd column in the settings bar containing the Mode Selector, a masked API Key input, and a **Security Profile Selector**.
-* **Custom Security Profiles:** Users can select predefined profiles (e.g., `Default`, `Strict PII`) or input their own **Custom Profile ID/Name** to map directly to their organization's specific Prisma AIRS backend configurations.
+* **Categorised Personas:** Organised via `<optgroup>`:
+  * *Standard:* Code Architect, ELI5
+  * *Security & Compliance:* PII Shield, Cyber Security Auditor
+  * *Creative & Logic:* Professional Editor, Database Guru, Storyteller, Socratic Tutor
+* **Custom Personas:** Users write custom system prompts, save them, and they persist via `localStorage`.
 
-### 3.5 Developer Tools (API Inspector)
-* **Twin-Scan Visibility:** A collapsible debugging panel at the bottom of the UI.
-* **Prisma AIRS Telemetry:** Displays **both** the exact outgoing API Request payload sent to the security middleware and the incoming JSON Response (decision matrix) returned by Prisma.
-* **LLM Payload Verification:** Shows the exact JSON payload being dispatched to Ollama.
-* **LLM Chunk Inspection:** Real-time display of the last raw JSON chunk received from the Ollama stream.
+### 3.4 Threat Library
+
+* **19 Pre-Loaded Adversarial Prompts** across two categories:
+  * *Basic Threats:* Prompt Injection, Evasion, DLP, Toxic Content, Malicious URL
+  * *Specific Adversarial Inputs:* Objective Manipulation, System Mode Attack, Prompt Leakage, Payload Splitting, Indirect Reference, Remote Code Execution, Repeated Token Attack, Fuzzing, Crescendo Multi-Turn, Adversarial Prefixes, Skeleton Key, Repeated Instructions, Flip-text, Persuasion
+* **Insert Threat Dropdown:** Loads any threat directly into the prompt box for one-click testing.
+
+### 3.5 Prisma AIRS Integration — Two-Phase Scanning
+
+The core security capability of the workbench. Every message exchange passes through two independent AIRS scans.
+
+#### Phase 1 — Pre-Flight Prompt Scan
+
+Runs **before** the prompt reaches the LLM.
+
+* **Request:** `contents: [{ prompt }]` with `tr_id` and `metadata` (model name, app name).
+* **On BLOCK (Strict mode):** Halt execution. LLM is never called. Show red block alert.
+* **On BLOCK (Audit mode):** Show yellow warning, continue to LLM.
+* **On ALLOW:** Proceed to LLM with no interruption.
+* **Scan badge** on user message updated with verdict: `✅ Allowed`, `⚠️ Flagged`, or `🛑 Blocked`.
+
+#### Phase 2 — Post-Response Scan
+
+Runs **after** the LLM has generated its full response, before it is displayed.
+
+* **Request:** `contents: [{ prompt, response }]` — both sides submitted for full-context evaluation.
+* **On BLOCK (Strict mode):** Replace the LLM response content with a block notice. Response is withheld.
+* **On BLOCK (Audit mode):** Show warning banner; if `response_masked_data` is present, display the AIRS-masked version of the response.
+* **On DLP Masking (Allow + masked data):** Display the masked response with a `⚠️ Masked` notice.
+* **On ALLOW:** Display response normally.
+* **Scan badge** on bot message updated with verdict: `✅ Clean`, `⚠️ Flagged`, `⚠️ Masked`, or `🛑 Blocked`.
+
+#### Enforcement Modes
+
+| Mode | Prompt Blocked? | Response Blocked? |
+| :--- | :--- | :--- |
+| **Strict (Pre-Flight Block)** | Yes — LLM not reached | Yes — response replaced |
+| **Audit Only (Twin-Scan)** | No — warn and continue | No — warn and show (or masked) |
+| **Off** | No scanning | No scanning |
+
+#### Security Profile Management
+
+* Select the built-in `Default Profile` or add custom profiles by name/ID via `localStorage`.
+* Profile name sent in every scan request as `ai_profile.profile_name`.
+
+### 3.6 Developer Tools — API Inspector (Twin-Scan View)
+
+Collapsible full-width panel below the main layout. Displays three columns in parallel:
+
+| Column | Contents |
+| :--- | :--- |
+| **Phase 1** | Outgoing AIRS prompt scan request + AIRS verdict JSON |
+| **Ollama** | Outgoing LLM request payload + last raw stream chunk |
+| **Phase 2** | Outgoing AIRS response scan request + AIRS verdict JSON |
+
+Real-time status indicator in the header cycles through: `🔍 Phase 1: Scanning prompt...` → `🤖 Streaming LLM...` → `🔍 Phase 2: Scanning response...` → `Done ✅`.
 
 ---
 
 ## 4. Technical Architecture
 
 ### 4.1 Frontend Stack
-* **Markup/Styling:** Single-file HTML5, CSS3 Variables for theming, CSS Grid for the 3-column settings layout.
-* **Scripting:** Vanilla JavaScript (ES6+), `async/await`, Fetch API.
-* **Storage:** Browser `localStorage` (for custom personas and custom security profiles).
 
-### 4.2 External Libraries (CDN)
-* `marked.min.js` (Markdown parsing)
-* `highlight.min.js` & `github-dark.min.css` (Code styling)
+* **HTML5 / CSS3:** Single-file app, CSS Variables for theming, CSS Grid for layout.
+* **JavaScript:** Vanilla ES6+, `async/await`, Fetch API, `ReadableStream`.
+* **Storage:** Browser `localStorage` for personas and AIRS profiles.
 
-### 4.3 Security & Network Flow
-1. **User Input** $\rightarrow$ **Prisma AIRS Hook** (Pre-flight DLP Check utilizing the selected Security Profile).
-2. **Debug Inspector Update** $\rightarrow$ Logs Prisma Request & Response.
-3. If Blocked $\rightarrow$ **Halt & Alert User**.
-4. If Clear/Audit $\rightarrow$ **Compile Payload** (Model + Persona System Prompt + User Prompt).
-5. **Fetch to Ollama** (`POST http://localhost:11434/api/chat`).
-6. **Stream Processing** $\rightarrow$ **Buffer Stitching** $\rightarrow$ **Markdown Parsing** $\rightarrow$ **DOM Update**.
+### 4.2 Backend Proxy
+
+* **Runtime:** Node.js + Express (port `3080`).
+* **Purpose:** CORS bypass — routes browser AIRS scan requests to `service.api.aisecurity.paloaltonetworks.com`.
+* **Routes:** `GET /` (serves `src/index.html`), `POST /api/prisma` (proxy to AIRS).
+
+### 4.3 External Libraries (CDN)
+
+* `marked.min.js` — Markdown parsing
+* `highlight.min.js` + `github-dark.min.css` — Syntax highlighting
+
+### 4.4 Security & Network Flow
+
+```mermaid
+flowchart TD
+    A([👤 User Prompt]) --> B
+
+    subgraph PHASE1 ["🔍 Phase 1 — Pre-Flight Prompt Scan"]
+        B[AIRS Scan\ncontents: prompt] --> C{Verdict}
+    end
+
+    C -- "🛑 BLOCK · Strict" --> D([Prompt Blocked\nLLM not reached])
+    C -- "⚠️ BLOCK · Audit" --> E([Warn user\nContinue to LLM])
+    C -- "✅ ALLOW" --> F
+
+    E --> F
+
+    subgraph LLM ["🤖 LLM Execution"]
+        F[Ollama streaming\nCollect full response]
+    end
+
+    F --> G
+
+    subgraph PHASE2 ["🔍 Phase 2 — Post-Response Scan"]
+        G[AIRS Scan\ncontents: prompt + response] --> H{Verdict}
+    end
+
+    H -- "🛑 BLOCK · Strict" --> I([Response replaced\nwith block notice])
+    H -- "⚠️ BLOCK · Audit" --> J([Warn + show response\nor masked version])
+    H -- "⚠️ DLP Masked" --> K([Sensitive data masked\nby AIRS])
+    H -- "✅ ALLOW" --> L([Response displayed\nnormally])
+```
+
+### 4.5 AIRS API Request Structure
+
+Both scans use the same endpoint: `POST /v1/scan/sync/request`
+
+```json
+{
+  "tr_id": "wb-<timestamp>",
+  "ai_profile": { "profile_name": "<selected-profile>" },
+  "metadata": {
+    "ai_model": "<selected-ollama-model>",
+    "app_name": "Ollama Pro Workbench"
+  },
+  "contents": [
+    {
+      "prompt": "<user prompt>",
+      "response": "<llm response>"
+    }
+  ]
+}
+```
+
+*Phase 1 sends `prompt` only. Phase 2 sends both `prompt` and `response`.*
+
+### 4.6 AIRS API Response Fields Used
+
+| Field | Used For |
+| :--- | :--- |
+| `action` | Determine block/allow verdict |
+| `category` | Show threat category in alert |
+| `prompt_detected` | Extract specific threat flags for Phase 1 badge |
+| `response_detected` | Extract specific threat flags for Phase 2 badge |
+| `response_masked_data.data` | Render DLP-masked response content |
+| `scan_id` / `report_id` | Available in API Inspector for audit trail |
 
 ---
 
 ## 5. Security & Privacy Considerations
-* **Local Data Sovereignty:** By default, all prompt processing remains on `localhost`. 
-* **CORS Requirement:** Ollama must be configured with `OLLAMA_ORIGINS="*"` to accept requests from the local browser file.
-* **API Key Safety:** The Prisma AIRS API key field is masked (`type="password"`). When transitioned to a real API, keys should ideally be handled via a secure backend proxy rather than exposed in client-side JS.
+
+* **Local Data Sovereignty:** All LLM inference remains on `localhost`. Prompts and responses are only sent to Prisma AIRS for security evaluation.
+* **API Key Handling:** The `x-pan-token` is masked in the UI and transmitted only through the local proxy — never exposed in client-side network calls.
+* **CORS:** Ollama requires `OLLAMA_ORIGINS="*"` to accept browser requests.
+* **Incomplete Responses:** If the user stops generation mid-stream, Phase 2 is skipped. A partial response is never scanned.
 
 ---
 
-## 6. Future Roadmap (v3.0)
-* **Real Prisma API Hook:** Replace the `mockPrismaAIRS` delay function with an actual `fetch` call to the Palo Alto Prisma Cloud/Access endpoint.
-* **Chat Memory (Context Window):** Implement an array to store the last $N$ messages, allowing the LLM to remember conversation history within a session.
-* **Export Engine:** Add functionality to download the entire chat history (and Twin-Scan debug logs) as a JSON or formatted Markdown file for audit compliance.
-* **LLM Output Scanning:** Implement post-generation AIRS scanning to catch hallucinated secrets or toxic output generated *by* the AI before rendering it to the user.
+## 6. Repository Structure
+
+```
+prisma-airs-with-ollama/
+├── src/
+│   ├── index.html        # Main application
+│   └── server.js         # CORS proxy (Express)
+├── docs/
+│   ├── PRD.md            # This document
+│   ├── README-backup.md
+│   └── pii-shield-testing.md
+├── dev/                  # Development iteration history
+├── test/
+│   └── sample_threats.json
+├── package.json
+└── README.md
+```
 
 ---
+
+## 7. Future Roadmap
+
+* **Chat Memory:** Store last N messages to give the LLM conversation history within a session.
+* **Export Engine:** Download full chat + Twin-Scan debug logs as JSON or Markdown for audit compliance.
+* **Scan History Panel:** Persist and review previous scan verdicts within the session.
+* **Multi-turn AIRS Context:** Pass conversation history in the AIRS `contents[]` array for improved multi-turn threat detection.
+* **Response Diff View:** When DLP masking is applied, show a side-by-side diff of the original vs. masked response (debug mode only).
