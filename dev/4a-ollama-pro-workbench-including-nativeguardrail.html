@@ -375,6 +375,11 @@
             box-shadow: 0 0 6px #28a745;
         }
 
+        .status-dot.guardrail {
+            background: #9b59b6;
+            box-shadow: 0 0 6px #9b59b6;
+        }
+
         /* #2 — Active model badge */
         .model-badge {
             font-size: 11px;
@@ -616,6 +621,15 @@
                     ">
                 <span class="status-dot off"></span>
                 <span id="header-airs-label">AIRS Off</span>
+            </span>
+            <span id="header-guardrail-status" style="
+                        display: flex;
+                        align-items: center;
+                        font-size: 11px;
+                        opacity: 0.7;
+                    ">
+                <span class="status-dot off"></span>
+                <span id="header-guardrail-label">Phase 0 Off</span>
             </span>
         </div>
         <div style="display: flex; gap: 10px; align-items: center">
@@ -1311,6 +1325,14 @@ Waiting for LLM...</pre>
             const enabled = document.getElementById("guardrail-enabled").checked;
             ["guardrail-model", "guardrail-threshold", "guardrail-enforcement", "guardrail-system-prompt"]
                 .forEach(id => document.getElementById(id).disabled = !enabled);
+            updateGuardrailStatus(enabled);
+        }
+
+        function updateGuardrailStatus(enabled) {
+            const dot   = document.querySelector("#header-guardrail-status .status-dot");
+            const label = document.getElementById("header-guardrail-label");
+            dot.className   = "status-dot " + (enabled ? "guardrail" : "off");
+            label.textContent = enabled ? "Phase 0 On" : "Phase 0 Off";
         }
 
         async function runNativeGuardrail(prompt, model, systemPrompt, threshold) {
