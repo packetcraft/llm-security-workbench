@@ -3,6 +3,7 @@
 
 <head>
     <title>AIRS Teaching — Prompt Scan Gate</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -175,6 +176,32 @@
             background: transparent;
             color: #fff;
         }
+
+        /* ── terminal markdown ── */
+        .bot-content p          { margin: 4px 0; line-height: 1.6; }
+        .bot-content strong     { color: #ffffff; font-weight: bold; }
+        .bot-content em         { color: #aaaaaa; font-style: italic; }
+        .bot-content h1,
+        .bot-content h2,
+        .bot-content h3         { color: #00ff88; letter-spacing: 1px;
+                                  margin: 10px 0 4px; font-size: 13px;
+                                  text-transform: uppercase; }
+        .bot-content ul,
+        .bot-content ol         { margin: 4px 0 4px 18px; }
+        .bot-content li         { margin: 2px 0; line-height: 1.6; }
+        .bot-content code       { background: #1a1a1a; color: #00ff88;
+                                  padding: 1px 5px; border-radius: 2px;
+                                  font-family: inherit; font-size: 12px;
+                                  border: 1px solid #2a2a2a; }
+        .bot-content pre        { background: #111; border: 1px solid #2a2a2a;
+                                  padding: 10px 14px; margin: 6px 0;
+                                  overflow-x: auto; border-radius: 2px; }
+        .bot-content pre code   { background: none; border: none;
+                                  padding: 0; color: #c8c8c8; }
+        .bot-content blockquote { border-left: 3px solid #333; margin: 6px 0;
+                                  padding-left: 10px; color: #666; }
+        .bot-content a          { color: #00ccff; text-decoration: none; }
+        .bot-content a:hover    { text-decoration: underline; }
 
         /* scrollbar */
         #chat-box::-webkit-scrollbar {
@@ -398,7 +425,7 @@
                     })
                 });
                 const data = await llmRes.json();
-                chatBox.innerHTML += `<p><span class="bot">${persona.name}:</span> ${data.response}</p>`;
+                chatBox.innerHTML += `<p><span class="bot">${persona.name}:</span></p><div class="bot-content">${marked.parse(data.response)}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch (err) {
                 chatBox.innerHTML += `<p style="color:red">LLM error: ${err.message}</p>`;

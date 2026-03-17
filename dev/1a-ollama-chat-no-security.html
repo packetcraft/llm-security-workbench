@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>My Custom Ollama Chat</title>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <style>
             body {
                 font-family: sans-serif;
@@ -27,6 +28,24 @@
                 color: green;
                 font-weight: bold;
             }
+            .bot-content p          { margin: 4px 0; line-height: 1.6; }
+            .bot-content strong     { font-weight: bold; }
+            .bot-content em         { font-style: italic; color: #555; }
+            .bot-content h1,
+            .bot-content h2,
+            .bot-content h3         { margin: 8px 0 4px; font-size: 14px; }
+            .bot-content ul,
+            .bot-content ol         { margin: 4px 0 4px 20px; }
+            .bot-content li         { margin: 2px 0; line-height: 1.6; }
+            .bot-content code       { background: #f0f0f0; padding: 1px 4px;
+                                      border-radius: 3px; font-family: monospace; }
+            .bot-content pre        { background: #f0f0f0; padding: 10px;
+                                      margin: 6px 0; overflow-x: auto;
+                                      border-radius: 4px; }
+            .bot-content pre code   { background: none; padding: 0; }
+            .bot-content blockquote { border-left: 3px solid #ccc; margin: 6px 0;
+                                      padding-left: 10px; color: #666; }
+            .bot-content a          { color: blue; }
         </style>
     </head>
     <body>
@@ -61,7 +80,7 @@
                     );
 
                     const data = await response.json();
-                    chatBox.innerHTML += `<div><span class="bot">Ollama:</span> ${data.response}</div>`;
+                    chatBox.innerHTML += `<div><span class="bot">Ollama:</span></div><div class="bot-content">${marked.parse(data.response)}</div>`;
                     chatBox.scrollTop = chatBox.scrollHeight;
                 } catch (error) {
                     chatBox.innerHTML += `<div style="color:red">Error: ${error.message}. Make sure Ollama is running.</div>`;
