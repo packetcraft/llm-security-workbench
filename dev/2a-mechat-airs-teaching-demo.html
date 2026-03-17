@@ -233,6 +233,7 @@
     <div id="chat-box"></div>
     <div style="display:flex; gap:8px; margin-top:8px;">
         <input type="text" id="user-input" placeholder="Type a prompt..." style="flex:1;" />
+        <button onclick="document.getElementById('chat-box').innerHTML=''" title="Clear chat history">🗑️ Clear</button>
         <button onclick="sendMessage()">Send</button>
     </div>
 
