@@ -1267,7 +1267,7 @@
                         if (resBadge) { resBadge.className = "scan-badge"; resBadge.textContent = "Scan Err"; }
                         document.getElementById("debug-status").innerText = "Response Scan Error";
 
-                    } else if (responseScan.status === "block") {
+                    } else if (responseScan.status === "block" || responseScan.status === "alert") {
                         const threats = responseScan.detected.length ? responseScan.detected.join(", ") : responseScan.category;
                         if (resBadge) { resBadge.className = "scan-badge blocked"; resBadge.textContent = "🛑 Blocked"; }
 
