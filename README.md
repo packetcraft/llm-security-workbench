@@ -168,8 +168,9 @@ This app uses a **split-routing architecture** to keep LLM traffic local while r
 | :--- | :--- |
 | Security scans | Browser → Local Node Proxy `:3080` → Prisma AIRS API |
 | LLM inference | Browser → Local Ollama API `:11434` |
+| Credential config | Browser → `GET /api/config` → `{ hasApiKey, profile }` (key never returned) |
 
-The Node.js proxy exists solely to bypass CORS restrictions — your prompts and responses are never stored or forwarded anywhere else.
+The Node.js proxy exists solely to bypass CORS restrictions — your prompts and responses are never stored or forwarded anywhere else. The AIRS API key stays on the server; the browser only learns whether one is present.
 
 ---
 
@@ -202,6 +203,29 @@ git clone https://github.com/packetcraft/Prisma-AIRS-with-ollama.git
 cd Prisma-AIRS-with-ollama
 npm install
 ```
+
+### 🔑 (Optional) Store credentials in `.env`
+
+Instead of typing your API key and profile name into the UI on every run, you can store them server-side in a `.env` file. The server reads these at startup — the key **never reaches the browser**.
+
+```bash
+cp .env.example .env
+# then open .env and fill in your values:
+#   AIRS_API_KEY=your-x-pan-token-here
+#   AIRS_PROFILE=your-profile-name-here
+```
+
+`.env` is in `.gitignore` — it will not be committed.
+
+**What happens at runtime:**
+
+1. `server.js` loads `.env` via `dotenv` and exposes a `/api/config` endpoint.
+2. The UI calls `/api/config` on load and receives `{ hasApiKey: true, profile: "your-profile" }` — the key itself is never returned.
+3. The API key input is replaced with `••••••••••••••••` and locked with a `🔒 .env` badge.
+4. The profile field is pre-selected and locked with a `🔒 .env` badge.
+5. When a scan request is made, the browser sends **no** `x-pan-token` header; the proxy reads the key from `process.env.AIRS_API_KEY` instead.
+
+If you skip this step, both fields remain editable — enter them manually in the UI as before.
 
 ---
 
@@ -243,7 +267,9 @@ cp dev/2a-mechat-airs-teaching-demo.html src/index.html
 4a  →  add Phase 0: local LLM-as-judge before any cloud call is made
 ```
 
-> **Config reminder:** All files (`2a`, `3a`, `4a`) expose the AIRS API key and profile as UI fields — no hardcoded values needed. Enter your `x-pan-token` and profile name directly in the interface before sending.
+> **Config reminder:** All files (`2a`, `3a`, `4a`) expose the AIRS API key and profile as UI fields — no hardcoded values needed. Enter your `x-pan-token` and profile name directly in the interface, **or** set `AIRS_API_KEY` and `AIRS_PROFILE` in `.env` (see Step 2) to have them pre-loaded and locked automatically. The `.env` approach is recommended so credentials are not retyped on each run.
+>
+> **Note:** The `dev/` standalone HTML files (`1a`, `1b`, `2a`) open directly in a browser and do not go through the Node proxy — `.env` values are only picked up by files served via `npm start` (i.e. `src/index.html`). For `dev/` files, enter credentials in the UI.
 
 ---
 
@@ -303,6 +329,9 @@ Click the **🛠️ API Inspector** bar at the bottom. You'll see three columns:
 | **"Failed to fetch" on Send** | Ollama not running | Run `ollama serve` in terminal |
 | **Prisma Proxy Error 500** | Node proxy can't reach Palo Alto | Check internet / verify `x-pan-token` |
 | **Cannot find module 'express'** | Dependencies not installed | Run `npm install` |
+| **Cannot find module 'dotenv'** | `npm install` not re-run after `.env` support was added | Run `npm install` then `npm start` |
+| **API key field stays editable despite `.env`** | Server not running or `/api/config` unreachable | Ensure `npm start` is running; `.env` is only loaded by the Node proxy |
+| **Profile not pre-selected from `.env`** | `AIRS_PROFILE` not set in `.env` | Add `AIRS_PROFILE=your-profile-name` to `.env` and restart |
 | **Phase 2 scan not running** | Streaming was stopped early | Phase 2 only runs on complete responses |
 
 ---

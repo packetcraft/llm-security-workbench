@@ -1,6 +1,6 @@
 # 📄 Product Requirements Document: Ollama Pro Workbench
 
-**Version:** 2.4 (Triple-Gate Edition)
+**Version:** 2.5 (Triple-Gate + Credential Management)
 **Date:** March 2026
 **Status:** Feature Complete / Stable Release
 
@@ -176,11 +176,35 @@ Real-time status indicator in the header cycles through: `🔍 Phase 1: Scanning
 * **JavaScript:** Vanilla ES6+, `async/await`, Fetch API, `ReadableStream`.
 * **Storage:** Browser `localStorage` for personas and AIRS profiles.
 
-### 4.2 Backend Proxy
+### 4.2 Backend Proxy & Credential Management
 
 * **Runtime:** Node.js + Express (port `3080`).
 * **Purpose:** CORS bypass — routes browser AIRS scan requests to `service.api.aisecurity.paloaltonetworks.com`.
-* **Routes:** `GET /` (serves `src/index.html`), `POST /api/prisma` (proxy to AIRS).
+* **Credential loading:** `dotenv` is loaded at startup from the project-root `.env` file. `AIRS_API_KEY` and `AIRS_PROFILE` are read into `process.env` and **never forwarded to the browser**.
+* **Routes:**
+
+| Route | Method | Description |
+| :--- | :--- | :--- |
+| `/` | `GET` | Serves `src/index.html` |
+| `/api/config` | `GET` | Returns `{ hasApiKey: bool, profile: string \| null }` — presence signal only, key never returned |
+| `/api/prisma` | `POST` | Proxies scan requests to Prisma AIRS; prefers `process.env.AIRS_API_KEY` over the `x-pan-token` request header |
+
+**Key preference logic in `/api/prisma`:**
+
+```javascript
+const apiKey = process.env.AIRS_API_KEY || req.headers["x-pan-token"];
+```
+
+If a `.env` key is present, the browser sends no `x-pan-token` header at all — the field is marked `disabled` in the UI and `dataset.fromEnv` is set so that mode toggles cannot re-enable it.
+
+**UI load sequence when `.env` is set:**
+
+1. UI calls `GET /api/config` on startup.
+2. If `hasApiKey: true` → API key input shows `••••••••••••••••`, is disabled, tagged `🔒 .env`.
+3. If `profile` is set → profile is injected as a pre-selected `<option>` in the profile dropdown, tagged `🔒 .env`.
+4. `toggleAIRSSettings()` checks `dataset.fromEnv` before re-enabling fields when mode changes — env-locked fields stay locked.
+
+**`.env.example`** is committed to the repository as a safe template. The real `.env` is in `.gitignore`.
 
 ### 4.3 External Libraries (CDN)
 
@@ -299,7 +323,8 @@ Both scans use the same endpoint: `POST /v1/scan/sync/request`
 * **Local Data Sovereignty:** All LLM inference remains on `localhost`. Prompts and responses are only sent to Prisma AIRS for security evaluation.
 * **Phase 0 is fully offline:** The Native Guardrail calls `localhost:11434` only — no prompt data leaves the machine during Phase 0.
 * **Defense-in-depth:** Phase 0 is a convenience gate, not a replacement for AIRS. LLM-based judges can be tricked via adversarial prompts; they are a first filter, not a guarantee.
-* **API Key Handling:** The `x-pan-token` is masked in the UI and transmitted only through the local proxy — never exposed in client-side network calls.
+* **API Key Handling:** The `x-pan-token` is never exposed in client-side network calls. It is read server-side from `process.env.AIRS_API_KEY` (set via `.env`) or, as a fallback, accepted from the UI and forwarded only through the local proxy. The browser never receives the key value — `/api/config` returns only a boolean presence flag.
+* **`.env` gitignore:** The `.env` file is excluded from version control. `.env.example` is committed as a safe template with placeholder values.
 * **CORS:** Ollama requires `OLLAMA_ORIGINS="*"` to accept browser requests.
 * **Incomplete Responses:** If the user stops generation mid-stream, Phase 2 is skipped. A partial response is never scanned.
 * **Fail-open guardrail:** If the Phase 0 judge model is unavailable, execution falls through to Phase 1 rather than hard-blocking the user.
@@ -312,13 +337,20 @@ Both scans use the same endpoint: `POST /v1/scan/sync/request`
 prisma-airs-with-ollama/
 ├── src/
 │   ├── index.html        # Main application (Phase 0 + Phase 1 + Phase 2)
-│   └── server.js         # CORS proxy (Express, port 3080)
+│   └── server.js         # CORS proxy (Express, port 3080); loads .env
 ├── docs/
 │   ├── PRD.md            # This document
 │   └── pii-shield-testing.md
 ├── dev/                  # Development iteration history
+│   ├── 1a-ollama-chat-no-security.html
+│   ├── 1b-mechat-no-security.html
+│   ├── 2a-mechat-airs-teaching-demo.html
+│   ├── 3a-ollama-pro-workbench-twin-scan.html
+│   └── 4a-ollama-pro-workbench-including-nativeguardrail.html
 ├── test/
 │   └── sample_threats.json
+├── .env.example          # Committed template — copy to .env and fill in values
+├── .gitignore            # Excludes .env
 ├── package.json
 └── README.md
 ```
