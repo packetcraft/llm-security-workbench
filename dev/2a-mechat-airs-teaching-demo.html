@@ -141,6 +141,26 @@
             border-bottom-color: #00ccff;
         }
 
+        .inline-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #444;
+            color: #00ccff;
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+            padding: 0 2px;
+            width: 220px;
+        }
+
+        .inline-input::placeholder {
+            color: #444;
+        }
+
+        .inline-input:focus {
+            border-bottom-color: #00ccff;
+        }
+
         #airs-toggle {
             padding: 0;
             background: transparent;
@@ -177,7 +197,10 @@
     <p style="color:#555; font-size:12px; margin-bottom:16px; line-height:2.2;">
         i am a chat bot with <select id="persona-select" class="inline-select"></select> personality.<br>
         powered by <select id="model-select" class="inline-select"></select> — chat ingress secured by Prisma AIRS.
-        <button id="airs-toggle" onclick="toggleAIRS()">[ 🛡️ AIRS ON ]</button>
+        <button id="airs-toggle" onclick="toggleAIRS()">[ 🛡️ AIRS ON ]</button><br>
+        api key <input type="password" id="airs-api-key" class="inline-input" placeholder="x-pan-token" />
+        &nbsp;·&nbsp;
+        profile <input type="text" id="airs-profile" class="inline-input" style="width:140px;" placeholder="e.g. default" />
     </p>
 
     <div id="chat-box"></div>
@@ -217,8 +240,6 @@
         /*
          * FLOW
          * ─────────────────────────────────────────────────────────
-         * HARDCODED CONFIG (3 lines to fill in)
-         *          ↓
          * sendMessage()
          *     ├── STEP 1 — POST to /api/prisma  (AIRS scan)  ← skipped if AIRS OFF
          *     ├── STEP 2 — check verdict.action
@@ -227,13 +248,6 @@
          *     └── STEP 3 — POST to Ollama /api/generate → display response
          * ─────────────────────────────────────────────────────────
          */
-
-        // ─────────────────────────────────────────────
-        // HARDCODED CONFIG — edit these before running
-        // ─────────────────────────────────────────────
-        const AIRS_API_KEY = "REDACTED";
-        const AIRS_PROFILE = "aws-entp-agents-sp";   // e.g. "ark-sec-profile"
-        // ─────────────────────────────────────────────
 
         let airsEnabled = true;
 
@@ -318,6 +332,13 @@
 
             const persona = PERSONAS[document.getElementById("persona-select").value];
             const model = document.getElementById("model-select").value;
+            const airsApiKey = document.getElementById("airs-api-key").value.trim();
+            const airsProfile = document.getElementById("airs-profile").value.trim();
+
+            if (airsEnabled && (!airsApiKey || !airsProfile)) {
+                alert("AIRS is enabled — please enter an API key and profile name, or toggle AIRS off.");
+                return;
+            }
 
             // Show user message — badge only shown when AIRS is on
             const msgId = "msg-" + Date.now();
@@ -336,11 +357,11 @@
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "x-pan-token": AIRS_API_KEY
+                            "x-pan-token": airsApiKey
                         },
                         body: JSON.stringify({
                             tr_id: "teach-" + Date.now(),
-                            ai_profile: { profile_name: AIRS_PROFILE },
+                            ai_profile: { profile_name: airsProfile },
                             metadata: { app_name: "AIRS Teaching Demo" },
                             contents: [{ prompt: prompt }]
                         })
