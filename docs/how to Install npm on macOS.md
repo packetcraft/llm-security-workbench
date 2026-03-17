@@ -1,4 +1,4 @@
-# Easiest Ways to Install npm on macOS
+# How to Install npm on macOS
 
 ## ✅ **Method 1 (Recommended): Install via Homebrew**
 
