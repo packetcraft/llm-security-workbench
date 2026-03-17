@@ -235,7 +235,10 @@
                     })
                 });
                 const data = await llmRes.json();
-                chatBox.innerHTML += `<p><span class="bot">${persona.name}:</span></p><div class="bot-content">${marked.parse(data.response)}</div>`;
+                if (data.error) throw new Error(data.error);
+                const responseText = data.response ?? data.message?.content ?? "";
+                if (!responseText) throw new Error("Empty response from model");
+                chatBox.innerHTML += `<p><span class="bot">${persona.name}:</span></p><div class="bot-content">${marked.parse(responseText)}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch (err) {
                 chatBox.innerHTML += `<p style="color:red">LLM error: ${err.message}</p>`;
