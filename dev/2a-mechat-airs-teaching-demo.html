@@ -233,7 +233,6 @@
         // ─────────────────────────────────────────────
         const AIRS_API_KEY = "REDACTED";
         const AIRS_PROFILE = "aws-entp-agents-sp";   // e.g. "ark-sec-profile"
-        const OLLAMA_MODEL = "llama3.2:3b";
         // ─────────────────────────────────────────────
 
         let airsEnabled = true;
@@ -254,16 +253,20 @@
             sel.appendChild(opt);
         });
 
-        // Populate model dropdown
-        const MODELS = ["llama3.2:3b", "llama3.2:1b", "llama3:8b", "mistral:7b", "gemma2:2b"];
-        const modelSel = document.getElementById("model-select");
-        MODELS.forEach(m => {
-            const opt = document.createElement("option");
-            opt.value = m;
-            opt.textContent = m;
-            if (m === OLLAMA_MODEL) opt.selected = true;
-            modelSel.appendChild(opt);
-        });
+        // Populate model dropdown — fetched live from Ollama
+        async function fetchModels() {
+            const modelSel = document.getElementById("model-select");
+            try {
+                const res  = await fetch("http://localhost:11434/api/tags");
+                const data = await res.json();
+                modelSel.innerHTML = data.models
+                    .map(m => `<option value="${m.name}">${m.name}</option>`)
+                    .join("");
+            } catch {
+                modelSel.innerHTML = "<option>Ollama offline</option>";
+            }
+        }
+        fetchModels();
 
         /*
          * ══════════════════════════════════════════════════════════════
