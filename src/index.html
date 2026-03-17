@@ -220,7 +220,7 @@
             }
             .debug-content.open {
                 display: grid;
-                grid-template-columns: 1fr 1fr 1fr 1fr;
+                grid-template-columns: 1fr 1fr 1fr;
                 gap: 0 20px;
             }
             .debug-label {
@@ -656,21 +656,26 @@
                 <span id="debug-status">Ready — click to expand</span>
             </div>
             <div class="debug-content">
+                <!-- Phase 1: Prompt Scan -->
                 <div>
-                    <span class="debug-label debug-security-req">// OUTGOING: PRISMA AIRS REQUEST</span>
-                    <pre id="debug-prisma-req" style="background: transparent; border: none; padding: 0; color: #ffb86c; overflow-x: auto;">Waiting for scan...</pre>
+                    <span class="debug-label debug-security-req">// 🔍 PHASE 1 — PROMPT SCAN REQUEST</span>
+                    <pre id="debug-prompt-req" style="background:transparent;border:none;padding:0;color:#ffb86c;overflow-x:auto;">Waiting...</pre>
+                    <span class="debug-label debug-security-res">// 📥 PHASE 1 — AIRS PROMPT VERDICT</span>
+                    <pre id="debug-prompt-res" style="background:transparent;border:none;padding:0;color:#ff5555;overflow-x:auto;">Waiting...</pre>
                 </div>
+                <!-- LLM -->
                 <div>
-                    <span class="debug-label debug-security-res">// INCOMING: PRISMA AIRS RESPONSE</span>
-                    <pre id="debug-prisma-res" style="background: transparent; border: none; padding: 0; color: #ff5555; overflow-x: auto;">Waiting for scan...</pre>
+                    <span class="debug-label">// 🤖 OLLAMA REQUEST</span>
+                    <pre id="debug-req" style="background:transparent;border:none;padding:0;overflow-x:auto;">Waiting...</pre>
+                    <span class="debug-label">// 🤖 OLLAMA LAST CHUNK</span>
+                    <pre id="debug-res" style="background:transparent;border:none;padding:0;overflow-x:auto;">Waiting...</pre>
                 </div>
+                <!-- Phase 2: Response Scan -->
                 <div>
-                    <span class="debug-label">// OUTGOING: OLLAMA REQUEST</span>
-                    <pre id="debug-req" style="background: transparent; border: none; padding: 0; overflow-x: auto;">Waiting...</pre>
-                </div>
-                <div>
-                    <span class="debug-label">// INCOMING: OLLAMA LAST CHUNK</span>
-                    <pre id="debug-res" style="background: transparent; border: none; padding: 0; overflow-x: auto;">Waiting...</pre>
+                    <span class="debug-label debug-security-req">// 🔍 PHASE 2 — RESPONSE SCAN REQUEST</span>
+                    <pre id="debug-response-req" style="background:transparent;border:none;padding:0;color:#ffb86c;overflow-x:auto;">Waiting for LLM...</pre>
+                    <span class="debug-label debug-security-res">// 📥 PHASE 2 — AIRS RESPONSE VERDICT</span>
+                    <pre id="debug-response-res" style="background:transparent;border:none;padding:0;color:#ff5555;overflow-x:auto;">Waiting for LLM...</pre>
                 </div>
             </div>
         </div>
@@ -984,22 +989,27 @@
                 if (controller) controller.abort();
             }
 
-            // 🌐 LIVE PRISMA AIRS VIA LOCAL PROXY
-            async function fetchPrismaAIRS(text, mode, profile, apiKey) {
+            // ══════════════════════════════════════════════════════════════
+            // 🌐 PRISMA AIRS SCANNER — handles both Phase 1 and Phase 2
+            // contentObj: { prompt } for Phase 1, { prompt, response } for Phase 2
+            // phase: "prompt" | "response"
+            // ══════════════════════════════════════════════════════════════
+            async function scanWithAIRS(contentObj, phase, mode, profile, apiKey, modelName) {
                 const endpoint = "http://localhost:3080/api/prisma";
+                const trId = "wb-" + Date.now();
                 const payload = {
+                    tr_id: trId,
                     ai_profile: { profile_name: profile },
-                    contents: [{ prompt: text }],
+                    metadata: {
+                        ai_model: modelName,
+                        app_name: "Ollama Pro Workbench",
+                    },
+                    contents: [contentObj],
                 };
 
-                const debugReq = {
-                    endpoint: endpoint,
-                    method: "POST",
-                    headers: { "x-pan-token": "***MASKED***" },
-                    payload: payload,
-                };
-                document.getElementById("debug-prisma-req").innerText =
-                    JSON.stringify(debugReq, null, 2);
+                const reqId = phase === "prompt" ? "debug-prompt-req" : "debug-response-req";
+                const resId = phase === "prompt" ? "debug-prompt-res" : "debug-response-res";
+                document.getElementById(reqId).innerText = JSON.stringify(payload, null, 2);
 
                 try {
                     const response = await fetch(endpoint, {
@@ -1013,32 +1023,38 @@
 
                     if (!response.ok) {
                         const err = await response.text();
-                        throw new Error(
-                            `API HTTP Error ${response.status}: ${err}`,
-                        );
+                        throw new Error(`HTTP ${response.status}: ${err}`);
                     }
 
                     const result = await response.json();
+                    document.getElementById(resId).innerText = JSON.stringify(result, null, 2);
+
+                    // Determine effective status based on AIRS action + enforcement mode
+                    const isBlock = result.action === "block";
+                    const status = isBlock ? (mode === "strict" ? "block" : "alert") : "allow";
+
+                    // Extract which specific threat flags fired for this phase
+                    const detectedObj = phase === "prompt"
+                        ? result.prompt_detected
+                        : result.response_detected;
+                    const detected = detectedObj
+                        ? Object.entries(detectedObj).filter(([, v]) => v === true).map(([k]) => k)
+                        : [];
 
                     return {
-                        status:
-                            result.action === "block"
-                                ? mode === "strict"
-                                    ? "block"
-                                    : "alert"
-                                : "allow",
+                        status,
                         action: result.action || "allow",
                         category: result.category || "benign",
-                        profile_evaluated: profile,
+                        detected,
+                        maskedData: result.response_masked_data || null,
+                        scanId: result.scan_id,
+                        reportId: result.report_id,
                         raw_response: result,
                     };
                 } catch (error) {
-                    console.error("Prisma Proxy Network Error:", error);
-                    return {
-                        status: "error",
-                        message: error.message,
-                        raw_response: null,
-                    };
+                    console.error("Prisma Scan Error:", error);
+                    document.getElementById(resId).innerText = "Error: " + error.message;
+                    return { status: "error", message: error.message, raw_response: null };
                 }
             }
 
@@ -1054,161 +1070,149 @@
             async function sendMessage() {
                 const input = document.getElementById("user-input");
                 const chatBox = document.getElementById("chat-box");
-                const modelSelect =
-                    document.getElementById("model-select").value;
+                const modelSelect = document.getElementById("model-select").value;
                 const personaSelect = document.getElementById("persona-select");
 
-                if (
-                    !input.value.trim() ||
-                    document.getElementById("send-btn").disabled
-                )
-                    return;
+                if (!input.value.trim() || document.getElementById("send-btn").disabled) return;
 
                 const userPrompt = input.value;
-                const personaLabel =
-                    personaSelect.options[personaSelect.selectedIndex].text ||
-                    "Custom";
-
+                const personaLabel = personaSelect.options[personaSelect.selectedIndex].text || "Custom";
                 const airsMode = document.getElementById("airs-mode").value;
-                const airsProfile =
-                    document.getElementById("airs-profile").value;
-                const airsApiKey = document
-                    .getElementById("airs-api-key")
-                    .value.trim();
+                const airsProfile = document.getElementById("airs-profile").value;
+                const airsApiKey = document.getElementById("airs-api-key").value.trim();
 
-                // #7 — Remove empty state on first message
+                // Remove empty state on first message
                 const emptyState = document.getElementById("chat-empty-state");
                 if (emptyState) emptyState.remove();
 
-                // #4/#11 — User message with timestamp + scan badge placeholder
+                // User message with prompt scan badge placeholder
                 const msgId = "msg-" + Date.now();
                 const userDiv = document.createElement("div");
                 userDiv.className = "message";
                 userDiv.id = msgId;
                 userDiv.innerHTML = `<span class="user-label">USER <span class="msg-timestamp">${getTimestamp()}</span><span class="scan-badge off" id="${msgId}-badge">AIRS Off</span></span>${userPrompt.replace(/</g,"&lt;").replace(/>/g,"&gt;")}`;
                 chatBox.appendChild(userDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
 
-                // Clear the input and reset threat dropdown to default
+                // Clear input
                 input.value = "";
                 input.style.height = "auto";
+                document.getElementById("char-counter").textContent = "0 chars";
                 document.getElementById("threat-select").value = "";
-
                 document.getElementById("send-btn").disabled = true;
 
-                // 🛡️ PRISMA AIRS SECURITY HOOK (PRE-FLIGHT)
+                const badge = document.getElementById(msgId + "-badge");
+
+                // ══════════════════════════════════════════
+                // PHASE 1 — PRE-FLIGHT PROMPT SCAN
+                // ══════════════════════════════════════════
                 if (airsMode !== "off") {
                     if (!airsApiKey) {
-                        alert(
-                            "Please enter your Prisma AIRS API Key (x-pan-token) to enable scanning.",
-                        );
+                        alert("Please enter your Prisma AIRS API Key (x-pan-token) to enable scanning.");
                         document.getElementById("send-btn").disabled = false;
                         return;
                     }
 
-                    document.getElementById("debug-status").innerText =
-                        "AIRS Scanning...";
+                    document.getElementById("debug-status").innerText = "🔍 Phase 1: Scanning prompt...";
+                    document.getElementById("debug-response-req").innerText = "Waiting for Phase 2...";
+                    document.getElementById("debug-response-res").innerText = "Waiting for Phase 2...";
 
-                    const securityReport = await fetchPrismaAIRS(
-                        userPrompt,
-                        airsMode,
-                        airsProfile,
-                        airsApiKey,
+                    const promptScan = await scanWithAIRS(
+                        { prompt: userPrompt },
+                        "prompt", airsMode, airsProfile, airsApiKey, modelSelect
                     );
 
-                    document.getElementById("debug-prisma-res").innerText =
-                        JSON.stringify(
-                            securityReport.raw_response || securityReport,
-                            null,
-                            2,
-                        );
-
-                    // #11 — Update scan badge on the user message
-                    const badge = document.getElementById(msgId + "-badge");
-                    if (securityReport.status === "error") {
+                    if (promptScan.status === "error") {
                         if (badge) { badge.className = "scan-badge"; badge.textContent = "Error"; }
                         const errDiv = document.createElement("div");
                         errDiv.className = "message security-alert";
-                        errDiv.innerHTML = `🛑 PRISMA PROXY ERROR:<br>${securityReport.message}<br><br><small>Make sure your server.js is running on localhost:3080</small>`;
+                        errDiv.innerHTML = `🛑 PRISMA PROXY ERROR (Phase 1)<br>${promptScan.message}<br><small>Make sure server.js is running on localhost:3080</small>`;
                         chatBox.appendChild(errDiv);
-                        document.getElementById("debug-status").innerText = "API Error";
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                        document.getElementById("debug-status").innerText = "Error";
                         document.getElementById("send-btn").disabled = false;
                         return;
-                    } else if (securityReport.status === "block") {
+                    }
+
+                    if (promptScan.status === "block") {
+                        // Strict mode: LLM never reached
                         if (badge) { badge.className = "scan-badge blocked"; badge.textContent = "🛑 Blocked"; }
+                        const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
                         const blockDiv = document.createElement("div");
                         blockDiv.className = "message security-alert";
-                        blockDiv.innerHTML = `🛑 PRISMA AIRS BLOCK (Strict Mode)<br>Request terminated before reaching local LLM.<br>Profile Evaluated: <code>${airsProfile}</code><br>Category Detected: <strong>${securityReport.category.toUpperCase()}</strong>`;
+                        blockDiv.innerHTML = `🛑 PRISMA AIRS — PROMPT BLOCKED<br>
+                            LLM was not reached. Request terminated by pre-flight scan.<br>
+                            Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong>`;
                         chatBox.appendChild(blockDiv);
-                        document.getElementById("debug-status").innerText = "Blocked";
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                        document.getElementById("debug-status").innerText = "Blocked (Prompt)";
                         document.getElementById("send-btn").disabled = false;
                         return;
-                    } else if (securityReport.status === "alert") {
+                    }
+
+                    if (promptScan.status === "alert") {
+                        // Audit mode: flag but proceed to LLM
                         if (badge) { badge.className = "scan-badge flagged"; badge.textContent = "⚠️ Flagged"; }
+                        const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
-                        warnDiv.innerHTML = `⚠️ PRISMA AIRS WARNING (Audit Mode)<br>Profile Evaluated: <code>${airsProfile}</code><br>Category Detected: <strong>${securityReport.category.toUpperCase()}</strong><br><small>Action was <em>${securityReport.action}</em>, bypassed by Audit mode.</small>`;
+                        warnDiv.innerHTML = `⚠️ AIRS PROMPT WARNING (Audit Mode) — Proceeding to LLM<br>
+                            Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong>`;
                         chatBox.appendChild(warnDiv);
                     } else {
                         if (badge) { badge.className = "scan-badge allowed"; badge.textContent = "✅ Allowed"; }
                     }
                 } else {
-                    document.getElementById("debug-prisma-req").innerText =
-                        "Scan Disabled. Prisma Bypassed.";
-                    document.getElementById("debug-prisma-res").innerText =
-                        "Scan Disabled. Prisma Bypassed.";
+                    ["debug-prompt-req","debug-prompt-res","debug-response-req","debug-response-res"]
+                        .forEach(id => document.getElementById(id).innerText = "AIRS Disabled.");
                 }
 
-                // 📋 PROCEED TO OLLAMA (Local LLM Execution)
+                // ══════════════════════════════════════════
+                // LLM EXECUTION
+                // ══════════════════════════════════════════
+                const botMsgId = "bot-" + Date.now();
                 const botDiv = document.createElement("div");
                 botDiv.className = "message";
+                botDiv.id = botMsgId;
                 botDiv.innerHTML = `
                     <span class="bot-label">
                         AI
                         <span class="identity-info">(${modelSelect} — ${personaLabel})</span>
                         <span class="msg-timestamp">${getTimestamp()}</span>
+                        ${airsMode !== "off" ? `<span class="scan-badge off" id="${botMsgId}-badge">Scanning resp...</span>` : ""}
                     </span>
                     <span class="content"></span><span class="cursor"></span>
                 `;
                 chatBox.appendChild(botDiv);
 
-                const payload = {
+                const ollamaPayload = {
                     model: modelSelect,
                     messages: [
-                        {
-                            role: "system",
-                            content:
-                                document.getElementById("system-prompt").value,
-                        },
+                        { role: "system", content: document.getElementById("system-prompt").value },
                         { role: "user", content: userPrompt },
                     ],
                     stream: true,
                 };
 
-                document.getElementById("debug-req").innerText = JSON.stringify(
-                    payload,
-                    null,
-                    2,
-                );
-                document.getElementById("debug-status").innerText =
-                    "Streaming LLM...";
+                document.getElementById("debug-req").innerText = JSON.stringify(ollamaPayload, null, 2);
+                document.getElementById("debug-status").innerText = "🤖 Streaming LLM...";
                 document.getElementById("stop-btn").disabled = false;
                 controller = new AbortController();
 
+                let fullRes = "";
+                let streamError = false;
+
                 try {
-                    const response = await fetch(
-                        "http://localhost:11434/api/chat",
-                        {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            signal: controller.signal,
-                            body: JSON.stringify(payload),
-                        },
-                    );
+                    const response = await fetch("http://localhost:11434/api/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        signal: controller.signal,
+                        body: JSON.stringify(ollamaPayload),
+                    });
 
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
-                    let fullRes = "";
                     let buffer = "";
 
                     while (true) {
@@ -1225,39 +1229,91 @@
                             const json = JSON.parse(line);
                             if (json.message?.content) {
                                 fullRes += json.message.content;
-                                botDiv.querySelector(".content").innerHTML =
-                                    marked.parse(fullRes);
-                                botDiv
-                                    .querySelectorAll("pre code")
-                                    .forEach((el) => hljs.highlightElement(el));
+                                botDiv.querySelector(".content").innerHTML = marked.parse(fullRes);
+                                botDiv.querySelectorAll("pre code").forEach(el => hljs.highlightElement(el));
                                 chatBox.scrollTop = chatBox.scrollHeight;
                             }
                         }
                     }
-                    document.getElementById("debug-status").innerText = "Done";
                 } catch (e) {
+                    streamError = true;
                     botDiv.querySelector(".content").innerHTML +=
                         `<p style="color:red">${e.name === "AbortError" ? "Stopped by user" : e.message}</p>`;
-                    document.getElementById("debug-status").innerText =
-                        e.name === "AbortError" ? "Stopped" : "Error";
+                    document.getElementById("debug-status").innerText = e.name === "AbortError" ? "Stopped" : "LLM Error";
                 } finally {
                     botDiv.querySelector(".cursor")?.remove();
-
-                    // #5 — Copy button on completed bot response
-                    const copyBtn = document.createElement("button");
-                    copyBtn.className = "copy-btn";
-                    copyBtn.textContent = "📋 Copy";
-                    copyBtn.onclick = () => {
-                        navigator.clipboard.writeText(botDiv.querySelector(".content").innerText).then(() => {
-                            copyBtn.textContent = "✅ Copied!";
-                            setTimeout(() => copyBtn.textContent = "📋 Copy", 2000);
-                        });
-                    };
-                    botDiv.querySelector(".bot-label").appendChild(copyBtn);
-
-                    document.getElementById("send-btn").disabled = false;
                     document.getElementById("stop-btn").disabled = true;
                 }
+
+                // ══════════════════════════════════════════
+                // PHASE 2 — POST-RESPONSE SCAN
+                // ══════════════════════════════════════════
+                if (airsMode !== "off" && fullRes && !streamError) {
+                    document.getElementById("debug-status").innerText = "🔍 Phase 2: Scanning response...";
+                    const resBadge = document.getElementById(botMsgId + "-badge");
+
+                    const responseScan = await scanWithAIRS(
+                        { prompt: userPrompt, response: fullRes },
+                        "response", airsMode, airsProfile, airsApiKey, modelSelect
+                    );
+
+                    if (responseScan.status === "error") {
+                        if (resBadge) { resBadge.className = "scan-badge"; resBadge.textContent = "Scan Err"; }
+                        document.getElementById("debug-status").innerText = "Response Scan Error";
+
+                    } else if (responseScan.status === "block") {
+                        const threats = responseScan.detected.length ? responseScan.detected.join(", ") : responseScan.category;
+                        if (resBadge) { resBadge.className = "scan-badge blocked"; resBadge.textContent = "🛑 Blocked"; }
+
+                        if (airsMode === "strict") {
+                            // Replace LLM response entirely
+                            botDiv.querySelector(".content").innerHTML = `
+                                <div class="security-alert">
+                                    🛑 PRISMA AIRS — RESPONSE BLOCKED<br>
+                                    The LLM response was intercepted and withheld.<br>
+                                    Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong>
+                                </div>`;
+                        } else {
+                            // Audit: warn + show masked version if available, else keep response
+                            const warnHtml = `<div class="security-alert" style="color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-bottom:10px;">
+                                ⚠️ AIRS RESPONSE WARNING (Audit Mode)<br>Threats: <strong>${threats.toUpperCase()}</strong></div>`;
+                            if (responseScan.maskedData) {
+                                botDiv.querySelector(".content").innerHTML = warnHtml + marked.parse(responseScan.maskedData.data);
+                            } else {
+                                botDiv.querySelector(".content").insertAdjacentHTML("afterbegin", warnHtml);
+                            }
+                            if (resBadge) { resBadge.className = "scan-badge flagged"; resBadge.textContent = "⚠️ Flagged"; }
+                        }
+                        document.getElementById("debug-status").innerText = "Blocked (Response)";
+
+                    } else if (responseScan.maskedData) {
+                        // Allowed but DLP masking applied
+                        if (resBadge) { resBadge.className = "scan-badge flagged"; resBadge.textContent = "⚠️ Masked"; }
+                        const maskHtml = `<div class="security-alert" style="color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-bottom:10px;">
+                            ⚠️ AIRS: Sensitive data detected and masked in response</div>`;
+                        botDiv.querySelector(".content").innerHTML = maskHtml + marked.parse(responseScan.maskedData.data);
+                        document.getElementById("debug-status").innerText = "Done (DLP Masked)";
+
+                    } else {
+                        if (resBadge) { resBadge.className = "scan-badge allowed"; resBadge.textContent = "✅ Clean"; }
+                        document.getElementById("debug-status").innerText = "Done ✅";
+                    }
+                } else if (!streamError) {
+                    document.getElementById("debug-status").innerText = "Done";
+                }
+
+                // Copy button
+                const copyBtn = document.createElement("button");
+                copyBtn.className = "copy-btn";
+                copyBtn.textContent = "📋 Copy";
+                copyBtn.onclick = () => {
+                    navigator.clipboard.writeText(botDiv.querySelector(".content").innerText).then(() => {
+                        copyBtn.textContent = "✅ Copied!";
+                        setTimeout(() => copyBtn.textContent = "📋 Copy", 2000);
+                    });
+                };
+                botDiv.querySelector(".bot-label").appendChild(copyBtn);
+                document.getElementById("send-btn").disabled = false;
             }
 
             // Initialize App
