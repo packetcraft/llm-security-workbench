@@ -33,12 +33,48 @@
 
             body {
                 font-family: -apple-system, system-ui, sans-serif;
-                max-width: 1100px;
+                max-width: 1500px;
                 margin: 20px auto;
                 background-color: var(--bg);
                 color: var(--text);
                 transition: 0.3s;
                 padding: 0 20px;
+            }
+
+            .two-col-layout {
+                display: flex;
+                gap: 20px;
+                align-items: flex-start;
+            }
+
+            .left-col {
+                width: 300px;
+                flex-shrink: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                /* #3 — Independent scroll */
+                max-height: calc(100vh - 100px);
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: var(--border) transparent;
+            }
+            .left-col::-webkit-scrollbar { width: 4px; }
+            .left-col::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+            .right-col {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .panel {
+                background: var(--panel);
+                padding: 20px;
+                border-radius: 12px;
+                border: 1px solid var(--border);
             }
             .header {
                 display: flex;
@@ -48,15 +84,21 @@
             }
 
             #chat-box {
-                height: 480px;
+                height: calc(100vh - 260px);
+                min-height: 300px;
                 border-radius: 12px;
                 border: 1px solid var(--border);
                 background: var(--panel);
                 overflow-y: auto;
                 padding: 25px;
-                margin-bottom: 20px;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                /* #8 — Styled scrollbar */
+                scrollbar-width: thin;
+                scrollbar-color: var(--border) transparent;
             }
+            #chat-box::-webkit-scrollbar { width: 6px; }
+            #chat-box::-webkit-scrollbar-track { background: transparent; }
+            #chat-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
             /* Settings Layout - 3 columns */
             .settings-bar {
@@ -118,7 +160,11 @@
                 display: flex;
                 flex-direction: column;
                 gap: 12px;
-                margin-bottom: 20px;
+                /* #7 — Sticky prompt bar */
+                position: sticky;
+                bottom: 16px;
+                z-index: 10;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
             }
             #user-input {
                 min-height: 80px;
@@ -147,9 +193,8 @@
                 cursor: not-allowed;
             }
 
-            /* DEBUG VIEW */
+            /* DEBUG VIEW — full-width panel below layout */
             .debug-panel {
-                margin-top: 20px;
                 border: 1px solid #444;
                 border-radius: 8px;
                 background: var(--debug);
@@ -157,6 +202,7 @@
                 font-family: "Fira Code", monospace;
                 font-size: 11px;
                 overflow: hidden;
+                margin-top: 20px;
             }
             .debug-header {
                 padding: 10px 15px;
@@ -169,11 +215,13 @@
             .debug-content {
                 display: none;
                 padding: 15px;
-                max-height: 350px;
+                max-height: 280px;
                 overflow-y: auto;
             }
             .debug-content.open {
-                display: block;
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+                gap: 0 20px;
             }
             .debug-label {
                 color: #569cd6;
@@ -255,261 +303,422 @@
                     opacity: 0;
                 }
             }
+
+            /* #1 — AIRS Status dot */
+            .status-dot {
+                display: inline-block;
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                margin-right: 5px;
+                vertical-align: middle;
+                transition: background 0.3s, box-shadow 0.3s;
+            }
+            .status-dot.off    { background: #555; }
+            .status-dot.audit  { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+            .status-dot.strict { background: #28a745; box-shadow: 0 0 6px #28a745; }
+
+            /* #2 — Active model badge */
+            .model-badge {
+                font-size: 11px;
+                background: rgba(55,147,255,0.12);
+                color: var(--primary);
+                padding: 3px 10px;
+                border-radius: 20px;
+                border: 1px solid var(--primary);
+                font-weight: 600;
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            /* #4 — Message timestamp */
+            .msg-timestamp {
+                font-size: 10px;
+                opacity: 0.4;
+                font-weight: 400;
+                margin-left: 8px;
+                text-transform: none;
+                letter-spacing: 0;
+            }
+
+            /* #5 — Copy button on bot responses */
+            .copy-btn {
+                float: right;
+                font-size: 10px;
+                padding: 2px 8px;
+                background: #2a2a2a;
+                color: #888;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: normal;
+                margin-left: 8px;
+                transition: 0.2s;
+            }
+            .copy-btn:hover { background: #3a3a3a; color: white; }
+
+            /* #6 — Scroll to bottom button */
+            .chat-box-wrapper { position: relative; }
+            #scroll-btn {
+                display: none;
+                position: absolute;
+                bottom: 14px;
+                right: 14px;
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                background: var(--primary);
+                color: white;
+                font-size: 18px;
+                padding: 0;
+                line-height: 34px;
+                text-align: center;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+                z-index: 10;
+                transition: opacity 0.2s;
+            }
+            #scroll-btn.visible { display: block; }
+
+            /* #7 — Empty state */
+            #chat-empty-state {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                opacity: 0.3;
+                text-align: center;
+                pointer-events: none;
+                user-select: none;
+            }
+            #chat-empty-state h3 { margin: 0 0 8px; font-size: 20px; }
+            #chat-empty-state p  { font-size: 13px; margin: 0; }
+
+            /* #8 — Character counter */
+            .char-counter {
+                font-size: 10px;
+                opacity: 0.45;
+                text-align: right;
+            }
+
+            /* #9 — Keyboard hint */
+            .kbd-hint { font-size: 10px; opacity: 0.5; }
+            .kbd-hint kbd {
+                font-family: inherit;
+                background: var(--border);
+                border: 1px solid var(--text);
+                color: var(--text);
+                border-radius: 3px;
+                padding: 1px 5px;
+                font-size: 10px;
+                opacity: 0.7;
+            }
+
+            /* #10 — Collapsible sidebar */
+            .sidebar-toggle-btn {
+                font-size: 11px;
+                padding: 6px 12px;
+                background: #333;
+                color: #aaa;
+            }
+            .left-col {
+                transition: width 0.25s ease, opacity 0.25s ease;
+            }
+            .left-col.collapsed {
+                width: 0 !important;
+                overflow: hidden;
+                opacity: 0;
+                gap: 0;
+            }
+
+            /* #11 — Scan badge on user messages */
+            .scan-badge {
+                display: inline-block;
+                font-size: 9px;
+                padding: 2px 7px;
+                border-radius: 10px;
+                margin-left: 6px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                vertical-align: middle;
+            }
+            .scan-badge.off     { background: rgba(100,100,100,0.15); color: #777; border: 1px solid #555; }
+            .scan-badge.allowed { background: rgba(40,167,69,0.15);  color: #28a745; border: 1px solid #28a745; }
+            .scan-badge.flagged { background: rgba(255,193,7,0.15);  color: var(--warning); border: 1px solid var(--warning); }
+            .scan-badge.blocked { background: rgba(220,53,69,0.15);  color: var(--danger); border: 1px solid var(--danger); }
+
+            /* #12 — API key visibility toggle */
+            .api-key-wrapper { position: relative; display: flex; align-items: center; }
+            .api-key-wrapper input { flex: 1; padding-right: 38px; }
+            .api-key-toggle {
+                position: absolute;
+                right: 8px;
+                background: none;
+                border: none;
+                color: #666;
+                cursor: pointer;
+                padding: 4px;
+                font-size: 13px;
+                font-weight: normal;
+                line-height: 1;
+            }
+            .api-key-toggle:hover { color: var(--text); }
         </style>
     </head>
     <body class="dark">
         <div class="header">
-            <h2>
-                Ollama Pro Workbench ⚡
-                <span style="font-size: 12px; color: var(--primary)">v2.2</span>
-            </h2>
-            <button onclick="document.body.classList.toggle('dark')">
-                🌓 Theme
-            </button>
-        </div>
-
-        <div class="settings-bar">
-            <div style="display: flex; flex-direction: column; gap: 15px">
-                <div class="setting-item">
-                    <label>1. Model Selector</label>
-                    <select id="model-select">
-                        <option>Loading models...</option>
-                    </select>
-                </div>
-                <div class="setting-item">
-                    <label>2. Persona Selection</label>
-                    <select id="persona-select" onchange="applyPersona()">
-                        <option value="">-- Select a Persona --</option>
-                        <optgroup label="Standard">
-                            <option value="architect">
-                                Code Architect (Python/Expert)
-                            </option>
-                            <option value="eli5">
-                                ELI5 (Scientific Educator)
-                            </option>
-                        </optgroup>
-                        <optgroup label="Security & Compliance">
-                            <option value="pii_shield">
-                                PII Shield (DLP Filter)
-                            </option>
-                            <option value="auditor">
-                                Cyber Security Auditor
-                            </option>
-                        </optgroup>
-                        <optgroup label="Creative & Logic">
-                            <option value="refiner">Professional Editor</option>
-                            <option value="db_guru">Database Guru (SQL)</option>
-                            <option value="storyteller">
-                                Creative Storyteller
-                            </option>
-                            <option value="socratic">Socratic Tutor</option>
-                        </optgroup>
-                        <optgroup
-                            label="Custom"
-                            id="custom-personas-group"
-                        ></optgroup>
-                    </select>
-                </div>
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                <h2 style="margin: 0;">
+                    Ollama Pro Workbench ⚡
+                    <span style="font-size: 12px; color: var(--primary)">v2.2</span>
+                </h2>
+                <span class="model-badge" id="header-model-badge">No model</span>
+                <span id="header-airs-status" style="display:flex; align-items:center; font-size:11px; opacity:0.7;">
+                    <span class="status-dot off"></span>
+                    <span id="header-airs-label">AIRS Off</span>
+                </span>
             </div>
-
-            <div class="setting-item">
-                <label>3. System Instructions</label>
-                <textarea
-                    id="system-prompt"
-                    style="height: 100%"
-                    placeholder="Define LLM behavior..."
-                ></textarea>
-                <div style="margin-top: 8px">
-                    <button
-                        class="btn-secondary"
-                        style="font-size: 10px; padding: 5px 10px; width: 100%"
-                        onclick="saveCustomPersona()"
-                    >
-                        💾 Save as Custom Persona
-                    </button>
-                </div>
-            </div>
-
-            <div class="setting-item security-group">
-                <label style="color: var(--danger)"
-                    >🛡️ Prisma AIRS Integration</label
-                >
-
-                <select id="airs-mode" onchange="toggleAIRSSettings()">
-                    <option value="off">Off (LLM Only)</option>
-                    <option value="audit">Audit Only (Twin-Scan)</option>
-                    <option value="strict">Strict (Pre-Flight Block)</option>
-                </select>
-
-                <input
-                    type="password"
-                    id="airs-api-key"
-                    placeholder="AIRS API Key (x-pan-token)"
-                    disabled
-                />
-
-                <select id="airs-profile" disabled>
-                    <optgroup label="Default Built-in">
-                        <option value="default">Default Profile</option>
-                    </optgroup>
-                    <optgroup
-                        label="Custom Profiles"
-                        id="custom-airs-group"
-                    ></optgroup>
-                </select>
-
-                <button
-                    id="add-airs-btn"
-                    class="btn-secondary"
-                    style="font-size: 10px; padding: 5px; margin-top: 2px"
-                    onclick="addCustomAirsProfile()"
-                    disabled
-                >
-                    ➕ Add Custom Security Profile
-                </button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">◀ Sidebar</button>
+                <button onclick="document.body.classList.toggle('dark')">🌓 Theme</button>
             </div>
         </div>
 
-        <div id="chat-box"></div>
+        <div class="two-col-layout">
 
-        <div class="input-container">
-            <label>4. Prompt</label>
-            <textarea
-                id="user-input"
-                placeholder="Type here (Shift+Enter for newline)..."
-                oninput="
-                    this.style.height = 'auto';
-                    this.style.height = this.scrollHeight + 'px';
-                "
-            ></textarea>
+            <!-- ═══ LEFT COLUMN ═══ -->
+            <div class="left-col">
 
-            <div
-                style="
-                    display: flex;
-                    align-items: center;
-                    gap: 15px;
-                    margin-top: 10px;
-                "
-            >
-                <div style="display: flex; gap: 10px">
-                    <button
-                        class="btn-secondary"
-                        onclick="
-                            document.getElementById('chat-box').innerHTML = ''
+                <!-- Prisma AIRS Integration -->
+                <div class="panel security-group">
+                    <label style="color: var(--danger)">🛡️ Prisma AIRS Integration</label>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                        <select id="airs-mode" onchange="toggleAIRSSettings()">
+                            <option value="off">Off (LLM Only)</option>
+                            <option value="audit">Audit Only (Twin-Scan)</option>
+                            <option value="strict">Strict (Pre-Flight Block)</option>
+                        </select>
+                        <div class="api-key-wrapper">
+                            <input
+                                type="password"
+                                id="airs-api-key"
+                                placeholder="AIRS API Key (x-pan-token)"
+                                disabled
+                            />
+                            <button class="api-key-toggle" onclick="toggleApiKeyVisibility()" title="Show/hide key">👁</button>
+                        </div>
+                        <select id="airs-profile" disabled>
+                            <optgroup label="Default Built-in">
+                                <option value="default">Default Profile</option>
+                            </optgroup>
+                            <optgroup label="Custom Profiles" id="custom-airs-group"></optgroup>
+                        </select>
+                        <button
+                            id="add-airs-btn"
+                            class="btn-secondary"
+                            style="font-size: 10px; padding: 5px; margin-top: 2px"
+                            onclick="addCustomAirsProfile()"
+                            disabled
+                        >
+                            ➕ Add Custom Security Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1. Model Selector -->
+                <div class="panel">
+                    <div class="setting-item">
+                        <label>1. Model Selector</label>
+                        <select id="model-select" onchange="updateModelBadge()">
+                            <option>Loading models...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 2. Persona Selection -->
+                <div class="panel">
+                    <div class="setting-item">
+                        <label>2. Persona Selection</label>
+                        <select id="persona-select" onchange="applyPersona()">
+                            <option value="">-- Select a Persona --</option>
+                            <optgroup label="Standard">
+                                <option value="architect">Code Architect (Python/Expert)</option>
+                                <option value="eli5">ELI5 (Scientific Educator)</option>
+                            </optgroup>
+                            <optgroup label="Security & Compliance">
+                                <option value="pii_shield">PII Shield (DLP Filter)</option>
+                                <option value="auditor">Cyber Security Auditor</option>
+                            </optgroup>
+                            <optgroup label="Creative & Logic">
+                                <option value="refiner">Professional Editor</option>
+                                <option value="db_guru">Database Guru (SQL)</option>
+                                <option value="storyteller">Creative Storyteller</option>
+                                <option value="socratic">Socratic Tutor</option>
+                            </optgroup>
+                            <optgroup label="Custom" id="custom-personas-group"></optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 3. System Instructions -->
+                <div class="panel">
+                    <div class="setting-item">
+                        <label>3. System Instructions</label>
+                        <textarea
+                            id="system-prompt"
+                            style="height: 150px; width: 100%; box-sizing: border-box;"
+                            placeholder="Define LLM behavior..."
+                        ></textarea>
+                        <div style="margin-top: 8px">
+                            <button
+                                class="btn-secondary"
+                                style="font-size: 10px; padding: 5px 10px; width: 100%"
+                                onclick="saveCustomPersona()"
+                            >
+                                💾 Save as Custom Persona
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- ═══ END LEFT COLUMN ═══ -->
+
+            <!-- ═══ RIGHT COLUMN ═══ -->
+            <div class="right-col">
+
+                <div class="chat-box-wrapper">
+                    <div id="chat-box">
+                        <div id="chat-empty-state">
+                            <h3>👋 Welcome</h3>
+                            <p>Select a model and persona,<br>then type a message to begin.</p>
+                        </div>
+                    </div>
+                    <button id="scroll-btn" onclick="scrollToBottom()" title="Scroll to bottom">↓</button>
+                </div>
+
+                <div class="input-container">
+                    <label>4. Prompt</label>
+                    <textarea
+                        id="user-input"
+                        placeholder="Type here (Shift+Enter for newline)..."
+                        oninput="
+                            this.style.height = 'auto';
+                            this.style.height = this.scrollHeight + 'px';
+                            document.getElementById('char-counter').textContent = this.value.length + ' chars';
                         "
-                    >
-                        Clear Chat
-                    </button>
-                    <button
-                        id="stop-btn"
-                        class="btn-danger"
-                        onclick="stopGeneration()"
-                        disabled
-                    >
-                        Stop
-                    </button>
+                    ></textarea>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="kbd-hint"><kbd>Shift</kbd> + <kbd>Enter</kbd> for new line</span>
+                        <span class="char-counter" id="char-counter">0 chars</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 4px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1;">
+                            <label style="color: var(--warning); margin: 0; white-space: nowrap;">⚠️ Insert Threat:</label>
+                            <select
+                                id="threat-select"
+                                onchange="applyThreat()"
+                                style="width: 100%; border-color: var(--warning)"
+                            >
+                                <option value="">-- No threat prompt --</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px">
+                            <button class="btn-secondary" onclick="document.getElementById('chat-box').innerHTML = ''">
+                                Clear Chat
+                            </button>
+                            <button id="stop-btn" class="btn-danger" onclick="stopGeneration()" disabled>
+                                Stop
+                            </button>
+                        </div>
+                        <button id="send-btn" onclick="sendMessage()" style="white-space: nowrap">
+                            Send Message
+                        </button>
+                    </div>
                 </div>
 
-                <div
-                    style="
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                        flex-grow: 1;
-                    "
-                >
-                    <label
-                        style="
-                            color: var(--warning);
-                            margin: 0;
-                            white-space: nowrap;
-                        "
-                        >⚠️ Threats:</label
-                    >
-                    <select
-                        id="threat-select"
-                        onchange="applyThreat()"
-                        style="width: 100%; border-color: var(--warning)"
-                    >
-                        <option value="">-- No threat prompt --</option>
-                    </select>
-                </div>
-
-                <button
-                    id="send-btn"
-                    onclick="sendMessage()"
-                    style="white-space: nowrap"
-                >
-                    Send Message
-                </button>
             </div>
+            <!-- ═══ END RIGHT COLUMN ═══ -->
+
         </div>
 
-        <div class="debug-panel">
+        <!-- ═══ API INSPECTOR — full width ═══ -->
+        <div class="debug-panel" style="margin-bottom: 30px;">
             <div
                 class="debug-header"
-                onclick="
-                    document
-                        .querySelector('.debug-content')
-                        .classList.toggle('open')
-                "
+                onclick="document.querySelector('.debug-content').classList.toggle('open')"
             >
                 <span>🛠️ API Inspector (Twin-Scan View)</span>
-                <span id="debug-status">Ready</span>
+                <span id="debug-status">Ready — click to expand</span>
             </div>
             <div class="debug-content">
-                <span class="debug-label debug-security-req"
-                    >// OUTGOING: PRISMA AIRS REQUEST PAYLOAD</span
-                >
-                <pre
-                    id="debug-prisma-req"
-                    style="
-                        background: transparent;
-                        border: none;
-                        padding: 0;
-                        color: #ffb86c;
-                    "
-                >
-Waiting for scan...</pre
-                >
-
-                <span class="debug-label debug-security-res"
-                    >// INCOMING: PRISMA AIRS RESPONSE MATRIX</span
-                >
-                <pre
-                    id="debug-prisma-res"
-                    style="
-                        background: transparent;
-                        border: none;
-                        padding: 0;
-                        color: #ff5555;
-                    "
-                >
-Waiting for scan...</pre
-                >
-
-                <span class="debug-label"
-                    >// OUTGOING: OLLAMA REQUEST PAYLOAD</span
-                >
-                <pre
-                    id="debug-req"
-                    style="background: transparent; border: none; padding: 0"
-                >
-Waiting...</pre
-                >
-
-                <span class="debug-label">// INCOMING: OLLAMA LAST CHUNK</span>
-                <pre
-                    id="debug-res"
-                    style="background: transparent; border: none; padding: 0"
-                >
-Waiting...</pre
-                >
+                <div>
+                    <span class="debug-label debug-security-req">// OUTGOING: PRISMA AIRS REQUEST</span>
+                    <pre id="debug-prisma-req" style="background: transparent; border: none; padding: 0; color: #ffb86c; overflow-x: auto;">Waiting for scan...</pre>
+                </div>
+                <div>
+                    <span class="debug-label debug-security-res">// INCOMING: PRISMA AIRS RESPONSE</span>
+                    <pre id="debug-prisma-res" style="background: transparent; border: none; padding: 0; color: #ff5555; overflow-x: auto;">Waiting for scan...</pre>
+                </div>
+                <div>
+                    <span class="debug-label">// OUTGOING: OLLAMA REQUEST</span>
+                    <pre id="debug-req" style="background: transparent; border: none; padding: 0; overflow-x: auto;">Waiting...</pre>
+                </div>
+                <div>
+                    <span class="debug-label">// INCOMING: OLLAMA LAST CHUNK</span>
+                    <pre id="debug-res" style="background: transparent; border: none; padding: 0; overflow-x: auto;">Waiting...</pre>
+                </div>
             </div>
         </div>
 
         <script>
             let controller;
+
+            // ── UI HELPERS ──────────────────────────────────────────────
+
+            function getTimestamp() {
+                return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            // #1/#2 — Update AIRS status dot and model badge in header
+            function updateHeaderStatus(mode) {
+                const dot   = document.querySelector('#header-airs-status .status-dot');
+                const label = document.getElementById('header-airs-label');
+                dot.className = 'status-dot ' + mode;
+                label.textContent = { off: 'AIRS Off', audit: 'AIRS Audit', strict: 'AIRS Strict' }[mode] || mode;
+            }
+
+            function updateModelBadge() {
+                const badge = document.getElementById('header-model-badge');
+                const full = document.getElementById('model-select').value || 'No model';
+                const short = full.includes('/') ? full.split('/').pop() : full;
+                badge.textContent = short;
+                badge.title = full; // Full name on hover
+            }
+
+            // #6 — Scroll to bottom
+            function scrollToBottom() {
+                const chatBox = document.getElementById('chat-box');
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            // #10 — Sidebar toggle
+            function toggleSidebar() {
+                const col = document.querySelector('.left-col');
+                col.classList.toggle('collapsed');
+                document.querySelector('.sidebar-toggle-btn').textContent =
+                    col.classList.contains('collapsed') ? '▶ Sidebar' : '◀ Sidebar';
+            }
+
+            // #12 — API key visibility
+            function toggleApiKeyVisibility() {
+                const input = document.getElementById('airs-api-key');
+                input.type = input.type === 'password' ? 'text' : 'password';
+            }
 
             // 📋 FULL PERSONA LIBRARY
             const basePersonas = {
@@ -670,6 +879,7 @@ Waiting...</pre
                 } catch (e) {
                     selector.innerHTML = "<option>Offline</option>";
                 }
+                updateModelBadge();
             }
 
             // 💾 PERSONA MANAGEMENT
@@ -714,6 +924,7 @@ Waiting...</pre
                 document.getElementById("airs-api-key").disabled = isDisabled;
                 document.getElementById("airs-profile").disabled = isDisabled;
                 document.getElementById("add-airs-btn").disabled = isDisabled;
+                updateHeaderStatus(mode);
             }
 
             function addCustomAirsProfile() {
@@ -865,7 +1076,17 @@ Waiting...</pre
                     .getElementById("airs-api-key")
                     .value.trim();
 
-                chatBox.innerHTML += `<div class="message"><span class="user-label">USER</span>${userPrompt}</div>`;
+                // #7 — Remove empty state on first message
+                const emptyState = document.getElementById("chat-empty-state");
+                if (emptyState) emptyState.remove();
+
+                // #4/#11 — User message with timestamp + scan badge placeholder
+                const msgId = "msg-" + Date.now();
+                const userDiv = document.createElement("div");
+                userDiv.className = "message";
+                userDiv.id = msgId;
+                userDiv.innerHTML = `<span class="user-label">USER <span class="msg-timestamp">${getTimestamp()}</span><span class="scan-badge off" id="${msgId}-badge">AIRS Off</span></span>${userPrompt.replace(/</g,"&lt;").replace(/>/g,"&gt;")}`;
+                chatBox.appendChild(userDiv);
 
                 // Clear the input and reset threat dropdown to default
                 input.value = "";
@@ -901,32 +1122,35 @@ Waiting...</pre
                             2,
                         );
 
+                    // #11 — Update scan badge on the user message
+                    const badge = document.getElementById(msgId + "-badge");
                     if (securityReport.status === "error") {
-                        chatBox.innerHTML += `<div class="message security-alert">🛑 PRISMA PROXY ERROR:<br>${securityReport.message}<br><br><small>Make sure your server.js is running on localhost:3080</small></div>`;
-                        document.getElementById("debug-status").innerText =
-                            "API Error";
+                        if (badge) { badge.className = "scan-badge"; badge.textContent = "Error"; }
+                        const errDiv = document.createElement("div");
+                        errDiv.className = "message security-alert";
+                        errDiv.innerHTML = `🛑 PRISMA PROXY ERROR:<br>${securityReport.message}<br><br><small>Make sure your server.js is running on localhost:3080</small>`;
+                        chatBox.appendChild(errDiv);
+                        document.getElementById("debug-status").innerText = "API Error";
                         document.getElementById("send-btn").disabled = false;
                         return;
                     } else if (securityReport.status === "block") {
-                        chatBox.innerHTML += `
-                            <div class="message security-alert">
-                                🛑 PRISMA AIRS BLOCK (Strict Mode)<br>
-                                Request terminated before reaching local LLM. <br>
-                                Profile Evaluated: <code>${airsProfile}</code><br>
-                                Category Detected: <strong>${securityReport.category.toUpperCase()}</strong>
-                            </div>`;
-                        document.getElementById("debug-status").innerText =
-                            "Blocked";
+                        if (badge) { badge.className = "scan-badge blocked"; badge.textContent = "🛑 Blocked"; }
+                        const blockDiv = document.createElement("div");
+                        blockDiv.className = "message security-alert";
+                        blockDiv.innerHTML = `🛑 PRISMA AIRS BLOCK (Strict Mode)<br>Request terminated before reaching local LLM.<br>Profile Evaluated: <code>${airsProfile}</code><br>Category Detected: <strong>${securityReport.category.toUpperCase()}</strong>`;
+                        chatBox.appendChild(blockDiv);
+                        document.getElementById("debug-status").innerText = "Blocked";
                         document.getElementById("send-btn").disabled = false;
                         return;
                     } else if (securityReport.status === "alert") {
-                        chatBox.innerHTML += `
-                            <div class="message security-alert" style="color:var(--warning); border-color:var(--warning); background:rgba(255,193,7,0.1)">
-                                ⚠️ PRISMA AIRS WARNING (Audit Mode)<br>
-                                Profile Evaluated: <code>${airsProfile}</code><br>
-                                Category Detected: <strong>${securityReport.category.toUpperCase()}</strong><br>
-                                <small>Action was <em>${securityReport.action}</em>, but bypassed by Audit mode.</small>
-                            </div>`;
+                        if (badge) { badge.className = "scan-badge flagged"; badge.textContent = "⚠️ Flagged"; }
+                        const warnDiv = document.createElement("div");
+                        warnDiv.className = "message security-alert";
+                        warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
+                        warnDiv.innerHTML = `⚠️ PRISMA AIRS WARNING (Audit Mode)<br>Profile Evaluated: <code>${airsProfile}</code><br>Category Detected: <strong>${securityReport.category.toUpperCase()}</strong><br><small>Action was <em>${securityReport.action}</em>, bypassed by Audit mode.</small>`;
+                        chatBox.appendChild(warnDiv);
+                    } else {
+                        if (badge) { badge.className = "scan-badge allowed"; badge.textContent = "✅ Allowed"; }
                     }
                 } else {
                     document.getElementById("debug-prisma-req").innerText =
@@ -942,6 +1166,7 @@ Waiting...</pre
                     <span class="bot-label">
                         AI
                         <span class="identity-info">(${modelSelect} — ${personaLabel})</span>
+                        <span class="msg-timestamp">${getTimestamp()}</span>
                     </span>
                     <span class="content"></span><span class="cursor"></span>
                 `;
@@ -1017,6 +1242,19 @@ Waiting...</pre
                         e.name === "AbortError" ? "Stopped" : "Error";
                 } finally {
                     botDiv.querySelector(".cursor")?.remove();
+
+                    // #5 — Copy button on completed bot response
+                    const copyBtn = document.createElement("button");
+                    copyBtn.className = "copy-btn";
+                    copyBtn.textContent = "📋 Copy";
+                    copyBtn.onclick = () => {
+                        navigator.clipboard.writeText(botDiv.querySelector(".content").innerText).then(() => {
+                            copyBtn.textContent = "✅ Copied!";
+                            setTimeout(() => copyBtn.textContent = "📋 Copy", 2000);
+                        });
+                    };
+                    botDiv.querySelector(".bot-label").appendChild(copyBtn);
+
                     document.getElementById("send-btn").disabled = false;
                     document.getElementById("stop-btn").disabled = true;
                 }
@@ -1026,7 +1264,13 @@ Waiting...</pre
             fetchModels();
             loadCustomPersonas();
             loadCustomAirsProfiles();
-            loadThreats(); // Load the sample threats into the dropdown
+            loadThreats();
+
+            // #6 — Show scroll-to-bottom button when not at bottom
+            document.getElementById("chat-box").addEventListener("scroll", function () {
+                const notAtBottom = this.scrollHeight - this.scrollTop - this.clientHeight > 80;
+                document.getElementById("scroll-btn").classList.toggle("visible", notAtBottom);
+            });
         </script>
     </body>
 </html>
