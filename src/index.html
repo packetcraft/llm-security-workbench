@@ -775,7 +775,7 @@ Waiting...</pre
 
             // 🌐 LIVE PRISMA AIRS VIA LOCAL PROXY
             async function fetchPrismaAIRS(text, mode, profile, apiKey) {
-                const endpoint = "http://localhost:3000/api/prisma";
+                const endpoint = "http://localhost:3080/api/prisma";
                 const payload = {
                     ai_profile: { profile_name: profile },
                     contents: [{ prompt: text }],
@@ -902,7 +902,7 @@ Waiting...</pre
                         );
 
                     if (securityReport.status === "error") {
-                        chatBox.innerHTML += `<div class="message security-alert">🛑 PRISMA PROXY ERROR:<br>${securityReport.message}<br><br><small>Make sure your server.js is running on localhost:3000</small></div>`;
+                        chatBox.innerHTML += `<div class="message security-alert">🛑 PRISMA PROXY ERROR:<br>${securityReport.message}<br><br><small>Make sure your server.js is running on localhost:3080</small></div>`;
                         document.getElementById("debug-status").innerText =
                             "API Error";
                         document.getElementById("send-btn").disabled = false;
