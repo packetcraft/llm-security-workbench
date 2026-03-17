@@ -254,9 +254,11 @@
         powered by <select id="model-select" class="inline-select"></select> — chat ingress secured by Prisma AIRS.
         <button id="airs-toggle" onclick="toggleAIRS()">[ 🛡️ AIRS ON ]</button><br>
         api key <input type="password" id="airs-api-key" class="inline-input" placeholder="x-pan-token" />
+        <span id="env-key-badge" style="display:none; font-size:11px; color:#00ff88;">🔒 .env</span>
         &nbsp;·&nbsp;
         profile <input type="text" id="airs-profile" class="inline-input" style="width:140px;"
             placeholder="e.g. default" />
+        <span id="env-profile-badge" style="display:none; font-size:11px; color:#00ff88;">🔒 .env</span>
     </p>
 
     <div id="chat-box"></div>
@@ -337,7 +339,31 @@
                 modelSel.innerHTML = "<option>Ollama offline</option>";
             }
         }
+        async function loadEnvConfig() {
+            try {
+                const res = await fetch("/api/config");
+                const cfg = await res.json();
+                if (cfg.hasApiKey) {
+                    const keyInput = document.getElementById("airs-api-key");
+                    keyInput.value = "••••••••••••••••";
+                    keyInput.disabled = true;
+                    keyInput.title = "API key loaded from .env";
+                    document.getElementById("env-key-badge").style.display = "inline";
+                }
+                if (cfg.profile) {
+                    const profileInput = document.getElementById("airs-profile");
+                    profileInput.value = cfg.profile;
+                    profileInput.disabled = true;
+                    profileInput.title = "Profile loaded from .env";
+                    document.getElementById("env-profile-badge").style.display = "inline";
+                }
+            } catch (_) {
+                // server not running or no .env — UI fields remain editable
+            }
+        }
+
         fetchModels();
+        loadEnvConfig();
 
         /*
          * ══════════════════════════════════════════════════════════════

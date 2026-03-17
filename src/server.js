@@ -1,3 +1,5 @@
+require("dotenv").config({ path: require("path").join(__dirname, "../.env") });
+
 const express = require("express");
 const cors = require("cors");
 const fetch = require("node-fetch");
@@ -12,16 +14,24 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// 2. The CORS-Bypassing Proxy for Prisma AIRS
+// 2. Expose non-sensitive config to the frontend (never exposes the key itself)
+app.get("/api/config", (req, res) => {
+  res.json({
+    hasApiKey: !!process.env.AIRS_API_KEY,
+    profile:   process.env.AIRS_PROFILE || null,
+  });
+});
+
+// 3. The CORS-Bypassing Proxy for Prisma AIRS
 app.post("/api/prisma", async (req, res) => {
   const prismaEndpoint =
     "https://service.api.aisecurity.paloaltonetworks.com/v1/scan/sync/request";
 
-  // Extract the API key sent from your HTML frontend
-  const apiKey = req.headers["x-pan-token"];
+  // Prefer .env key; fall back to key sent from the UI
+  const apiKey = process.env.AIRS_API_KEY || req.headers["x-pan-token"];
 
   if (!apiKey) {
-    return res.status(401).json({ error: "Missing x-pan-token API Key" });
+    return res.status(401).json({ error: "Missing x-pan-token — set AIRS_API_KEY in .env or enter it in the UI" });
   }
 
   try {
