@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Ollama Pro UI</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+        <style>
+            :root {
+                --bg: #f4f4f9;
+                --panel: #ffffff;
+                --text: #333;
+                --primary: #007bff;
+                --border: #ddd;
+            }
+            body.dark {
+                --bg: #1a1a1a;
+                --panel: #2d2d2d;
+                --text: #e0e0e0;
+                --primary: #3793ff;
+                --border: #444;
+            }
+
+            body {
+                font-family: -apple-system, system-ui, sans-serif;
+                max-width: 900px;
+                margin: 20px auto;
+                background-color: var(--bg);
+                color: var(--text);
+                transition:
+                    background-color 0.3s,
+                    color 0.3s;
+                padding: 0 20px;
+            }
+
+            /* Layout */
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            #chat-box {
+                height: 500px;
+                border-radius: 12px;
+                border: 1px solid var(--border);
+                background: var(--panel);
+                overflow-y: auto;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Settings & Controls */
+            .settings-bar {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin-bottom: 15px;
+                background: var(--panel);
+                padding: 15px;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+            }
+            .setting-item {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            label {
+                font-size: 12px;
+                font-weight: bold;
+                opacity: 0.8;
+            }
+
+            textarea,
+            select,
+            input {
+                padding: 10px;
+                border-radius: 6px;
+                border: 1px solid var(--border);
+                background: var(--panel);
+                color: var(--text);
+                font-size: 14px;
+            }
+
+            /* Messaging UI */
+            .input-group {
+                display: flex;
+                gap: 10px;
+            }
+            #user-input {
+                flex-grow: 1;
+            }
+            button {
+                padding: 10px 20px;
+                border-radius: 8px;
+                border: none;
+                background: var(--primary);
+                color: white;
+                cursor: pointer;
+                font-weight: bold;
+                transition: opacity 0.2s;
+            }
+            button:hover {
+                opacity: 0.9;
+            }
+            button:disabled {
+                background: #6c757d;
+                cursor: not-allowed;
+            }
+            .btn-secondary {
+                background: #6c757d;
+            }
+
+            /* Themes & Messages */
+            .theme-toggle {
+                cursor: pointer;
+                font-size: 20px;
+                background: none;
+                border: none;
+            }
+            .message {
+                margin-bottom: 25px;
+                line-height: 1.6;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 15px;
+            }
+            .user {
+                color: var(--primary);
+                font-weight: bold;
+                display: block;
+                margin-bottom: 5px;
+            }
+            .bot {
+                color: #28a745;
+                font-weight: bold;
+                display: block;
+                margin-bottom: 5px;
+            }
+
+            /* Gold: Code Block Styling */
+            pre {
+                background: #1e1e1e;
+                padding: 15px;
+                border-radius: 8px;
+                overflow-x: auto;
+                margin: 10px 0;
+            }
+            code {
+                font-family: "Fira Code", "Consolas", monospace;
+                font-size: 13px;
+            }
+            .content p {
+                margin: 8px 0;
+            }
+
+            /* Cursor animation */
+            .cursor {
+                display: inline-block;
+                width: 8px;
+                height: 15px;
+                background: #28a745;
+                margin-left: 5px;
+                animation: blink 1s infinite;
+                vertical-align: middle;
+            }
+            @keyframes blink {
+                50% {
+                    opacity: 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h2>Ollama Pro UI ⚡</h2>
+            <button
+                class="theme-toggle"
+                onclick="document.body.classList.toggle('dark')"
+                title="Toggle Dark Mode"
+            >
+                🌓
+            </button>
+        </div>
+
+        <div class="settings-bar">
+            <div class="setting-item">
+                <label>Model Selector</label>
+                <select id="model-select">
+                    <option>Loading models...</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>System Prompt (Silver)</label>
+                <textarea
+                    id="system-prompt"
+                    rows="1"
+                    placeholder="e.g. You are a helpful assistant."
+                ></textarea>
+            </div>
+        </div>
+
+        <div id="chat-box"></div>
+
+        <div class="input-group">
+            <input
+                type="text"
+                id="user-input"
+                placeholder="Ask anything..."
+                onkeypress="if (event.key === 'Enter') sendMessage();"
+            />
+            <button id="send-btn" onclick="sendMessage()">Send</button>
+            <button class="btn-secondary" onclick="clearChat()">Clear</button>
+        </div>
+
+        <script>
+            let fullResponse = "";
+
+            // Gold: Configure Markdown to use Highlight.js
+            marked.setOptions({
+                highlight: function (code, lang) {
+                    return hljs.highlightAuto(code).value;
+                },
+                breaks: true,
+            });
+
+            // Initialize: Fetch models from Ollama
+            async function fetchModels() {
+                const selector = document.getElementById("model-select");
+                try {
+                    const response = await fetch(
+                        "http://localhost:11434/api/tags",
+                    );
+                    const data = await response.json();
+                    selector.innerHTML = data.models
+                        .map(
+                            (m) =>
+                                `<option value="${m.name}">${m.name}</option>`,
+                        )
+                        .join("");
+                } catch (e) {
+                    selector.innerHTML =
+                        "<option>Error loading models</option>";
+                    console.error("CORS or Connection Error:", e);
+                }
+            }
+            fetchModels();
+
+            function clearChat() {
+                document.getElementById("chat-box").innerHTML = "";
+                fullResponse = "";
+            }
+
+            async function sendMessage() {
+                const input = document.getElementById("user-input");
+                const system = document.getElementById("system-prompt");
+                const chatBox = document.getElementById("chat-box");
+                const sendBtn = document.getElementById("send-btn");
+                const model = document.getElementById("model-select").value;
+                const prompt = input.value.trim();
+
+                if (!prompt) return;
+
+                // UI Lockdown during generation
+                input.disabled = true;
+                sendBtn.disabled = true;
+
+                chatBox.innerHTML += `<div class="message"><span class="user">You:</span> ${prompt}</div>`;
+                input.value = "";
+
+                const botDiv = document.createElement("div");
+                botDiv.className = "message";
+                botDiv.innerHTML = `<span class="bot">AI (${model}):</span> <span class="content"></span><span class="cursor"></span>`;
+                chatBox.appendChild(botDiv);
+
+                const contentSpan = botDiv.querySelector(".content");
+                const cursor = botDiv.querySelector(".cursor");
+                fullResponse = "";
+                let buffer = ""; // Robust Fix: Buffer for JSON chunks
+
+                try {
+                    const response = await fetch(
+                        "http://localhost:11434/api/chat",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                model: model,
+                                messages: [
+                                    { role: "system", content: system.value },
+                                    { role: "user", content: prompt },
+                                ],
+                                stream: true,
+                            }),
+                        },
+                    );
+
+                    if (!response.ok)
+                        throw new Error("Ollama connection failed.");
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+
+                        let lines = buffer.split("\n");
+                        buffer = lines.pop(); // Keep partial line in buffer
+
+                        for (const line of lines) {
+                            if (!line.trim()) continue;
+                            try {
+                                const json = JSON.parse(line);
+                                if (json.message && json.message.content) {
+                                    fullResponse += json.message.content;
+                                    // Markdown + Syntax Highlighting
+                                    contentSpan.innerHTML =
+                                        marked.parse(fullResponse);
+                                    // Refresh highlighting for code blocks
+                                    botDiv
+                                        .querySelectorAll("pre code")
+                                        .forEach((el) =>
+                                            hljs.highlightElement(el),
+                                        );
+                                    chatBox.scrollTop = chatBox.scrollHeight;
+                                }
+                            } catch (e) {
+                                console.warn("Skipping partial JSON line...");
+                            }
+                        }
+                    }
+                } catch (error) {
+                    contentSpan.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
+                } finally {
+                    if (cursor) cursor.remove();
+                    input.disabled = false;
+                    sendBtn.disabled = false;
+                    input.focus();
+                }
+            }
+        </script>
+    </body>
+</html>

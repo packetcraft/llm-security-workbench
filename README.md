@@ -44,18 +44,15 @@ Because browsers block direct frontend calls to third-party security APIs, you m
 
 **Prerequisites:** Ensure you have [Node.js](https://nodejs.org/) installed.
 
-1. Open your terminal/command prompt.
-2. Create a new project folder and navigate into it:
+1. Clone the repository and navigate into it:
    ```bash
-   mkdir ollama-prisma-workbench
-   cd ollama-prisma-workbench
+   git clone https://github.com/packetcraft/Prisma-AIRS-with-ollama.git
+   cd Prisma-AIRS-with-ollama
    ```
-3. Initialize the project and install the required dependencies:
+2. Install dependencies:
    ```bash
-   npm init -y
-   npm install express cors node-fetch@2
+   npm install
    ```
-4. Place your `index.html` and `server.js` files into this folder.
 
 ---
 
@@ -63,7 +60,7 @@ Because browsers block direct frontend calls to third-party security APIs, you m
 
 1. Start the local server:
    ```bash
-   node server.js
+   npm start
    ```
    *(You should see `🚀 Workbench running at http://localhost:3000` in your terminal).*
 2. Open your web browser and navigate to: **`http://localhost:3000`**
@@ -104,7 +101,7 @@ Use the Persona Dropdown to test behavioral steering:
 | **"Offline" in Model Dropdown** | Ollama CORS is blocking the browser. | Double-check Step 1. Ensure Ollama was fully quit before restarting. |
 | **"Failed to fetch" on Send** | Ollama is not running. | Open your terminal and run `ollama serve`. |
 | **Prisma Proxy Error: 500** | The Node.js server cannot reach Palo Alto. | Check your internet connection or verify your `x-pan-token` is valid. |
-| **Cannot find module 'express'** | Dependencies were not installed. | Run `npm install express cors node-fetch@2` in the project folder. |
+| **Cannot find module 'express'** | Dependencies were not installed. | Run `npm install` in the project folder. |
 
 ## 🛠️ Usage Tips
 * **Shift + Enter:** Creates a new line in the prompt box without sending the message.

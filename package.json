@@ -2,10 +2,10 @@
   "name": "prisma-airs-ollama",
   "version": "1.0.0",
   "description": "I’ve updated the **README.md** to include the persona laboratory guide, the manual `curl` verification steps for both MacOS and Windows, and the expanded troubleshooting matrix.",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
