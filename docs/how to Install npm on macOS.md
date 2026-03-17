@@ -28,6 +28,7 @@ npm -v
 ## 🟦 **Method 2: Install via Node Version Manager (NVM)**
 
 Best if you want to switch between multiple Node versions (common for dev workflows).
+Refer: https://nodejs.org/en/download
 
 ### **Steps**
 
@@ -61,7 +62,7 @@ Simple GUI installer.
 
 ### **Steps**
 
-1. Go to: https://nodejs.org
+1. Go to: https://nodejs.org/en/download
 
 2. Download **macOS Installer (.pkg)** → choose **LTS** version.
 
