@@ -658,12 +658,14 @@
                             👁
                         </button>
                     </div>
+                    <span id="env-key-badge" style="display:none; font-size:10px; color:#00ff88;">🔒 .env</span>
                     <select id="airs-profile" disabled>
                         <optgroup label="Default Built-in">
                             <option value="default">Default Profile</option>
                         </optgroup>
                         <optgroup label="Custom Profiles" id="custom-airs-group"></optgroup>
                     </select>
+                    <span id="env-profile-badge" style="display:none; font-size:10px; color:#00ff88;">🔒 .env</span>
                     <button id="add-airs-btn" class="btn-secondary" style="
                                 font-size: 10px;
                                 padding: 5px;
@@ -1202,12 +1204,44 @@ Waiting for LLM...</pre>
                 .join("");
         }
 
+        // 🌿 .ENV CONFIG LOADER
+        async function loadEnvConfig() {
+            try {
+                const res = await fetch("http://localhost:3080/api/config");
+                if (!res.ok) return;
+                const cfg = await res.json();
+
+                if (cfg.hasApiKey) {
+                    const keyEl = document.getElementById("airs-api-key");
+                    keyEl.value = "••••••••••••••••";
+                    keyEl.disabled = true;
+                    keyEl.dataset.fromEnv = "true";
+                    document.getElementById("env-key-badge").style.display = "inline";
+                }
+
+                if (cfg.profile) {
+                    const profileSel = document.getElementById("airs-profile");
+                    const opt = document.createElement("option");
+                    opt.value = cfg.profile;
+                    opt.textContent = cfg.profile + " (.env)";
+                    opt.selected = true;
+                    profileSel.insertBefore(opt, profileSel.firstChild);
+                    profileSel.dataset.fromEnv = "true";
+                    document.getElementById("env-profile-badge").style.display = "inline";
+                }
+            } catch {
+                // server not running — silently skip
+            }
+        }
+
         // 🛡️ SECURITY PROFILE MANAGEMENT
         function toggleAIRSSettings() {
             const mode = document.getElementById("airs-mode").value;
             const isDisabled = mode === "off";
-            document.getElementById("airs-api-key").disabled = isDisabled;
-            document.getElementById("airs-profile").disabled = isDisabled;
+            const keyEl     = document.getElementById("airs-api-key");
+            const profileEl = document.getElementById("airs-profile");
+            if (!keyEl.dataset.fromEnv)     keyEl.disabled     = isDisabled;
+            if (!profileEl.dataset.fromEnv) profileEl.disabled = isDisabled;
             document.getElementById("add-airs-btn").disabled = isDisabled;
             updateHeaderStatus(mode);
         }
@@ -1440,11 +1474,10 @@ Waiting for LLM...</pre>
                 personaSelect.options[personaSelect.selectedIndex].text ||
                 "Custom";
             const airsMode = document.getElementById("airs-mode").value;
-            const airsProfile =
-                document.getElementById("airs-profile").value;
-            const airsApiKey = document
-                .getElementById("airs-api-key")
-                .value.trim();
+            const airsProfile = document.getElementById("airs-profile").value;
+            const airsKeyEl      = document.getElementById("airs-api-key");
+            const airsKeyFromEnv = !!airsKeyEl.dataset.fromEnv;
+            const airsApiKey     = airsKeyFromEnv ? "" : airsKeyEl.value.trim();
 
             // Remove empty state on first message
             const emptyState = document.getElementById("chat-empty-state");
@@ -1543,7 +1576,7 @@ Waiting for LLM...</pre>
             // PHASE 1 — PRE-FLIGHT PROMPT SCAN
             // ══════════════════════════════════════════
             if (airsMode !== "off") {
-                if (!airsApiKey) {
+                if (!airsKeyFromEnv && !airsApiKey) {
                     alert(
                         "Please enter your Prisma AIRS API Key (x-pan-token) to enable scanning.",
                     );
@@ -1872,6 +1905,7 @@ Waiting for LLM...</pre>
         loadCustomPersonas();
         loadCustomAirsProfiles();
         loadThreats();
+        loadEnvConfig();
 
         // #6 — Show scroll-to-bottom button when not at bottom
         document

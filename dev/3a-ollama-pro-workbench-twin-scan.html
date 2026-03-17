@@ -618,12 +618,14 @@
                         <button class="api-key-toggle" onclick="toggleApiKeyVisibility()"
                             title="Show/hide key">👁</button>
                     </div>
+                    <span id="env-key-badge" style="display:none; font-size:10px; color:#28a745;">🔒 loaded from .env</span>
                     <select id="airs-profile" disabled>
                         <optgroup label="Default Built-in">
                             <option value="default">Default Profile</option>
                         </optgroup>
                         <optgroup label="Custom Profiles" id="custom-airs-group"></optgroup>
                     </select>
+                    <span id="env-profile-badge" style="display:none; font-size:10px; color:#28a745;">🔒 loaded from .env</span>
                     <button id="add-airs-btn" class="btn-secondary"
                         style="font-size: 10px; padding: 5px; margin-top: 2px" onclick="addCustomAirsProfile()"
                         disabled>
@@ -1021,8 +1023,11 @@
         function toggleAIRSSettings() {
             const mode = document.getElementById("airs-mode").value;
             const isDisabled = mode === "off";
-            document.getElementById("airs-api-key").disabled = isDisabled;
-            document.getElementById("airs-profile").disabled = isDisabled;
+            const keyEl     = document.getElementById("airs-api-key");
+            const profileEl = document.getElementById("airs-profile");
+            // Don't unlock fields that are locked by .env
+            if (!keyEl.dataset.fromEnv)     keyEl.disabled     = isDisabled;
+            if (!profileEl.dataset.fromEnv) profileEl.disabled = isDisabled;
             document.getElementById("add-airs-btn").disabled = isDisabled;
             updateHeaderStatus(mode);
         }
@@ -1172,9 +1177,11 @@
 
             const userPrompt = input.value;
             const personaLabel = personaSelect.options[personaSelect.selectedIndex].text || "Custom";
-            const airsMode = document.getElementById("airs-mode").value;
-            const airsProfile = document.getElementById("airs-profile").value;
-            const airsApiKey = document.getElementById("airs-api-key").value.trim();
+            const airsMode       = document.getElementById("airs-mode").value;
+            const airsProfile    = document.getElementById("airs-profile").value;
+            const airsKeyEl      = document.getElementById("airs-api-key");
+            const airsKeyFromEnv = !!airsKeyEl.dataset.fromEnv;
+            const airsApiKey     = airsKeyFromEnv ? "" : airsKeyEl.value.trim();
 
             // Remove empty state on first message
             const emptyState = document.getElementById("chat-empty-state");
@@ -1202,8 +1209,8 @@
             // PHASE 1 — PRE-FLIGHT PROMPT SCAN
             // ══════════════════════════════════════════
             if (airsMode !== "off") {
-                if (!airsApiKey) {
-                    alert("Please enter your Prisma AIRS API Key (x-pan-token) to enable scanning.");
+                if (!airsKeyFromEnv && !airsApiKey) {
+                    alert("Please enter your Prisma AIRS API Key (x-pan-token), or set AIRS_API_KEY in .env");
                     document.getElementById("send-btn").disabled = false;
                     return;
                 }
@@ -1430,11 +1437,37 @@
             chatBox.appendChild(notice);
         }
 
+        async function loadEnvConfig() {
+            try {
+                const res = await fetch("/api/config");
+                const cfg = await res.json();
+                if (cfg.hasApiKey) {
+                    const keyEl = document.getElementById("airs-api-key");
+                    keyEl.value = "••••••••••••••••";
+                    keyEl.dataset.fromEnv = "true";
+                    keyEl.title = "API key loaded from .env";
+                    document.getElementById("env-key-badge").style.display = "inline";
+                }
+                if (cfg.profile) {
+                    const profileSel = document.getElementById("airs-profile");
+                    const opt = document.createElement("option");
+                    opt.value = cfg.profile;
+                    opt.textContent = cfg.profile + " (.env)";
+                    opt.selected = true;
+                    profileSel.querySelector("optgroup").prepend(opt);
+                    profileSel.dataset.fromEnv = "true";
+                    profileSel.title = "Profile loaded from .env";
+                    document.getElementById("env-profile-badge").style.display = "inline";
+                }
+            } catch (_) { /* server not running or no .env — fields stay editable */ }
+        }
+
         // Initialize App
         fetchModels();
         loadCustomPersonas();
         loadCustomAirsProfiles();
         loadThreats();
+        loadEnvConfig();
 
         // #6 — Show scroll-to-bottom button when not at bottom
         document.getElementById("chat-box").addEventListener("scroll", function () {
