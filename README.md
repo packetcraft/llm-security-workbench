@@ -12,7 +12,7 @@ A professional, local-first web interface for interacting with Ollama LLMs. This
 
 ## ⚙️ Architecture Overview
 To maintain local privacy while enabling cloud security scanning, this app uses a split-routing architecture:
-1. **Security Traffic:** Browser $\rightarrow$ `Local Node Proxy (Port 3000)` $\rightarrow$ `Prisma AIRS API`.
+1. **Security Traffic:** Browser $\rightarrow$ `Local Node Proxy (Port 3080)` $\rightarrow$ `Prisma AIRS API`.
 2. **LLM Traffic:** Browser $\rightarrow$ `Local Ollama API (Port 11434)`.
 
 ---
@@ -62,8 +62,8 @@ Because browsers block direct frontend calls to third-party security APIs, you m
    ```bash
    npm start
    ```
-   *(You should see `🚀 Workbench running at http://localhost:3000` in your terminal).*
-2. Open your web browser and navigate to: **`http://localhost:3000`**
+   *(You should see `🚀 Workbench running at http://localhost:3080` in your terminal).*
+2. Open your web browser and navigate to: **`http://localhost:3080`**
 
 ---
 
