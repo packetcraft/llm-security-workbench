@@ -48,9 +48,9 @@ The **Ollama Pro Workbench** is a lightweight, browser-based environment for int
   * USER message — Phase 1: `✅ Allowed · 819ms` / `🛑 Blocked · 204ms` / `⚠️ Flagged · 611ms`
   * AI message — Phase 2: `✅ Clean · 422ms` / `🛑 Blocked · 337ms` / `⚠️ Flagged · 290ms` / `⚠️ Masked · 445ms`
   * AI message — LLM generation: a distinct dark pill (`background: #1a1a1a`) showing `🤖 3.2s`, covering the full Ollama stream from fetch start to last token. Revealed in `finally` so it always fires — including on user-stopped streams.
-* **Organised Header Bar (5a):** Header split into four logical zones — **Title**, **Model badge** (prefixed `⬡`), **Security status chips**, and **Action buttons** — separated by thin vertical dividers. Status chips use coloured pill borders that update live when enforcement modes change: grey (off), yellow (audit/advisory), red (AIRS strict), purple (Phase 0 strict), canary orange (Phase 0.5 active). Action buttons (New Session, Sidebar, Theme) share a unified ghost style — transparent background with border, hover fills.
+* **Organised Header Bar (3c):** Header split into four logical zones — **Title**, **Model badge** (prefixed `⬡`), **Security status chips**, and **Action buttons** — separated by thin vertical dividers. Status chips use coloured pill borders that update live when enforcement modes change: grey (off), yellow (audit/advisory), red (AIRS strict), purple (Phase 0 strict), canary orange (Phase 0.5 active). Action buttons (New Session, Sidebar, Theme) share a unified ghost style — transparent background with border, hover fills.
 * **2a Teaching Demo — Tokyo Night theme:** Full CSS rework to Tokyo Night palette. AI message header now shows `Persona (model-short-name):` for at-a-glance context. AIRS status line moved to its own line in the subtitle for readability.
-* **Dark/Light Mode:** Toggleable theme with CSS variable theming (5a: Tokyo Night Dark / Tokyo Night Light).
+* **Dark/Light Mode:** Toggleable theme with CSS variable theming (3c: Tokyo Night Dark / Tokyo Night Light).
 * **Scroll-to-Bottom:** Floating button appears when chat is scrolled up.
 
 ### 3.3 Persona Library & Management
@@ -219,15 +219,15 @@ The `dev/` folder holds HTML files at different stages of the security build-up.
 While the server is running, any dev file is accessible directly at `http://localhost:3080/dev/<prefix>`. The `/dev/:prefix` route resolves the first filename in `dev/` that starts with the prefix and serves it via `res.sendFile`. The AIRS proxy routes (`/api/config`, `/api/prisma`) work identically to `src/index.html`.
 
 ```
-http://localhost:3080/dev/4a   →  4a-llm-security-workbench-native-guardrail.html
+http://localhost:3080/dev/3b   →  3b-llm-security-workbench-native-guardrail.html
 http://localhost:3080/dev/3a   →  3a-llm-security-workbench-twin-scan.html
 ```
 
 **Option B — Promote to default via `scripts/stage.js`:**
 
 ```bash
-npm run stage 4a      # prefix match — works for any file in /dev
-npm run stage:4a      # named shortcut
+npm run stage 3c      # prefix match — works for any file in /dev
+npm run stage:3c      # named shortcut
 npm run stage         # lists all available files
 ```
 
@@ -235,14 +235,14 @@ The script uses `fs.copyFileSync` (pure Node, works cross-platform on Windows an
 
 | npm script | Effect |
 | :--- | :--- |
-| `npm run stage 5a` | Copies `5a-*.html` → `src/index.html` |
-| `npm run stage:1a` … `stage:5a` | Named shortcuts for the standard progression files |
+| `npm run stage 3c` | Copies `3c-*.html` → `src/index.html` |
+| `npm run stage:1a` … `stage:3c` | Named shortcuts for the standard progression files |
 | `npm run stage` | Prints all available dev files and usage |
 | `npm run canary` | Starts the Little Canary Flask microservice on port `5001` |
 
 ### 3.7 Developer Tools — API Inspector (5-Phase View)
 
-Collapsible full-width panel below the main layout. Displays five columns in parallel (in `dev/5a`; four in `dev/4a` and earlier):
+Collapsible full-width panel below the main layout. Displays five columns in parallel (in `dev/3c`; four in `dev/3b` and earlier):
 
 | Column | Contents |
 | :--- | :--- |
@@ -278,7 +278,7 @@ Real-time status indicator in the header cycles through: `🔒 Phase 0: Native g
 | Route | Method | Description |
 | :--- | :--- | :--- |
 | `/` | `GET` | Serves `src/index.html` |
-| `/dev/:prefix` | `GET` | Serves the first `/dev` HTML file whose name starts with `:prefix` — e.g. `/dev/5a` serves `5a-llm-security-workbench-little-canary.html`. AIRS proxy works normally. |
+| `/dev/:prefix` | `GET` | Serves the first `/dev` HTML file whose name starts with `:prefix` — e.g. `/dev/3c` serves `3c-llm-security-workbench-little-canary.html`. AIRS proxy works normally. |
 | `/api/config` | `GET` | Returns `{ hasApiKey: bool, profile: string \| null }` — presence signal only, key never returned |
 | `/api/prisma` | `POST` | Proxies scan requests to Prisma AIRS; prefers `process.env.AIRS_API_KEY` over the `x-pan-token` request header |
 | `/api/canary` | `POST` | Proxies canary scan requests to the Flask microservice at `localhost:5001/check`; returns `502` with a helpful error if the service is unavailable |
@@ -478,8 +478,8 @@ llm-security-workbench/
 │   ├── 1b-mechat-no-security.html
 │   ├── 2a-mechat-airs-teaching-demo.html
 │   ├── 3a-llm-security-workbench-twin-scan.html
-│   ├── 4a-llm-security-workbench-native-guardrail.html
-│   └── 5a-llm-security-workbench-little-canary.html
+│   ├── 3b-llm-security-workbench-native-guardrail.html
+│   └── 3c-llm-security-workbench-little-canary.html
 ├── python/
 │   ├── canary_server.py  # Flask microservice wrapping little-canary (port 5001)
 │   └── requirements.txt  # flask, little-canary
@@ -487,7 +487,7 @@ llm-security-workbench/
 │   └── sample_threats.json
 ├── .env.example          # Committed template — copy to .env and fill in values
 ├── .gitignore            # Excludes .env
-├── package.json          # npm scripts: start, stage, stage:1a … stage:5a, canary
+├── package.json          # npm scripts: start, stage, stage:1a … stage:3c, canary
 └── README.md
 ```
 

@@ -15,8 +15,8 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// 1b. Serve any dev file by prefix — e.g. GET /dev/4a serves the first
-//     file in /dev whose name starts with "4a". AIRS proxy still works.
+// 1b. Serve any dev file by prefix — e.g. GET /dev/3c serves the first
+//     file in /dev whose name starts with "3c". AIRS proxy still works.
 app.get("/dev/:prefix", (req, res) => {
   const devDir = path.join(__dirname, "..", "dev");
   const prefix = req.params.prefix;

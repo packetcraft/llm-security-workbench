@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // stage.js — copies a /dev file to src/index.html by prefix match
-// Usage:  node scripts/stage.js 4a
-//         npm run stage 4a
-//         npm run stage:4a
+// Usage:  node scripts/stage.js 3c
+//         npm run stage 3c
+//         npm run stage:3c
 
 const fs   = require("fs");
 const path = require("path");
@@ -19,8 +19,8 @@ if (!prefix) {
   console.log("Available dev files:");
   files.forEach(f => console.log(`  ${f}`));
   console.log("\nExamples:");
-  console.log("  npm run stage 4a");
-  console.log("  npm run stage:4a");
+  console.log("  npm run stage 3c");
+  console.log("  npm run stage:3c");
   process.exit(0);
 }
 

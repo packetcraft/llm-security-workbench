@@ -308,7 +308,7 @@ graph LR
         direction TB
 
         subgraph BROWSER ["Browser (workbench UI)"]
-            UI["Ollama Pro Workbench\ndev/5a · src/index.html"]
+            UI["Ollama Pro Workbench\ndev/3c · src/index.html"]
         end
 
         subgraph NODE ["Node.js · npm start · :3080"]
@@ -382,7 +382,7 @@ npm install
 
 ### 🐦 (Optional) Install Little Canary microservice
 
-Required only for the Phase 0.5 features in `dev/5a`:
+Required only for the Phase 0.5 features in `dev/3c`:
 
 ```bash
 pip install flask little-canary
@@ -424,7 +424,7 @@ Open **`http://localhost:3080`** in your browser.
 
 ### Running with Little Canary (Phase 0.5)
 
-If you are using `dev/5a`, start the Flask microservice in a separate terminal:
+If you are using `dev/3c`, start the Flask microservice in a separate terminal:
 
 ```bash
 npm run canary
@@ -445,8 +445,8 @@ Visit any dev file directly in your browser using its prefix. The AIRS proxy wor
 http://localhost:3080/dev/1a    →  1a-ollama-chat-no-security.html
 http://localhost:3080/dev/2a    →  2a-mechat-airs-teaching-demo.html
 http://localhost:3080/dev/3a    →  3a-llm-security-workbench-twin-scan.html
-http://localhost:3080/dev/4a    →  4a-llm-security-workbench-native-guardrail.html
-http://localhost:3080/dev/5a    →  5a-llm-security-workbench-little-canary.html
+http://localhost:3080/dev/3b    →  3b-llm-security-workbench-native-guardrail.html
+http://localhost:3080/dev/3c    →  3c-llm-security-workbench-little-canary.html
 ```
 
 ### Option B — Stage as default (`src/index.html`)
@@ -454,13 +454,13 @@ http://localhost:3080/dev/5a    →  5a-llm-security-workbench-little-canary.htm
 Use the `stage` script to copy any dev file to `src/index.html` — it matches by prefix so you never need to type the full filename:
 
 ```bash
-npm run stage 5a        # match by prefix — works for any file in /dev
-npm run stage:4a        # named shortcut (1a, 1b, 2a, 3a, 4a, 5a)
+npm run stage 3c        # match by prefix — works for any file in /dev
+npm run stage:3b        # named shortcut (1a, 1b, 2a, 3a, 3b, 3c)
 npm run stage           # prints all available files
 ```
 
 ```
-✅  Staged:  dev/5a-llm-security-workbench-little-canary.html
+✅  Staged:  dev/3c-llm-security-workbench-little-canary.html
          →  src/index.html
 🌐  Open:   http://localhost:3080
 ```
@@ -471,21 +471,21 @@ npm run stage           # prints all available files
 | `1b-mechat-no-security.html` | **Bridge** — same meChat UI before introducing AIRS | ✗ | Personas, live model dropdown, terminal theme |
 | `2a-mechat-airs-teaching-demo.html` | **Teaching demo** — introduce AIRS as a prompt gate | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments, Tokyo Night theme, AI header shows `Persona (model)` |
 | `3a-llm-security-workbench-twin-scan.html` | **Full workbench** — production-grade twin-scan | ✓ | Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector |
-| `4a-llm-security-workbench-native-guardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt) |
-| `5a-llm-security-workbench-little-canary.html` | **Five-gate workbench** — adds Phase 0.5 Little Canary | ✓ | All of 4a + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector, per-phase latency badges + LLM generation timer, organised header bar with live status chips |
+| `3b-llm-security-workbench-native-guardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt) |
+| `3c-llm-security-workbench-little-canary.html` | **Five-gate workbench** — adds Phase 0.5 Little Canary | ✓ | All of 3b + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector, per-phase latency badges + LLM generation timer, organised header bar with live status chips |
 
 ### Recommended learning path
 
 ```
 1a  →  understand the LLM call with no security
 1b  →  add UI polish (personas, model selector) — still no security
-2a  →  introduce AIRS: one fetch → one verdict → gate the LLM
+2a  →  introduce AIRS: one fetch → one verdict → gate the LLM (customer view)
 3a  →  graduate to twin-scan: secure both ingress and egress
-4a  →  add Phase 0: local LLM-as-judge before any cloud call is made
-5a  →  add Phase 0.5: Little Canary structural + behavioural injection filter
+3b  →  add Phase 0: local LLM-as-judge before any cloud call is made
+3c  →  add Phase 0.5: Little Canary structural + behavioural injection filter
 ```
 
-> **Config reminder:** All files (`2a`, `3a`, `4a`) expose the AIRS API key and profile as UI fields — no hardcoded values needed. Enter your `x-pan-token` and profile name directly in the interface, **or** set `AIRS_API_KEY` and `AIRS_PROFILE` in `.env` (see Step 2) to have them pre-loaded and locked automatically. The `.env` approach is recommended so credentials are not retyped on each run.
+> **Config reminder:** All files (`2a`, `3a`, `3b`, `3c`) expose the AIRS API key and profile as UI fields — no hardcoded values needed. Enter your `x-pan-token` and profile name directly in the interface, **or** set `AIRS_API_KEY` and `AIRS_PROFILE` in `.env` (see Step 2) to have them pre-loaded and locked automatically. The `.env` approach is recommended so credentials are not retyped on each run.
 >
 > **Note:** The `dev/` standalone HTML files open directly via `http://localhost:3080/dev/<prefix>` — the Node proxy handles credential injection and AIRS routing exactly as it does for `src/index.html`.
 
@@ -524,10 +524,10 @@ curl http://localhost:11434/api/tags
 
 *✅ Success: The LLM response is generated, then scanned. If DLP fires, the response is shown with sensitive fields masked (`XXXXXXXXXXXX`) and a `⚠️ Masked` badge appears on the bot message.*
 
-### Test 4 (5a only) — Little Canary
+### Test 4 (3c only) — Little Canary
 
 1. Start the canary service: `npm run canary`
-2. Navigate to `http://localhost:3080/dev/5a`
+2. Navigate to `http://localhost:3080/dev/3c`
 3. In the **🐦 Little Canary** panel, set mode to **Full — block high-confidence attacks**.
 4. Expand **⚙️ Canary Settings** and select a small model (`qwen2.5:1.5b`).
 5. Select the **Prompt Injection** or **Jailbreak** threat and click **Send Message**.
@@ -541,7 +541,7 @@ curl http://localhost:11434/api/tags
 *✅ Success: A yellow advisory banner appears in chat. Execution continues — the Ollama system prompt receives the canary warning prefix prepended to it. The LLM is aware of the suspected attack.*
 
 ### Test 5 — API Inspector
-Click the **🛠️ API Inspector** bar at the bottom. In `dev/5a` you'll see five columns:
+Click the **🛠️ API Inspector** bar at the bottom. In `dev/3c` you'll see five columns:
 - **Phase 0** — Native Guardrail judge request & raw verdict JSON
 - **Phase 0.5** — Little Canary request payload & verdict JSON (safe, summary, advisory)
 - **Phase 1** — AIRS prompt scan request & verdict
