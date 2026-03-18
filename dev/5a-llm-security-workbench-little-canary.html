@@ -13,14 +13,22 @@
 
     <style>
         :root {
-            --bg: #f4f4f9;
-            --panel: #ffffff;
+            --bg: #eef1f7;
+            --panel: #f5f8fd;
             --text: #333;
             --primary: #007bff;
-            --border: #ddd;
+            --border: #d5dae6;
             --danger: #dc3545;
             --warning: #ffc107;
             --debug: #1a1a1a;
+            /* LLM time pill — light mode */
+            --llm-pill-bg:     #2c3e50;
+            --llm-pill-text:   #c8d6e5;
+            --llm-pill-border: #4a6278;
+            /* copy button */
+            --copy-btn-bg:     #dce3ef;
+            --copy-btn-color:  #444;
+            --copy-btn-hover:  #c8d1e0;
         }
 
         body.dark {
@@ -28,7 +36,15 @@
             --panel: #1e1e1e;
             --text: #e0e0e0;
             --primary: #3793ff;
-            --border: #333;
+            --border: #3a3a3a;
+            /* LLM time pill — dark mode */
+            --llm-pill-bg:     #2d2d2d;
+            --llm-pill-text:   #b0b0b0;
+            --llm-pill-border: #555;
+            /* copy button */
+            --copy-btn-bg:     #2a2a2a;
+            --copy-btn-color:  #ccc;
+            --copy-btn-hover:  #3a3a3a;
         }
 
         body {
@@ -306,9 +322,9 @@
 
         /* 📋 Identity Info & Alerts */
         .identity-info {
-            opacity: 0.6;
+            opacity: 0.75;
             font-weight: 400;
-            font-size: 10px;
+            font-size: 11px;
             margin-left: 5px;
             color: var(--text);
             text-transform: none;
@@ -434,7 +450,7 @@
         /* #4 — Message timestamp */
         .msg-timestamp {
             font-size: 10px;
-            opacity: 0.4;
+            opacity: 0.55;
             font-weight: 400;
             margin-left: 8px;
             text-transform: none;
@@ -446,8 +462,9 @@
             float: right;
             font-size: 10px;
             padding: 2px 8px;
-            background: #2a2a2a;
-            color: #888;
+            background: var(--copy-btn-bg, #2a2a2a);
+            color: var(--copy-btn-color, #888);
+            border: 1px solid var(--border);
             border-radius: 4px;
             cursor: pointer;
             font-weight: normal;
@@ -456,8 +473,8 @@
         }
 
         .copy-btn:hover {
-            background: #3a3a3a;
-            color: white;
+            background: var(--copy-btn-hover, #3a3a3a);
+            color: var(--text);
         }
 
         /* #6 — Scroll to bottom button */
@@ -611,9 +628,9 @@
             font-weight: 700;
             letter-spacing: 0.5px;
             vertical-align: middle;
-            background: #1a1a1a;
-            color: #aaa;
-            border: 1px solid #444;
+            background: var(--llm-pill-bg);
+            color: var(--llm-pill-text);
+            border: 1px solid var(--llm-pill-border);
         }
 
         /* #11 — Scan badge on user messages */
@@ -624,7 +641,6 @@
             border-radius: 10px;
             margin-left: 6px;
             font-weight: 700;
-            text-transform: uppercase;
             letter-spacing: 0.5px;
             vertical-align: middle;
         }
@@ -1804,7 +1820,7 @@ Waiting for LLM...</pre>
 
                 guardBadge.style.display = "inline";
                 guardBadge.className = "scan-badge off";
-                guardBadge.textContent = "🔒 Scanning...";
+                guardBadge.textContent = "🔒 SCANNING...";
                 document.getElementById("debug-status").innerText = "🔒 Phase 0: Native guardrail...";
 
                 const _gt0 = Date.now();
@@ -1823,7 +1839,7 @@ Waiting for LLM...</pre>
                 } else if (gResult.blocked) {
                     if (guardEnforcement === "strict") {
                         guardBadge.className = "scan-badge guardrail-block";
-                        guardBadge.textContent = `🔒 Blocked ${_gLat}`;
+                        guardBadge.textContent = `🔒 BLOCKED ${_gLat}`;
                         const blockDiv = document.createElement("div");
                         blockDiv.className = "message security-alert";
                         blockDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
@@ -1838,7 +1854,7 @@ Waiting for LLM...</pre>
                     } else {
                         // Audit: flag but proceed
                         guardBadge.className = "scan-badge guardrail-block";
-                        guardBadge.textContent = `🔒 Flagged ${_gLat}`;
+                        guardBadge.textContent = `🔒 FLAGGED ${_gLat}`;
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
@@ -1849,7 +1865,7 @@ Waiting for LLM...</pre>
                     }
                 } else {
                     guardBadge.className = "scan-badge guardrail-pass";
-                    guardBadge.textContent = `🔒 Safe ${_gLat}`;
+                    guardBadge.textContent = `🔒 SAFE ${_gLat}`;
                 }
             }
 
@@ -1885,7 +1901,7 @@ Waiting for LLM...</pre>
                     // Full mode: block on unsafe OR flagged advisory
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge guardrail-block";
-                    canaryBadge.textContent = `🐦 Blocked ${_cLat}`;
+                    canaryBadge.textContent = `🐦 BLOCKED ${_cLat}`;
                     const blockDiv = document.createElement("div");
                     blockDiv.className = "message security-alert";
                     blockDiv.style.cssText = "color:#e67e22;border-color:#e67e22;background:rgba(230,126,34,0.1)";
@@ -1902,7 +1918,7 @@ Waiting for LLM...</pre>
                     canaryAdvisoryPrefix = cResult.advisory.system_prefix;
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge flagged";
-                    canaryBadge.textContent = `🐦 Flagged ${_cLat}`;
+                    canaryBadge.textContent = `🐦 FLAGGED ${_cLat}`;
                     const warnDiv = document.createElement("div");
                     warnDiv.className = "message security-alert";
                     warnDiv.style.cssText = "color:#f1c40f;border-color:#f1c40f;background:rgba(241,196,15,0.1)";
@@ -1912,7 +1928,7 @@ Waiting for LLM...</pre>
                 } else {
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge allowed";
-                    canaryBadge.textContent = `🐦 Safe ${_cLat}`;
+                    canaryBadge.textContent = `🐦 SAFE ${_cLat}`;
                 }
             } else {
                 document.getElementById("debug-canary-req").innerText = "Canary Disabled.";
@@ -1953,7 +1969,7 @@ Waiting for LLM...</pre>
                 if (promptScan.status === "error") {
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge";
-                    airsBadge.textContent = `Error ${_aLat}`;
+                    airsBadge.textContent = `ERROR ${_aLat}`;
                     const errDiv = document.createElement("div");
                     errDiv.className = "message security-alert";
                     errDiv.innerHTML = `🛑 PRISMA PROXY ERROR (Phase 1)<br>${promptScan.message}<br><small>Make sure server.js is running on localhost:3080</small>`;
@@ -1969,7 +1985,7 @@ Waiting for LLM...</pre>
                     // Strict mode: LLM never reached
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge blocked";
-                    airsBadge.textContent = `🛑 Blocked ${_aLat}`;
+                    airsBadge.textContent = `🛑 BLOCKED ${_aLat}`;
                     const threats = promptScan.detected.length
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
@@ -1990,7 +2006,7 @@ Waiting for LLM...</pre>
                     // Audit mode: flag but proceed to LLM
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge flagged";
-                    airsBadge.textContent = `⚠️ Flagged ${_aLat}`;
+                    airsBadge.textContent = `⚠️ FLAGGED ${_aLat}`;
                     const threats = promptScan.detected.length
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
@@ -2004,7 +2020,7 @@ Waiting for LLM...</pre>
                 } else {
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge allowed";
-                    airsBadge.textContent = `✅ Allowed ${_aLat}`;
+                    airsBadge.textContent = `✅ ALLOWED ${_aLat}`;
                 }
             } else {
                 [
@@ -2159,7 +2175,7 @@ Waiting for LLM...</pre>
                 if (responseScan.status === "error") {
                     if (resBadge) {
                         resBadge.className = "scan-badge";
-                        resBadge.textContent = `Scan Err ${_rLat}`;
+                        resBadge.textContent = `SCAN ERR ${_rLat}`;
                     }
                     document.getElementById("debug-status").innerText =
                         "Response Scan Error";
@@ -2172,7 +2188,7 @@ Waiting for LLM...</pre>
                         : responseScan.category;
                     if (resBadge) {
                         resBadge.className = "scan-badge blocked";
-                        resBadge.textContent = `🛑 Blocked ${_rLat}`;
+                        resBadge.textContent = `🛑 BLOCKED ${_rLat}`;
                     }
 
                     if (airsMode === "strict") {
@@ -2198,7 +2214,7 @@ Waiting for LLM...</pre>
                         }
                         if (resBadge) {
                             resBadge.className = "scan-badge flagged";
-                            resBadge.textContent = `⚠️ Flagged ${_rLat}`;
+                            resBadge.textContent = `⚠️ FLAGGED ${_rLat}`;
                         }
                     }
                     document.getElementById("debug-status").innerText =
@@ -2207,7 +2223,7 @@ Waiting for LLM...</pre>
                     // Allowed but DLP masking applied
                     if (resBadge) {
                         resBadge.className = "scan-badge flagged";
-                        resBadge.textContent = `⚠️ Masked ${_rLat}`;
+                        resBadge.textContent = `⚠️ MASKED ${_rLat}`;
                     }
                     const maskHtml = `<div class="security-alert" style="color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-bottom:10px;">
                             ⚠️ AIRS: Sensitive data detected and masked in response</div>`;
@@ -2219,7 +2235,7 @@ Waiting for LLM...</pre>
                 } else {
                     if (resBadge) {
                         resBadge.className = "scan-badge allowed";
-                        resBadge.textContent = `✅ Clean ${_rLat}`;
+                        resBadge.textContent = `✅ CLEAN ${_rLat}`;
                     }
                     document.getElementById("debug-status").innerText =
                         "Done ✅";
