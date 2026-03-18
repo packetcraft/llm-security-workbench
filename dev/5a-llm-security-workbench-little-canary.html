@@ -2151,7 +2151,7 @@ Waiting for LLM...</pre>
             botDiv.innerHTML = `
                     <span class="bot-label">
                         AI
-                        <span class="identity-info">(${modelSelect} — ${personaLabel})</span>
+                        <span class="identity-info">(${modelSelect.split("/").pop().split(":")[0]} — ${personaLabel})</span>
                         <span class="msg-timestamp">${getTimestamp()}</span>
                         <span class="llm-time-badge" id="${botMsgId}-llm-time" style="display:none"></span>
                         ${airsMode !== "off" ? `<span class="scan-badge off" id="${botMsgId}-badge">Scanning resp...</span>` : ""}
