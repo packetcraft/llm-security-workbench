@@ -213,9 +213,9 @@ If the guardrail Ollama call itself fails (model offline, JSON parse error, netw
 
 | Model | Why |
 | :--- | :--- |
-| `llama3.2:3b` | Fast, good instruction following, small footprint |
-| `gemma2:2b` | Very fast, reliable JSON output |
-| `phi3:mini` | Lightweight, strong safety awareness |
+| `shieldgemma:2b` | Native sequence classifier trained specifically for safety triage; outputs text not JSON format |
+| `llama-guard3:8b`| Gold standard for adversarial safety classification |
+| `llama3.2:3b` | General fallback: Fast, good instruction following, small footprint |
 
 > **Note:** Using the same model for both judging and chatting works but is suboptimal. A dedicated small judge model runs faster and keeps the two tasks cleanly separated.
 
@@ -447,6 +447,8 @@ http://localhost:3080/dev/2a    →  2a-mechat-airs-teaching-demo.html
 http://localhost:3080/dev/3a    →  3a-llm-security-workbench-twin-scan.html
 http://localhost:3080/dev/3b    →  3b-llm-security-workbench-native-guardrail.html
 http://localhost:3080/dev/3c    →  3c-llm-security-workbench-little-canary.html
+http://localhost:3080/dev/4a    →  4a-llm-security-workbench-batch-runner.html
+http://localhost:3080/dev/4b    →  4b-llm-security-workbench-advanced-batch.html
 ```
 
 ### Option B — Stage as default (`src/index.html`)
@@ -460,7 +462,7 @@ npm run stage           # prints all available files
 ```
 
 ```
-✅  Staged:  dev/3c-llm-security-workbench-little-canary.html
+✅  Staged:  dev/4b-llm-security-workbench-advanced-batch.html
          →  src/index.html
 🌐  Open:   http://localhost:3080
 ```
@@ -472,7 +474,9 @@ npm run stage           # prints all available files
 | ⭐ | **`2a-mechat-airs-teaching-demo.html`** | **Teaching demo** — introduce AIRS as a prompt gate (customer view) | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments, Tokyo Night theme, AI header shows `Persona (model)` |
 |   | `3a-llm-security-workbench-twin-scan.html` | *Full workbench — production-grade twin-scan* | ✓ | *Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector* |
 |   | `3b-llm-security-workbench-native-guardrail.html` | *Triple-gate workbench — adds local Phase 0 guardrail* | ✓ | *All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt)* |
-| ⭐ | **`3c-llm-security-workbench-little-canary.html`** | **Full workbench** — all five security gates | ✓ | All of 3b + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector, per-phase latency badges + LLM generation timer, organised header bar with live status chips |
+|   | `3c-llm-security-workbench-little-canary.html` | *Five-gate workbench — introduces Phase 0.5 Little Canary* | ✓ | *All of 3b + Phase 0.5 structural + behavioural probe, advisory prefix, 5-column API inspector, latency badges, organised header* |
+|   | `4a-llm-security-workbench-batch-runner.html` | *First iteration of the Batch Threat Runner* | ✓ | *All of 3c + Batch runner modal to iterate 19 threats automatically* |
+| ⭐ | **`4b-llm-security-workbench-advanced-batch.html`** | **Full advanced workbench** — resilient with background execution | ✓ | All of 4a + Background decoupled batch processing, persistent states (results not lost on close), granular Phase Catch reporting (MD export), strict AbortController timeouts, model defaults for `shieldgemma:2b` |
 
 ### Recommended learning path
 

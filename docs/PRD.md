@@ -258,6 +258,12 @@ Real-time status indicator in the header cycles through: `🔒 Phase 0: Native g
 
 **Per-phase latency** is displayed inline on each badge as it resolves — observers can read bottlenecks without opening the API Inspector. The LLM generation pill (`🤖 Xs`) appears on the AI message header immediately after the stream ends (or is stopped), distinct from the security scan badges via its dark background style.
 
+### 3.8 Advanced Background Batch Runner
+Introduced in version `4b`, the Batch Threat Runner evaluates all default adversarial prompts automatically. It features background-async test capabilities, decoupled from the modal window. Additionally, strict `AbortController` API timeouts (15s for Phase 0 and 30s for LLM processing) ensure the pipeline robustly fails-open instead of hanging dynamically. **Version 4b.1 adds persistent execution state (results are preserved if the modal is closed and reopened) and a granular Phase Catch summary in the Markdown export.**
+
+### 3.9 Resilient Classification Prompts (ShieldGemma)
+The Phase 0 native local judge pipeline now robustly handles JSON bypasses when interacting with strict sequence classifiers. If models like `shieldgemma` or `llama-guard3` are selected, `4b` drops standard JSON framing rules in favor of resilient lexical heuristics (scanning text for `Yes`/`No` or `Safe`/`Unsafe`), maximizing local model support without crashing.
+
 ---
 
 ## 4. Technical Architecture
@@ -520,8 +526,6 @@ llm-security-workbench/
 ### 🟡 Medium effort
 
 * **Multi-turn conversation history:** Pass a rolling `messages[]` array (last N turns) on every `/api/chat` call so the LLM is context-aware across turns. The AIRS Phase 1 payload could similarly include prior turns for improved multi-turn threat detection.
-* **Batch threat runner:** A "Run All Threats" button that fires all library prompts through the current pipeline sequentially (with configurable delay between requests), then renders a results table showing threat type, blocking phase, and latency. Turns the workbench into a threshold calibration tool.
-* **Chat + scan export:** A "📥 Export session" button that downloads a JSON or Markdown file containing all messages, scan verdicts, latencies, and the active security configuration. Supports audit trail and post-demo review.
 * **DLP diff view:** When Phase 2 returns `response_masked_data`, show a collapsible before/after block on the AI message — original vs. masked side-by-side — rather than silently swapping in the masked version. Makes DLP masking behaviour explicit and teachable.
 
 ### 🔴 Advanced
