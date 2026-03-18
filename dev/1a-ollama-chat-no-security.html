@@ -86,6 +86,9 @@
                     chatBox.innerHTML += `<div style="color:red">Error: ${error.message}. Make sure Ollama is running.</div>`;
                 }
             }
+        document.getElementById("user-input").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") sendMessage();
+        });
         </script>
     </body>
 </html>

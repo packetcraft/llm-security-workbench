@@ -304,7 +304,10 @@
                 const res  = await fetch("http://localhost:11434/api/tags");
                 const data = await res.json();
                 modelSel.innerHTML = data.models
-                    .map(m => `<option value="${m.name}">${m.name}</option>`)
+                    .map(m => {
+                        const isDefault = m.name.includes("llama3.2") || m.name.includes("3b");
+                        return `<option value="${m.name}" ${isDefault ? "selected" : ""}>${m.name}</option>`;
+                    })
                     .join("");
             } catch {
                 modelSel.innerHTML = "<option>Ollama offline</option>";
@@ -335,6 +338,9 @@
 
         fetchModels();
         loadEnvConfig();
+        document.getElementById("user-input").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") sendMessage();
+        });
 
         /*
          * ══════════════════════════════════════════════════════════════
