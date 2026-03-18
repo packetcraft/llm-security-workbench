@@ -415,21 +415,33 @@
         }
 
         .status-dot.canary-advisory {
-            background: #f1c40f;
-            box-shadow: 0 0 6px #f1c40f;
+            background: #b85c2a;
+            box-shadow: 0 0 6px #b85c2a;
         }
 
         .status-dot.canary-block {
-            background: #e67e22;
-            box-shadow: 0 0 6px #e67e22;
+            background: #8c3d18;
+            box-shadow: 0 0 6px #8c3d18;
         }
 
         .security-group.mode-canary-advisory {
-            border-color: #f1c40f;
+            border-color: #b85c2a;
         }
 
         .security-group.mode-canary-block {
-            border-color: #e67e22;
+            border-color: #8c3d18;
+        }
+
+        .scan-badge.canary-advisory {
+            background: rgba(184, 92, 42, 0.15);
+            color: #b85c2a;
+            border: 1px solid #b85c2a;
+        }
+
+        .scan-badge.canary-block {
+            background: rgba(140, 61, 24, 0.2);
+            color: #8c3d18;
+            border: 1px solid #8c3d18;
         }
 
         /* #2 — Active model badge */
@@ -807,7 +819,7 @@ Respond ONLY with valid JSON, no other text:
 
             <!-- Little Canary (Phase 0.5) -->
             <div class="panel security-group" id="canary-panel">
-                <label style="color:#f1c40f">🐦 Little Canary (Phase 0.5)</label>
+                <label style="color:#b85c2a">🐦 Little Canary (Phase 0.5)</label>
                 <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
                     <select id="canary-mode" onchange="toggleCanarySettings()">
                         <option value="off">⚫ Off (Disabled)</option>
@@ -815,7 +827,7 @@ Respond ONLY with valid JSON, no other text:
                         <option value="full">🔴 Full — block high-confidence attacks</option>
                     </select>
                     <details style="margin-top:2px;">
-                        <summary style="font-size:11px;cursor:pointer;color:#f1c40f;">⚙️ Canary Settings</summary>
+                        <summary style="font-size:11px;cursor:pointer;color:#b85c2a;">⚙️ Canary Settings</summary>
                         <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
                             <select id="canary-model" disabled>
                                 <option value="">-- Select canary model --</option>
@@ -1064,7 +1076,7 @@ Waiting...</pre>
             </div>
             <!-- Phase 0.5: Little Canary -->
             <div>
-                <span class="debug-label" style="color:#f1c40f">// 🐦 PHASE 0.5 — CANARY REQUEST</span>
+                <span class="debug-label" style="color:#b85c2a">// 🐦 PHASE 0.5 — CANARY REQUEST</span>
                 <pre id="debug-canary-req" style="
                             background: transparent;
                             border: none;
@@ -1072,7 +1084,7 @@ Waiting...</pre>
                             overflow-x: auto;
                         ">
 Waiting...</pre>
-                <span class="debug-label" style="color:#f1c40f">// 🐦 PHASE 0.5 — CANARY VERDICT</span>
+                <span class="debug-label" style="color:#b85c2a">// 🐦 PHASE 0.5 — CANARY VERDICT</span>
                 <pre id="debug-canary-res" style="
                             background: transparent;
                             border: none;
@@ -1900,11 +1912,11 @@ Waiting for LLM...</pre>
                 } else if (canaryMode === "full" && (!cResult.safe || cResult.advisory?.flagged)) {
                     // Full mode: block on unsafe OR flagged advisory
                     canaryBadge.style.display = "inline";
-                    canaryBadge.className = "scan-badge guardrail-block";
+                    canaryBadge.className = "scan-badge canary-block";
                     canaryBadge.textContent = `🐦 BLOCKED ${_cLat}`;
                     const blockDiv = document.createElement("div");
                     blockDiv.className = "message security-alert";
-                    blockDiv.style.cssText = "color:#e67e22;border-color:#e67e22;background:rgba(230,126,34,0.1)";
+                    blockDiv.style.cssText = "color:#8c3d18;border-color:#8c3d18;background:rgba(140,61,24,0.1)";
                     blockDiv.innerHTML = `🐦 LITTLE CANARY — PROMPT BLOCKED (Phase 0.5)<br>
                             <em>${cResult.summary}</em><br>
                             <small>AIRS and LLM were not reached.</small>`;
@@ -1917,11 +1929,11 @@ Waiting for LLM...</pre>
                     // Advisory mode only — inject warning prefix into system prompt
                     canaryAdvisoryPrefix = cResult.advisory.system_prefix;
                     canaryBadge.style.display = "inline";
-                    canaryBadge.className = "scan-badge flagged";
+                    canaryBadge.className = "scan-badge canary-advisory";
                     canaryBadge.textContent = `🐦 FLAGGED ${_cLat}`;
                     const warnDiv = document.createElement("div");
                     warnDiv.className = "message security-alert";
-                    warnDiv.style.cssText = "color:#f1c40f;border-color:#f1c40f;background:rgba(241,196,15,0.1)";
+                    warnDiv.style.cssText = "color:#b85c2a;border-color:#b85c2a;background:rgba(184,92,42,0.1)";
                     warnDiv.innerHTML = `🐦 LITTLE CANARY ADVISORY — warning injected into system prompt<br><em>${cResult.summary}</em>`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
