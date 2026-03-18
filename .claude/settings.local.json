@@ -2,7 +2,23 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:pan.dev)",
-      "WebFetch(domain:docs.paloaltonetworks.com)"
+      "WebFetch(domain:docs.paloaltonetworks.com)",
+      "WebFetch(domain:owasp.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.lakera.ai)",
+      "WebFetch(domain:simonwillison.net)",
+      "WebFetch(domain:www.jailbreakchat.com)",
+      "WebFetch(domain:arxiv.org)",
+      "WebFetch(domain:www.promptingguide.ai)",
+      "WebFetch(domain:learnprompting.org)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:portswigger.net)",
+      "WebFetch(domain:llm-security.org)",
+      "WebFetch(domain:embracethered.com)",
+      "WebFetch(domain:kai-greshake.de)",
+      "WebFetch(domain:www.microsoft.com)",
+      "WebFetch(domain:labs.withsecure.com)",
+      "WebFetch(domain:twitter.com)"
     ]
   }
 }
