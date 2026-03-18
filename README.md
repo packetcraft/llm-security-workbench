@@ -1,6 +1,6 @@
-# 🛡️ Ollama Pro Workbench v2.5 (Little Canary Edition)
+# 🛡️ LLM Security Workbench
 
-A professional, local-first web interface for interacting with Ollama LLMs, secured by **Palo Alto Networks Prisma AIRS** with enterprise-grade two-phase scanning — protecting both the prompt going in and the response coming out.
+A local-first AI security testing workbench built on **Ollama**. Evaluates prompts and responses through a configurable four-gate pipeline — a local LLM-as-judge (Phase 0), a structural + behavioural canary filter (Phase 0.5), a cloud prompt scan (Phase 1), and a cloud response scan (Phase 2) — with **Prisma AIRS** powering the cloud scanning layers.
 
 ## ✨ Key Features
 
