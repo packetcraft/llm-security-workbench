@@ -1,5 +1,5 @@
 {
-  "name": "prisma-airs-ollama",
+  "name": "llm-security-workbench",
   "version": "1.0.0",
   "description": "I’ve updated the **README.md** to include the persona laboratory guide, the manual `curl` verification steps for both MacOS and Windows, and the expanded troubleshooting matrix.",
   "main": "src/server.js",

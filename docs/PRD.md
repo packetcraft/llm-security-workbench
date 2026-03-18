@@ -454,7 +454,7 @@ Response body:
 ## 6. Repository Structure
 
 ```
-prisma-airs-with-ollama/
+llm-security-workbench/
 ├── src/
 │   ├── index.html        # Active workbench (promoted via npm run stage)
 │   └── server.js         # CORS proxy (Express, port 3080); loads .env; serves /dev/:prefix
