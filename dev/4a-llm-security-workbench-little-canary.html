@@ -959,11 +959,32 @@
         .batch-results-table tr.batch-error  td:nth-child(3) { color: var(--muted); }
         .batch-results-table tr:hover td { background: rgba(255,255,255,0.03); }
         #batch-results-wrap { max-height: 360px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
-        .batch-summary-bar { display: flex; gap: 16px; font-size: 12px; padding: 6px 0; }
-        .batch-summary-bar .s-blocked { color: var(--danger); font-weight:700; }
-        .batch-summary-bar .s-flagged  { color: var(--warning); font-weight:700; }
-        .batch-summary-bar .s-allowed  { color: var(--green); font-weight:700; }
+        /* Batch scope — category checkboxes */
+        .batch-cat-header { display: flex; gap: 8px; align-items: center; margin-bottom: 5px; }
+        .batch-cat-header span { font-size: 12px; color: var(--text-muted); flex: 1; }
+        .batch-cat-header a { font-size: 10px; color: var(--primary); cursor: pointer; text-decoration: none; }
+        .batch-cat-header a:hover { text-decoration: underline; }
+        #batch-cat-wrap {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            background: var(--bg);
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .batch-cat-cb { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; cursor: pointer; }
+        .batch-cat-cb input { cursor: pointer; accent-color: var(--primary); }
+        .batch-cat-cb .cat-count { color: var(--muted); }
+        .batch-summary-bar { display: flex; flex-direction: column; gap: 4px; font-size: 12px; padding: 6px 0; }
+        .batch-summary-bar .s-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .batch-summary-bar .s-blocked  { color: var(--danger);     font-weight:700; }
+        .batch-summary-bar .s-flagged  { color: var(--warning);    font-weight:700; }
+        .batch-summary-bar .s-allowed  { color: var(--green);      font-weight:700; }
         .batch-summary-bar .s-error    { color: var(--muted); }
+        .batch-summary-bar .s-phase0   { color: var(--purple); }
+        .batch-summary-bar .s-phase05  { color: var(--canary-adv); }
+        .batch-summary-bar .s-phase1   { color: var(--primary); }
+        .batch-summary-bar .s-phase2   { color: var(--primary); opacity: 0.6; }
         .batch-footer { display: flex; gap: 8px; align-items: center; }
 
         /* #12 — API key visibility toggle */
@@ -2535,10 +2556,43 @@ Waiting for LLM...</pre>
             document.getElementById("batch-results-body").innerHTML = "";
             document.getElementById("batch-summary").innerHTML = "";
             document.getElementById("batch-progress-bar").style.width = "0%";
-            document.getElementById("batch-progress-label").textContent = "Ready — configure delay and press Run";
+            document.getElementById("batch-progress-label").textContent = "Ready — select categories and press Run";
             document.getElementById("batch-start-btn").disabled = false;
             document.getElementById("batch-stop-btn").disabled = true;
+
+            // Populate category checkboxes from SAMPLE_THREATS (loaded async)
+            const catList = document.getElementById("batch-cat-list");
+            if (SAMPLE_THREATS.length === 0) {
+                catList.innerHTML = `<span style="color:var(--muted);font-size:11px">(no threats loaded — is the server running?)</span>`;
+            } else {
+                catList.innerHTML = SAMPLE_THREATS.map(g =>
+                    `<label class="batch-cat-cb">
+                        <input type="checkbox" data-cat="${g.categoryId}" checked onchange="_updateRunBtn()">
+                        ${g.category} <span class="cat-count">(${g.threats.length})</span>
+                    </label>`
+                ).join("");
+            }
+            _updateRunBtn();
+
             document.getElementById("batch-modal-backdrop").classList.add("open");
+        }
+
+        function setBatchCatAll(checked) {
+            document.querySelectorAll("#batch-cat-list input[type=checkbox]")
+                .forEach(cb => cb.checked = checked);
+            _updateRunBtn();
+        }
+
+        function _updateRunBtn() {
+            const n = getSelectedThreats().length;
+            document.getElementById("batch-start-btn").textContent = `▶ Run (${n})`;
+        }
+
+        function getSelectedThreats() {
+            const checks = document.querySelectorAll("#batch-cat-list input[type=checkbox]:checked");
+            if (!checks.length) return [];
+            const selectedIds = new Set([...checks].map(cb => cb.dataset.cat));
+            return SAMPLE_THREATS.filter(g => selectedIds.has(g.categoryId)).flatMap(g => g.threats);
         }
 
         function closeBatchModal() {
@@ -2581,9 +2635,11 @@ Waiting for LLM...</pre>
             const phase1Active = airsMode !== "off";
 
             const delayMs    = parseInt(document.getElementById("batch-delay").value) || 600;
-            const allThreats = SAMPLE_THREATS.flatMap(g => g.threats);
+            const allThreats = getSelectedThreats();
             const total      = allThreats.length;
+            if (!total) { alert("No threats selected."); return; }
             let blocked = 0, flagged = 0, allowed = 0, errors = 0;
+            let p0 = 0, p05 = 0, p1 = 0; // phase catch counts (p2 always 0 in batch)
 
             batchStop = false;
             _batchResults = [];
@@ -2666,6 +2722,11 @@ Waiting for LLM...</pre>
                 }
 
                 // ── Tally & render ─────────────────────────────────────
+                // Count which phase caught it first
+                if      (firstCaught.includes("0.5"))    p05++;
+                else if (firstCaught.startsWith("🔒"))   p0++;
+                else if (firstCaught.startsWith("🛡️"))  p1++;
+
                 let rowClass = "batch-allowed", resultLabel = "✅ Allowed";
                 if      (finalStatus === "error") { errors++;  rowClass = "batch-error";   resultLabel = "❌ Error"; }
                 else if (finalStatus === "block") { blocked++; rowClass = "batch-blocked"; resultLabel = "🛑 Blocked"; }
@@ -2700,10 +2761,18 @@ Waiting for LLM...</pre>
                 });
 
                 document.getElementById("batch-summary").innerHTML =
-                    `<span class="s-blocked">🛑 ${blocked} blocked</span>` +
-                    `<span class="s-flagged">⚠️ ${flagged} flagged</span>` +
-                    `<span class="s-allowed">✅ ${allowed} allowed</span>` +
-                    (errors ? `<span class="s-error">❌ ${errors} err</span>` : "");
+                    `<div class="s-row">` +
+                        `<span class="s-phase0"  title="Caught by Phase 0 Native Guardrail">🔒 ${p0}</span>` +
+                        `<span class="s-phase05" title="Caught by Phase 0.5 Little Canary">🐦 ${p05}</span>` +
+                        `<span class="s-phase1"  title="Caught by Phase 1 AIRS Prompt Scan">🛡️ AIRS-1: ${p1}</span>` +
+                        `<span class="s-phase2"  title="AIRS Phase 2 (response scan) — not run in batch">🛡️ AIRS-2: 0</span>` +
+                    `</div>` +
+                    `<div class="s-row">` +
+                        `<span class="s-blocked">🛑 ${blocked} blocked</span>` +
+                        `<span class="s-flagged">⚠️ ${flagged} flagged</span>` +
+                        `<span class="s-allowed">✅ ${allowed} allowed</span>` +
+                        (errors ? `<span class="s-error">❌ ${errors} err</span>` : "") +
+                    `</div>`;
 
                 if (i < total - 1 && !batchStop) await new Promise(r => setTimeout(r, delayMs));
             }
@@ -2974,6 +3043,16 @@ Waiting for LLM...</pre>
                 <button id="batch-modal-close" onclick="closeBatchModal()">✕</button>
                 <h3>⚡ Batch Threat Runner</h3>
             </div>
+            <!-- Category scope selector -->
+            <div class="batch-cat-header">
+                <span>Categories to include:</span>
+                <a onclick="setBatchCatAll(true)">All</a>
+                <a onclick="setBatchCatAll(false)">None</a>
+            </div>
+            <div id="batch-cat-wrap">
+                <div id="batch-cat-list"></div>
+            </div>
+            <!-- Controls row -->
             <div class="batch-controls">
                 <label>Delay between requests:</label>
                 <input type="range" id="batch-delay" min="100" max="3000" step="100" value="600"
