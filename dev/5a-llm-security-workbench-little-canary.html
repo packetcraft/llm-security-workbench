@@ -12,23 +12,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <style>
+        /* Tokyo Night Light */
         :root {
-            --bg: #e8dfc8;
-            --panel: #f5edd8;
-            --text: #2d2416;
-            --primary: #5c7fa3;
-            --border: #c4b08a;
-            --danger: #c0392b;
-            --warning: #d4900a;
+            --bg: #d8dae4;
+            --panel: #e6e7ed;
+            --text: #343b58;
+            --primary: #2959aa;
+            --border: #b0b5c8;
+            --danger: #8c4351;
+            --warning: #965027;
             --debug: #1a1a1a;
-            /* LLM time pill — light mode (warm dark ink) */
-            --llm-pill-bg:     #3d2b1f;
-            --llm-pill-text:   #e0cda8;
-            --llm-pill-border: #6b4f38;
+            /* LLM time pill — Tokyo Night navy */
+            --llm-pill-bg:     #0f4b6e;
+            --llm-pill-text:   #c0d6e8;
+            --llm-pill-border: #2959aa;
             /* copy button */
-            --copy-btn-bg:     #d8cdb0;
-            --copy-btn-color:  #3d2b1f;
-            --copy-btn-hover:  #c8bb98;
+            --copy-btn-bg:     #cdd0de;
+            --copy-btn-color:  #343b58;
+            --copy-btn-hover:  #bcc0d0;
+            /* semantic */
+            --green: #385f0d;
         }
 
         body.dark {
@@ -45,6 +48,8 @@
             --copy-btn-bg:     #2a2a2a;
             --copy-btn-color:  #ccc;
             --copy-btn-hover:  #3a3a3a;
+            /* semantic */
+            --green: #28a745;
         }
 
         body {
@@ -312,7 +317,7 @@
         }
 
         .bot-label {
-            color: #28a745;
+            color: var(--green);
             font-weight: 800;
             font-size: 11px;
             text-transform: uppercase;
@@ -665,8 +670,8 @@
 
         .scan-badge.allowed {
             background: rgba(40, 167, 69, 0.15);
-            color: #28a745;
-            border: 1px solid #28a745;
+            color: var(--green);
+            border: 1px solid var(--green);
         }
 
         .scan-badge.flagged {
