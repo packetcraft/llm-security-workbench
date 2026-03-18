@@ -211,8 +211,8 @@ The `dev/` folder holds HTML files at different stages of the security build-up.
 While the server is running, any dev file is accessible directly at `http://localhost:3080/dev/<prefix>`. The `/dev/:prefix` route resolves the first filename in `dev/` that starts with the prefix and serves it via `res.sendFile`. The AIRS proxy routes (`/api/config`, `/api/prisma`) work identically to `src/index.html`.
 
 ```
-http://localhost:3080/dev/4a   →  4a-ollama-pro-workbench-including-nativeguardrail.html
-http://localhost:3080/dev/3a   →  3a-ollama-pro-workbench-twin-scan.html
+http://localhost:3080/dev/4a   →  4a-llm-security-workbench-native-guardrail.html
+http://localhost:3080/dev/3a   →  3a-llm-security-workbench-twin-scan.html
 ```
 
 **Option B — Promote to default via `scripts/stage.js`:**
@@ -268,7 +268,7 @@ Real-time status indicator in the header cycles through: `🔒 Phase 0: Native g
 | Route | Method | Description |
 | :--- | :--- | :--- |
 | `/` | `GET` | Serves `src/index.html` |
-| `/dev/:prefix` | `GET` | Serves the first `/dev` HTML file whose name starts with `:prefix` — e.g. `/dev/5a` serves `5a-ollama-pro-workbench-little-canary.html`. AIRS proxy works normally. |
+| `/dev/:prefix` | `GET` | Serves the first `/dev` HTML file whose name starts with `:prefix` — e.g. `/dev/5a` serves `5a-llm-security-workbench-little-canary.html`. AIRS proxy works normally. |
 | `/api/config` | `GET` | Returns `{ hasApiKey: bool, profile: string \| null }` — presence signal only, key never returned |
 | `/api/prisma` | `POST` | Proxies scan requests to Prisma AIRS; prefers `process.env.AIRS_API_KEY` over the `x-pan-token` request header |
 | `/api/canary` | `POST` | Proxies canary scan requests to the Flask microservice at `localhost:5001/check`; returns `502` with a helpful error if the service is unavailable |
@@ -467,9 +467,9 @@ llm-security-workbench/
 │   ├── 1a-ollama-chat-no-security.html
 │   ├── 1b-mechat-no-security.html
 │   ├── 2a-mechat-airs-teaching-demo.html
-│   ├── 3a-ollama-pro-workbench-twin-scan.html
-│   ├── 4a-ollama-pro-workbench-including-nativeguardrail.html
-│   └── 5a-ollama-pro-workbench-little-canary.html
+│   ├── 3a-llm-security-workbench-twin-scan.html
+│   ├── 4a-llm-security-workbench-native-guardrail.html
+│   └── 5a-llm-security-workbench-little-canary.html
 ├── python/
 │   ├── canary_server.py  # Flask microservice wrapping little-canary (port 5001)
 │   └── requirements.txt  # flask, little-canary

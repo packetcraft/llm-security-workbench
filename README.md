@@ -443,9 +443,9 @@ Visit any dev file directly in your browser using its prefix. The AIRS proxy wor
 ```
 http://localhost:3080/dev/1a    →  1a-ollama-chat-no-security.html
 http://localhost:3080/dev/2a    →  2a-mechat-airs-teaching-demo.html
-http://localhost:3080/dev/3a    →  3a-ollama-pro-workbench-twin-scan.html
-http://localhost:3080/dev/4a    →  4a-ollama-pro-workbench-including-nativeguardrail.html
-http://localhost:3080/dev/5a    →  5a-ollama-pro-workbench-little-canary.html
+http://localhost:3080/dev/3a    →  3a-llm-security-workbench-twin-scan.html
+http://localhost:3080/dev/4a    →  4a-llm-security-workbench-native-guardrail.html
+http://localhost:3080/dev/5a    →  5a-llm-security-workbench-little-canary.html
 ```
 
 ### Option B — Stage as default (`src/index.html`)
@@ -459,7 +459,7 @@ npm run stage           # prints all available files
 ```
 
 ```
-✅  Staged:  dev/5a-ollama-pro-workbench-little-canary.html
+✅  Staged:  dev/5a-llm-security-workbench-little-canary.html
          →  src/index.html
 🌐  Open:   http://localhost:3080
 ```
@@ -469,9 +469,9 @@ npm run stage           # prints all available files
 | `1a-ollama-chat-no-security.html` | **Baseline** — understand Ollama chat with zero security | ✗ | Single `fetch` to Ollama, no frills |
 | `1b-mechat-no-security.html` | **Bridge** — same meChat UI before introducing AIRS | ✗ | Personas, live model dropdown, terminal theme |
 | `2a-mechat-airs-teaching-demo.html` | **Teaching demo** — introduce AIRS as a prompt gate | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments |
-| `3a-ollama-pro-workbench-twin-scan.html` | **Full workbench** — production-grade twin-scan | ✓ | Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector |
-| `4a-ollama-pro-workbench-including-nativeguardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt) |
-| `5a-ollama-pro-workbench-little-canary.html` | **Five-gate workbench** — adds Phase 0.5 Little Canary | ✓ | All of 4a + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector |
+| `3a-llm-security-workbench-twin-scan.html` | **Full workbench** — production-grade twin-scan | ✓ | Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector |
+| `4a-llm-security-workbench-native-guardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt) |
+| `5a-llm-security-workbench-little-canary.html` | **Five-gate workbench** — adds Phase 0.5 Little Canary | ✓ | All of 4a + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector |
 
 ### Recommended learning path
 
