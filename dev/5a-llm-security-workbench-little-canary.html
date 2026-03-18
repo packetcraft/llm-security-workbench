@@ -1331,13 +1331,19 @@ Waiting for LLM...</pre>
                     })
                     .join("");
                 selector.innerHTML = optionsHtml;
-                const smallModelHtml = '<option value="">-- Select model --</option>' +
-                    data.models.map((m) => {
-                        const preferSmall = m.name.includes("3b") || m.name.includes("1b") || m.name.includes("gemma") || m.name.includes("qwen");
-                        return `<option value="${m.name}" ${preferSmall ? "selected" : ""}>${m.name}</option>`;
-                    }).join("");
-                guardSelector.innerHTML = smallModelHtml.replace("-- Select model --", "-- Select judge model --");
-                canarySelector.innerHTML = smallModelHtml.replace("-- Select model --", "-- Select canary model --");
+                // Prefer qwen2.5:1.5b for both guard and canary, then fallbacks
+                const bestSmall = data.models.find(m => m.name === "qwen2.5:1.5b") ||
+                    data.models.find(m => m.name.includes("qwen2.5")) ||
+                    data.models.find(m => m.name.includes("1.5b")) ||
+                    data.models.find(m => m.name.includes("1b")) ||
+                    data.models.find(m => m.name.includes("3b")) ||
+                    data.models.find(m => m.name.includes("gemma")) ||
+                    data.models[0];
+                const smallOptions = data.models.map((m) =>
+                    `<option value="${m.name}" ${m === bestSmall ? "selected" : ""}>${m.name}</option>`
+                ).join("");
+                guardSelector.innerHTML  = '<option value="">-- Select judge model --</option>' + smallOptions;
+                canarySelector.innerHTML = '<option value="">-- Select canary model --</option>' + smallOptions;
             } catch (e) {
                 selector.innerHTML = "<option>Offline</option>";
                 guardSelector.innerHTML = "<option>Offline</option>";

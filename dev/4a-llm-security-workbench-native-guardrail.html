@@ -1170,12 +1170,18 @@ Waiting for LLM...</pre>
                     })
                     .join("");
                 selector.innerHTML = optionsHtml;
-                // Populate judge model dropdown with the same list
+                // Populate judge model dropdown — prefer qwen2.5:1.5b, then fallbacks
+                const bestGuard = data.models.find(m => m.name === "qwen2.5:1.5b") ||
+                    data.models.find(m => m.name.includes("qwen2.5")) ||
+                    data.models.find(m => m.name.includes("1.5b")) ||
+                    data.models.find(m => m.name.includes("1b")) ||
+                    data.models.find(m => m.name.includes("3b")) ||
+                    data.models.find(m => m.name.includes("gemma")) ||
+                    data.models[0];
                 guardSelector.innerHTML = '<option value="">-- Select judge model --</option>' +
-                    data.models.map((m) => {
-                        const preferSmall = m.name.includes("3b") || m.name.includes("1b") || m.name.includes("gemma");
-                        return `<option value="${m.name}" ${preferSmall ? "selected" : ""}>${m.name}</option>`;
-                    }).join("");
+                    data.models.map((m) =>
+                        `<option value="${m.name}" ${m === bestGuard ? "selected" : ""}>${m.name}</option>`
+                    ).join("");
             } catch (e) {
                 selector.innerHTML = "<option>Offline</option>";
                 guardSelector.innerHTML = "<option>Offline</option>";
