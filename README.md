@@ -1,23 +1,26 @@
-# 🛡️ Ollama Pro Workbench v2.4 (Twin-Scan Edition)
+# 🛡️ Ollama Pro Workbench v2.5 (Little Canary Edition)
 
 A professional, local-first web interface for interacting with Ollama LLMs, secured by **Palo Alto Networks Prisma AIRS** with enterprise-grade two-phase scanning — protecting both the prompt going in and the response coming out.
 
 ## ✨ Key Features
 
 * **Native Guardrail (Phase 0):** An optional LLM-as-judge gate that intercepts prompts _before_ AIRS. A local Ollama model evaluates the prompt against a predefined safety system prompt and returns a confidence-weighted JSON verdict — fully offline, no API key required.
+* **Little Canary (Phase 0.5):** A two-layer prompt injection firewall that slots between Phase 0 and Phase 1. Runs a structural regex filter (~1 ms) followed by a behavioural canary LLM probe (~250 ms). Supports **Full** (block) and **Advisory** (inject warning prefix into system prompt, continue) modes. Backed by a local Flask microservice wrapping the [`little-canary`](https://pypi.org/project/little-canary/) Python library.
 * **Two-Phase AIRS Scanning:** Scans the user prompt (pre-flight) AND the LLM response (post-generation) — not just one side of the conversation.
 * **DLP Response Masking:** If Prisma AIRS detects sensitive data in the LLM response, the masked version is displayed instead.
 * **Zero-CORS Security Proxy:** A local Node.js proxy routes all AIRS API calls, bypassing browser CORS restrictions.
-* **Three Enforcement Modes:** Strict (block), Audit (flag and continue), or Off — applied independently to both the guardrail and AIRS phases, each with a 3-state colour indicator (grey/yellow/green or purple) in the header and panel border.
-* **API Inspector (Twin-Scan View):** Four-column debug panel showing Phase 0 guardrail request/verdict, Phase 1 AIRS request/verdict, Ollama payload, and Phase 2 AIRS request/verdict side-by-side. All panels reset automatically on each new prompt.
+* **Three Enforcement Modes:** Strict (block), Audit (flag and continue), or Off — applied independently to all security phases, each with a 3-state colour indicator in the header and panel border.
+* **API Inspector (5-Phase View):** Five-column debug panel showing Phase 0, Phase 0.5 (Canary), Phase 1 AIRS, Ollama, and Phase 2 AIRS side-by-side. All panels reset automatically on each new prompt.
 * **Model Parameter Controls:** Live sliders for Temperature, Top P, Top K, and Repeat Penalty — wired directly into the Ollama `options` payload with ℹ tooltip explanations on each control.
 * **Dynamic Persona Library:** Built-in and custom personas with `localStorage` persistence.
 * **Threat Library:** 19 pre-loaded adversarial prompts across categories: injection, DLP, evasion, toxic content, malicious URLs, and more.
-* **Collapsible Left Panel:** All settings panels (AIRS, Guardrail, Model Parameters, System Instructions) use expandable `<details>` sections to keep the sidebar compact — primary mode controls always visible.
+* **Collapsible Left Panel:** All settings panels (AIRS, Guardrail, Little Canary, Model Parameters, System Instructions) use expandable `<details>` sections to keep the sidebar compact — primary mode controls always visible.
 
 ---
 
 ## 🔄 Security Flow (AIRS Twin-Scan — default)
+
+> **v2.5 adds Phase 0.5 (Little Canary).** See the [full five-gate flow](#-security-flow-with-all-four-gates-enabled) below.
 
 ```mermaid
 flowchart TD
@@ -68,6 +71,62 @@ flowchart TD
     C0 -- "✅ SAFE" --> B
 
     E0 --> B
+
+    subgraph PHASE1 ["🔍 Phase 1 — Pre-Flight Prompt Scan"]
+        B[AIRS Scan\ncontents: prompt] --> C{Verdict}
+    end
+
+    C -- "🛑 BLOCK · Strict" --> D([Prompt Blocked\nLLM not reached])
+    C -- "⚠️ BLOCK · Audit" --> E([Warn user\nContinue to LLM])
+    C -- "✅ ALLOW" --> F
+
+    E --> F
+
+    subgraph LLM ["🤖 LLM Execution"]
+        F[Ollama streaming\nCollect full response]
+    end
+
+    F --> G
+
+    subgraph PHASE2 ["🔍 Phase 2 — Post-Response Scan"]
+        G[AIRS Scan\ncontents: prompt + response] --> H{Verdict}
+    end
+
+    H -- "🛑 BLOCK · Strict" --> I([Response replaced\nwith block notice])
+    H -- "⚠️ BLOCK · Audit" --> J([Warn + show response\nor masked version])
+    H -- "⚠️ DLP Masked" --> K([Sensitive data masked\nby AIRS])
+    H -- "✅ ALLOW" --> L([Response displayed\nnormally])
+```
+
+---
+
+## 🔒 Security Flow (with all four gates enabled)
+
+When Phase 0 (Guardrail), Phase 0.5 (Little Canary), and AIRS Twin-Scan are all active, a prompt passes through four independent security layers before any response is shown.
+
+```mermaid
+flowchart TD
+    A([👤 User Prompt]) --> B0
+
+    subgraph PHASE0 ["🔒 Phase 0 — Native Guardrail (local, optional)"]
+        B0[Local Ollama judge\nformat:json · temp:0.1] --> C0{Verdict}
+    end
+
+    C0 -- "🔒 BLOCK · Strict" --> D0([Prompt Blocked\nNo API call made])
+    C0 -- "🔒 FLAGGED · Audit" --> E0([Warn user\nContinue to Phase 0.5])
+    C0 -- "✅ SAFE" --> B05
+
+    E0 --> B05
+
+    subgraph PHASE05 ["🐦 Phase 0.5 — Little Canary (local, optional)"]
+        B05[Structural regex filter\n+ canary LLM probe] --> C05{Verdict}
+    end
+
+    C05 -- "🐦 BLOCK · Full mode" --> D05([Prompt Blocked\nNo API call made])
+    C05 -- "🐦 ADVISORY · flagged" --> E05([Warning prefix\ninjected into system prompt])
+    C05 -- "✅ SAFE" --> B
+
+    E05 --> B
 
     subgraph PHASE1 ["🔍 Phase 1 — Pre-Flight Prompt Scan"]
         B[AIRS Scan\ncontents: prompt] --> C{Verdict}
@@ -161,6 +220,72 @@ If the guardrail Ollama call itself fails (model offline, JSON parse error, netw
 
 ---
 
+## 🐦 Little Canary (Phase 0.5) — Deep Dive
+
+### Why it exists
+
+Phase 0 (Native Guardrail) catches jailbreaks and social engineering via a general-purpose safety judge. Little Canary adds a **specialised, two-layer prompt injection firewall** that runs in ~1–250 ms:
+
+1. **Structural filter** — regex/heuristic patterns catch obvious injection signatures in ~1 ms without any LLM call.
+2. **Canary probe** — a small Ollama model is asked a canary question alongside the user input. If the canary answer is overridden by the user's payload, an injection is detected behaviorally.
+
+This gives you defence-in-depth: a fast, deterministic layer followed by a probabilistic behavioural layer.
+
+### Modes
+
+| Mode | Behaviour |
+| :--- | :--- |
+| **Off** | Canary is skipped entirely. |
+| **Advisory** | If flagged, a warning prefix (`system_prefix`) is injected at the top of the Ollama system prompt and execution continues. The LLM is made aware of the suspected attack. |
+| **Full** | Hard block — if `safe: false` the prompt is stopped; AIRS and the LLM are never called. |
+
+### Architecture
+
+Because `little-canary` is a Python library with no built-in HTTP interface, a thin Flask microservice wraps it:
+
+```
+Browser → /api/canary (Node proxy) → localhost:5001/check (Flask) → SecurityPipeline.check()
+```
+
+`server.js` proxies `/api/canary` to the Flask service. If the Flask service is down, the workbench **fails open** — a yellow warning is shown and execution continues.
+
+### Setup
+
+```bash
+# In a separate terminal:
+pip install flask little-canary
+npm run canary        # starts python/canary_server.py on port 5001
+```
+
+Or directly:
+```bash
+python python/canary_server.py
+```
+
+Verify the service is running:
+```bash
+curl http://localhost:5001/health
+# → {"status": "ok", "service": "little-canary"}
+```
+
+### Configuration
+
+| Setting | Description | Default |
+| :--- | :--- | :--- |
+| **Mode select** | Off / Advisory / Full | Off |
+| **Canary model** | Which Ollama model runs the canary probe — auto-populated from `/api/tags` | Prefers `qwen2.5`, `3b`, `1b`, or `gemma` |
+| **Block threshold** | Confidence threshold for triggering a block (0.1–0.9) | 0.6 |
+
+### Recommended canary models
+
+| Model | Why |
+| :--- | :--- |
+| `qwen2.5:1.5b` | Very fast, small memory footprint, good instruction following |
+| `qwen2.5:3b` | Slightly more accurate, still fast |
+| `gemma2:2b` | Reliable alternative |
+
+---
+
 ## ⚙️ Architecture Overview
 
 This app uses a **split-routing architecture** to keep LLM traffic local while routing security scans through the cloud:
@@ -168,6 +293,7 @@ This app uses a **split-routing architecture** to keep LLM traffic local while r
 | Traffic | Route |
 | :--- | :--- |
 | Security scans | Browser → Local Node Proxy `:3080` → Prisma AIRS API |
+| Little Canary | Browser → Local Node Proxy `:3080/api/canary` → Flask microservice `:5001` → Ollama |
 | LLM inference | Browser → Local Ollama API `:11434` |
 | Credential config | Browser → `GET /api/config` → `{ hasApiKey, profile }` (key never returned) |
 
@@ -197,12 +323,20 @@ Then relaunch Ollama from the menu bar.
 
 ## 📦 Step 2: Install the Workbench
 
-**Prerequisites:** [Node.js](https://nodejs.org/) installed.
+**Prerequisites:** [Node.js](https://nodejs.org/) and Python 3.9+ installed.
 
 ```bash
 git clone https://github.com/packetcraft/Prisma-AIRS-with-ollama.git
 cd Prisma-AIRS-with-ollama
 npm install
+```
+
+### 🐦 (Optional) Install Little Canary microservice
+
+Required only for the Phase 0.5 features in `dev/5a`:
+
+```bash
+pip install flask little-canary
 ```
 
 ### 🔑 (Optional) Store credentials in `.env`
@@ -239,6 +373,15 @@ npm start
 Open **`http://localhost:3080`** in your browser.
 *(You should see `🚀 Workbench running at http://localhost:3080` in your terminal.)*
 
+### Running with Little Canary (Phase 0.5)
+
+If you are using `dev/5a`, start the Flask microservice in a separate terminal:
+
+```bash
+npm run canary
+# → 🐦 Little Canary service starting on http://localhost:5001
+```
+
 ---
 
 ## 🗂️ Step 4: Choose Your Starting Point
@@ -254,6 +397,7 @@ http://localhost:3080/dev/1a    →  1a-ollama-chat-no-security.html
 http://localhost:3080/dev/2a    →  2a-mechat-airs-teaching-demo.html
 http://localhost:3080/dev/3a    →  3a-ollama-pro-workbench-twin-scan.html
 http://localhost:3080/dev/4a    →  4a-ollama-pro-workbench-including-nativeguardrail.html
+http://localhost:3080/dev/5a    →  5a-ollama-pro-workbench-little-canary.html
 ```
 
 ### Option B — Stage as default (`src/index.html`)
@@ -261,13 +405,13 @@ http://localhost:3080/dev/4a    →  4a-ollama-pro-workbench-including-nativegua
 Use the `stage` script to copy any dev file to `src/index.html` — it matches by prefix so you never need to type the full filename:
 
 ```bash
-npm run stage 4a        # match by prefix — works for any file in /dev
-npm run stage:4a        # named shortcut (1a, 1b, 2a, 3a, 4a)
+npm run stage 5a        # match by prefix — works for any file in /dev
+npm run stage:4a        # named shortcut (1a, 1b, 2a, 3a, 4a, 5a)
 npm run stage           # prints all available files
 ```
 
 ```
-✅  Staged:  dev/4a-ollama-pro-workbench-including-nativeguardrail.html
+✅  Staged:  dev/5a-ollama-pro-workbench-little-canary.html
          →  src/index.html
 🌐  Open:   http://localhost:3080
 ```
@@ -279,6 +423,7 @@ npm run stage           # prints all available files
 | `2a-mechat-airs-teaching-demo.html` | **Teaching demo** — introduce AIRS as a prompt gate | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments |
 | `3a-ollama-pro-workbench-twin-scan.html` | **Full workbench** — production-grade twin-scan | ✓ | Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector |
 | `4a-ollama-pro-workbench-including-nativeguardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt) |
+| `5a-ollama-pro-workbench-little-canary.html` | **Five-gate workbench** — adds Phase 0.5 Little Canary | ✓ | All of 4a + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector |
 
 ### Recommended learning path
 
@@ -288,6 +433,7 @@ npm run stage           # prints all available files
 2a  →  introduce AIRS: one fetch → one verdict → gate the LLM
 3a  →  graduate to twin-scan: secure both ingress and egress
 4a  →  add Phase 0: local LLM-as-judge before any cloud call is made
+5a  →  add Phase 0.5: Little Canary structural + behavioural injection filter
 ```
 
 > **Config reminder:** All files (`2a`, `3a`, `4a`) expose the AIRS API key and profile as UI fields — no hardcoded values needed. Enter your `x-pan-token` and profile name directly in the interface, **or** set `AIRS_API_KEY` and `AIRS_PROFILE` in `.env` (see Step 2) to have them pre-loaded and locked automatically. The `.env` approach is recommended so credentials are not retyped on each run.
@@ -329,16 +475,33 @@ curl http://localhost:11434/api/tags
 
 *✅ Success: The LLM response is generated, then scanned. If DLP fires, the response is shown with sensitive fields masked (`XXXXXXXXXXXX`) and a `⚠️ Masked` badge appears on the bot message.*
 
-### Test 4 — API Inspector
-Click the **🛠️ API Inspector** bar at the bottom. You'll see four columns:
+### Test 4 (5a only) — Little Canary
+
+1. Start the canary service: `npm run canary`
+2. Navigate to `http://localhost:3080/dev/5a`
+3. In the **🐦 Little Canary** panel, set mode to **Full — block high-confidence attacks**.
+4. Expand **⚙️ Canary Settings** and select a small model (`qwen2.5:1.5b`).
+5. Select the **Prompt Injection** or **Jailbreak** threat and click **Send Message**.
+
+*✅ Success: An orange `🐦 LITTLE CANARY — PROMPT BLOCKED (Phase 0.5)` alert appears. AIRS and the LLM are never called. The Phase 0.5 column in the API Inspector shows the full canary request and response.*
+
+**Advisory mode test:**
+1. Set mode to **Advisory — flag & inject warning**.
+2. Send the same injection prompt.
+
+*✅ Success: A yellow advisory banner appears in chat. Execution continues — the Ollama system prompt receives the canary warning prefix prepended to it. The LLM is aware of the suspected attack.*
+
+### Test 5 — API Inspector
+Click the **🛠️ API Inspector** bar at the bottom. In `dev/5a` you'll see five columns:
 - **Phase 0** — Native Guardrail judge request & raw verdict JSON
+- **Phase 0.5** — Little Canary request payload & verdict JSON (safe, summary, advisory)
 - **Phase 1** — AIRS prompt scan request & verdict
 - **Ollama** — LLM request payload (including model parameters) & last stream chunk
 - **Phase 2** — AIRS response scan request & verdict
 
 All columns reset to "Waiting..." automatically when a new prompt is sent.
 
-### Test 5 — Personas
+### Test 6 — Personas
 | Persona | Test Prompt |
 | :--- | :--- |
 | **Code Architect** | *"Write a Python async web scraper."* |
@@ -359,6 +522,9 @@ All columns reset to "Waiting..." automatically when a new prompt is sent.
 | **API key field stays editable despite `.env`** | Server not running or `/api/config` unreachable | Ensure `npm start` is running; `.env` is only loaded by the Node proxy |
 | **Profile not pre-selected from `.env`** | `AIRS_PROFILE` not set in `.env` | Add `AIRS_PROFILE=your-profile-name` to `.env` and restart |
 | **Phase 2 scan not running** | Streaming was stopped early | Phase 2 only runs on complete responses |
+| **Little Canary 502 Bad Gateway** | Flask microservice not running | Run `npm run canary` in a separate terminal |
+| **`ModuleNotFoundError: little_canary`** | Python package not installed | Run `pip install flask little-canary` |
+| **Canary model not appearing in dropdown** | Ollama hasn't pulled the model | Run `ollama pull qwen2.5:1.5b` |
 
 ---
 
@@ -373,4 +539,6 @@ All columns reset to "Waiting..." automatically when a new prompt is sent.
 * **Insert Threat:** Use the dropdown to load pre-built adversarial prompts into the prompt box.
 * **API Inspector:** Expand at the bottom to inspect all four phases (Phase 0, Phase 1, Ollama, Phase 2) in real-time. Panels clear automatically on every new prompt.
 * **Custom Profiles:** Expand **⚙️ AIRS Settings** then click **➕ Add Custom Security Profile** to enter your organisation's Prisma AIRS Profile ID.
+* **Little Canary Advisory mode:** Prefer Advisory over Full when starting out — it injects a warning into the system prompt rather than hard-blocking, so you can observe how the LLM handles the flagged input while still being warned.
+* **Little Canary without AIRS:** Phase 0.5 runs entirely over `localhost` via the Flask microservice — no API key needed. It can be used standalone with AIRS mode set to Off.
 * **Copy response:** Each AI response has a **📋 Copy** button in the message header.

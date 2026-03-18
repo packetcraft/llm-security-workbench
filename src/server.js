@@ -38,7 +38,23 @@ app.get("/api/config", (req, res) => {
   });
 });
 
-// 3. The CORS-Bypassing Proxy for Prisma AIRS
+// 3. Little Canary proxy — forwards to the local Python microservice on :5001
+app.post("/api/canary", async (req, res) => {
+  try {
+    const response = await fetch("http://localhost:5001/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+    });
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json(data);
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: "Little Canary service unavailable — is python/canary_server.py running? " + err.message });
+  }
+});
+
+// 4. The CORS-Bypassing Proxy for Prisma AIRS
 app.post("/api/prisma", async (req, res) => {
   const prismaEndpoint =
     "https://service.api.aisecurity.paloaltonetworks.com/v1/scan/sync/request";

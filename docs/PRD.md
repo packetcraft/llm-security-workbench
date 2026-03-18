@@ -1,6 +1,6 @@
 # 📄 Product Requirements Document: Ollama Pro Workbench
 
-**Version:** 2.6 (UI Polish + Model Parameter Controls)
+**Version:** 2.7 (Little Canary — Phase 0.5)
 **Date:** 2026-03-18
 **Status:** Feature Complete / Stable Release
 
@@ -8,7 +8,7 @@
 
 ## 1. Product Overview
 
-The **Ollama Pro Workbench** is a lightweight, browser-based environment for interfacing with local Ollama LLM instances, secured end-to-end by **Palo Alto Networks Prisma AIRS**. It bridges rapid prompt engineering with enterprise-grade AI security testing by implementing a full three-gate scanning pipeline: an optional local LLM-as-judge (Phase 0) intercepts the prompt before any cloud call is made, followed by a cloud-based pre-flight prompt scan (Phase 1), and a cloud-based post-response scan (Phase 2) — covering both ingress and egress at every layer.
+The **Ollama Pro Workbench** is a lightweight, browser-based environment for interfacing with local Ollama LLM instances, secured end-to-end by **Palo Alto Networks Prisma AIRS**. It bridges rapid prompt engineering with enterprise-grade AI security testing by implementing a full four-gate scanning pipeline: an optional local LLM-as-judge (Phase 0) intercepts the prompt first, followed by an optional structural + behavioural canary filter (Phase 0.5), then a cloud-based pre-flight prompt scan (Phase 1), and a cloud-based post-response scan (Phase 2) — covering both ingress and egress at every layer.
 
 ---
 
@@ -35,8 +35,8 @@ The **Ollama Pro Workbench** is a lightweight, browser-based environment for int
 ### 3.2 UI/UX & Formatting
 
 * **Two-Column Layout:** Left sidebar (settings) and right column (chat + prompt), collapsible via header toggle.
-* **Collapsible Settings Panels:** All secondary settings in the left column are wrapped in `<details>` elements — the primary mode control is always visible; ancillary options expand on demand. Panels: AIRS (`⚙️ AIRS Settings`), Guardrail (`⚙️ Guardrail Settings`), Model (`⚙️ Model Parameters`), Persona (`⚙️ System Instructions`).
-* **3-State Status Indicators:** Both the AIRS and Phase 0 header dots and left-panel borders reflect three states with distinct colours — Off (grey), Audit (yellow), Strict (red for AIRS / purple for Phase 0).
+* **Collapsible Settings Panels:** All secondary settings in the left column are wrapped in `<details>` elements — the primary mode control is always visible; ancillary options expand on demand. Panels: AIRS (`⚙️ AIRS Settings`), Guardrail (`⚙️ Guardrail Settings`), Canary (`⚙️ Canary Settings`), Model (`⚙️ Model Parameters`), Persona (`⚙️ System Instructions`).
+* **3-State Status Indicators:** AIRS, Phase 0, and Phase 0.5 header dots and left-panel borders reflect distinct colour states — Off (grey), Audit (yellow), Strict (red for AIRS / purple for Phase 0), Advisory (canary yellow `#f1c40f` for Phase 0.5), Full/block (orange `#e67e22` for Phase 0.5).
 * **Slider Info Tooltips:** Every slider has an `ℹ` badge. Hovering shows a body-level `position: fixed` tooltip with a plain-English explanation of the parameter's effect and recommended ranges. Implemented as a JS-positioned overlay appended to `<body>` to avoid clipping by `overflow-y: auto` containers.
 * **Streamlined Left Panel Navigation:** Three numbered steps — 1. Model Selector, 2. Persona & System Instructions, 3. Prompt — guide users through setup in order.
 * **Markdown & Syntax Highlighting:** `Marked.js` for rendering, `Highlight.js` (GitHub Dark) for code blocks.
@@ -60,9 +60,9 @@ The **Ollama Pro Workbench** is a lightweight, browser-based environment for int
   * *Specific Adversarial Inputs:* Objective Manipulation, System Mode Attack, Prompt Leakage, Payload Splitting, Indirect Reference, Remote Code Execution, Repeated Token Attack, Fuzzing, Crescendo Multi-Turn, Adversarial Prefixes, Skeleton Key, Repeated Instructions, Flip-text, Persuasion
 * **Insert Threat Dropdown:** Loads any threat directly into the prompt box for one-click testing.
 
-### 3.5 Security Pipeline — Three-Gate Architecture
+### 3.5 Security Pipeline — Four-Gate Architecture
 
-Every message exchange can pass through up to three independent security gates, each operating at a different layer of the stack.
+Every message exchange can pass through up to four independent security gates, each operating at a different layer of the stack.
 
 #### Phase 0 — Native Guardrail (local, optional)
 
@@ -114,6 +114,48 @@ Respond ONLY with valid JSON, no other text:
 
 ---
 
+#### Phase 0.5 — Little Canary (local, optional)
+
+A **two-layer prompt injection firewall** that runs between Phase 0 and Phase 1. Backed by the [`little-canary`](https://pypi.org/project/little-canary/) Python library, exposed as a Flask REST microservice.
+
+**Design rationale:** The Native Guardrail (Phase 0) uses a general-purpose safety classifier. Little Canary complements it with a **specialised prompt injection detector** using two distinct techniques:
+1. **Structural filter** — regex/heuristic patterns catch well-known injection signatures in ~1 ms, no LLM required.
+2. **Canary probe** — the canary LLM model is given both a canary question and the user input. If the canary answer is overridden by payload content, an injection is detected behaviourally (~250 ms).
+
+**Architecture:**
+```
+Browser → POST /api/canary (Node proxy) → localhost:5001/check (Flask microservice)
+        → SecurityPipeline(canary_model, mode, provider="ollama").check(input)
+        ← { safe, summary, advisory: { flagged, severity, system_prefix } | null }
+```
+
+**Technical implementation:**
+* Flask microservice at `python/canary_server.py` (port `5001`) — `npm run canary` to start.
+* `server.js` proxies `/api/canary` → `localhost:5001/check`; returns `502` with a helpful message if the Flask service is down.
+* Fail-open: if the proxy returns an error, a yellow warning is shown in chat and execution continues to Phase 1.
+* Advisory mode stores `cResult.advisory.system_prefix` and prepends it to the Ollama system prompt payload — the LLM is made aware of the suspected attack without hard-blocking.
+
+**Configuration options:**
+
+| Field | Description | Default |
+| :--- | :--- | :--- |
+| Mode select | Off / Advisory (inject prefix + continue) / Full (block) | Off |
+| Canary model | Any model available in Ollama — auto-populated from `/api/tags`; prefers `qwen2.5`, `3b`, `1b`, `gemma` | Auto-selects |
+| Block threshold | Confidence threshold for triggering a block (0.1–0.9) | 0.6 |
+
+**Enforcement outcomes:**
+
+| Verdict | Full mode | Advisory mode |
+| :--- | :--- | :--- |
+| `safe: false` | 🐦 Block — AIRS and LLM never called | N/A (advisory mode does not hard-block) |
+| `advisory.flagged: true` | N/A | 🐦 Warning prefix injected; continue to Phase 1 |
+| `safe: true` | ✅ Safe — continue to Phase 1 | ✅ Safe — continue to Phase 1 |
+| Service error | ⚠️ Warn — fail open, continue | ⚠️ Warn — fail open, continue |
+
+**Visual indicator:** Canary yellow `🐦 Flagged` badge (advisory) or orange `🐦 Blocked` badge (full block) on the user message.
+
+---
+
 #### Phase 1 — Pre-Flight Prompt Scan
 
 Runs **before** the prompt reaches the LLM. Requires Prisma AIRS API key and mode set to Audit or Strict.
@@ -148,10 +190,10 @@ Runs **after** the LLM has generated its full response, before it is displayed.
 A **🔄 New Session** button in the header resets the workspace to a clean state:
 
 * Clears all chat messages from the UI.
-* Resets all eight API Inspector panels (Phase 0, Phase 1, Ollama, Phase 2 — request and verdict for each) to idle.
+* Resets all ten API Inspector panels (Phase 0, Phase 0.5, Phase 1, Ollama, Phase 2 — request and verdict for each) to idle.
 * Drops a `"🔄 New session started"` notice in the chat as visual confirmation.
 
-All eight panels also reset automatically at the start of every `sendMessage()` call, so stale data from a previous prompt is never visible alongside a new one.
+All ten panels also reset automatically at the start of every `sendMessage()` call, so stale data from a previous prompt is never visible alongside a new one.
 
 > **Note on session IDs:** The workbench generates a fresh `tr_id` (`"wb-" + Date.now()`) on every individual scan request rather than maintaining a persistent session ID across turns. This means each scan is independently traceable in the AIRS audit trail, but consecutive turns within one conversation are not grouped under a shared session ID in the AIRS console. The New Session button therefore acts as a UI/UX reset only — no session token is rotated on the AIRS side.
 
@@ -185,24 +227,26 @@ The script uses `fs.copyFileSync` (pure Node, works cross-platform on Windows an
 
 | npm script | Effect |
 | :--- | :--- |
-| `npm run stage 4a` | Copies `4a-*.html` → `src/index.html` |
-| `npm run stage:1a` … `stage:4a` | Named shortcuts for the standard progression files |
+| `npm run stage 5a` | Copies `5a-*.html` → `src/index.html` |
+| `npm run stage:1a` … `stage:5a` | Named shortcuts for the standard progression files |
 | `npm run stage` | Prints all available dev files and usage |
+| `npm run canary` | Starts the Little Canary Flask microservice on port `5001` |
 
-### 3.7 Developer Tools — API Inspector (Twin-Scan View)
+### 3.7 Developer Tools — API Inspector (5-Phase View)
 
-Collapsible full-width panel below the main layout. Displays four columns in parallel:
+Collapsible full-width panel below the main layout. Displays five columns in parallel (in `dev/5a`; four in `dev/4a` and earlier):
 
 | Column | Contents |
 | :--- | :--- |
 | **Phase 0** | Native Guardrail outgoing judge request + raw verdict JSON (confidence, safe flag, reason) |
+| **Phase 0.5** | Little Canary request payload (input, model, mode, threshold) + verdict JSON (safe, summary, advisory) |
 | **Phase 1** | Outgoing AIRS prompt scan request + AIRS verdict JSON |
-| **Ollama** | Outgoing LLM request payload (including model parameters) + last raw stream chunk |
+| **Ollama** | Outgoing LLM request payload (including model parameters + any canary advisory prefix) + last raw stream chunk |
 | **Phase 2** | Outgoing AIRS response scan request + AIRS verdict JSON |
 
-All columns reset to "Waiting..." automatically at the start of each new prompt, preventing stale data from a prior exchange persisting when a phase does not run (e.g. Phase 0 blocks, so Phase 1/2 never fire).
+All columns reset to "Waiting..." automatically at the start of each new prompt, preventing stale data from a prior exchange persisting when a phase does not run (e.g. Phase 0.5 blocks, so Phase 1/2 never fire).
 
-Real-time status indicator in the header cycles through: `🔒 Phase 0: Native guardrail...` → `🔍 Phase 1: Scanning prompt...` → `🤖 Streaming LLM...` → `🔍 Phase 2: Scanning response...` → `Done ✅`.
+Real-time status indicator in the header cycles through: `🔒 Phase 0: Native guardrail...` → `🐦 Phase 0.5: Little Canary scanning...` → `🔍 Phase 1: Scanning prompt...` → `🤖 Streaming LLM...` → `🔍 Phase 2: Scanning response...` → `Done ✅`.
 
 ---
 
@@ -224,9 +268,10 @@ Real-time status indicator in the header cycles through: `🔒 Phase 0: Native g
 | Route | Method | Description |
 | :--- | :--- | :--- |
 | `/` | `GET` | Serves `src/index.html` |
-| `/dev/:prefix` | `GET` | Serves the first `/dev` HTML file whose name starts with `:prefix` — e.g. `/dev/4a` serves `4a-ollama-pro-workbench-including-nativeguardrail.html`. AIRS proxy works normally. |
+| `/dev/:prefix` | `GET` | Serves the first `/dev` HTML file whose name starts with `:prefix` — e.g. `/dev/5a` serves `5a-ollama-pro-workbench-little-canary.html`. AIRS proxy works normally. |
 | `/api/config` | `GET` | Returns `{ hasApiKey: bool, profile: string \| null }` — presence signal only, key never returned |
 | `/api/prisma` | `POST` | Proxies scan requests to Prisma AIRS; prefers `process.env.AIRS_API_KEY` over the `x-pan-token` request header |
+| `/api/canary` | `POST` | Proxies canary scan requests to the Flask microservice at `localhost:5001/check`; returns `502` with a helpful error if the service is unavailable |
 
 **Key preference logic in `/api/prisma`:**
 
@@ -355,12 +400,48 @@ Both scans use the same endpoint: `POST /v1/scan/sync/request`
 | `response_masked_data.data` | Render DLP-masked response content |
 | `scan_id` / `report_id` | Available in API Inspector for audit trail |
 
+### 4.8 Little Canary Microservice
+
+**File:** `python/canary_server.py`
+**Dependencies:** `python/requirements.txt` — `flask>=3.0.0`, `little-canary>=0.2.3`
+**Port:** `5001`
+
+**Endpoint — `POST /check`:**
+
+Request body:
+```json
+{
+  "input": "<user prompt>",
+  "model": "qwen2.5:1.5b",
+  "mode": "full",
+  "threshold": 0.6
+}
+```
+
+Response body:
+```json
+{
+  "safe": false,
+  "summary": "Prompt injection detected — override attempt on canary question",
+  "advisory": {
+    "flagged": true,
+    "severity": "high",
+    "system_prefix": "⚠️ WARNING: The following user input was flagged for a suspected prompt injection attack..."
+  }
+}
+```
+
+`advisory` is `null` when `safe: true` and no advisory action is triggered.
+
+**Endpoint — `GET /health`:** Returns `{ "status": "ok", "service": "little-canary" }` — use to verify the service is running before enabling Phase 0.5 in the UI.
+
 ---
 
 ## 5. Security & Privacy Considerations
 
 * **Local Data Sovereignty:** All LLM inference remains on `localhost`. Prompts and responses are only sent to Prisma AIRS for security evaluation.
 * **Phase 0 is fully offline:** The Native Guardrail calls `localhost:11434` only — no prompt data leaves the machine during Phase 0.
+* **Phase 0.5 is fully offline:** Little Canary calls `localhost:5001` (Flask) → `localhost:11434` (Ollama) only — no data leaves the machine during Phase 0.5.
 * **Defense-in-depth:** Phase 0 is a convenience gate, not a replacement for AIRS. LLM-based judges can be tricked via adversarial prompts; they are a first filter, not a guarantee.
 * **API Key Handling:** The `x-pan-token` is never exposed in client-side network calls. It is read server-side from `process.env.AIRS_API_KEY` (set via `.env`) or, as a fallback, accepted from the UI and forwarded only through the local proxy. The browser never receives the key value — `/api/config` returns only a boolean presence flag.
 * **`.env` gitignore:** The `.env` file is excluded from version control. `.env.example` is committed as a safe template with placeholder values.
@@ -387,12 +468,16 @@ prisma-airs-with-ollama/
 │   ├── 1b-mechat-no-security.html
 │   ├── 2a-mechat-airs-teaching-demo.html
 │   ├── 3a-ollama-pro-workbench-twin-scan.html
-│   └── 4a-ollama-pro-workbench-including-nativeguardrail.html
+│   ├── 4a-ollama-pro-workbench-including-nativeguardrail.html
+│   └── 5a-ollama-pro-workbench-little-canary.html
+├── python/
+│   ├── canary_server.py  # Flask microservice wrapping little-canary (port 5001)
+│   └── requirements.txt  # flask, little-canary
 ├── test/
 │   └── sample_threats.json
 ├── .env.example          # Committed template — copy to .env and fill in values
 ├── .gitignore            # Excludes .env
-├── package.json          # npm scripts: start, stage, stage:1a … stage:4a
+├── package.json          # npm scripts: start, stage, stage:1a … stage:5a, canary
 └── README.md
 ```
 
@@ -401,6 +486,7 @@ prisma-airs-with-ollama/
 ## 7. Future Roadmap
 
 * **Guardrail fine-tuning helper:** A sidebar tool that runs a batch of sample threats against the current judge model + system prompt and reports pass/fail rates to help calibrate the threshold.
+* **Canary batch evaluation:** Run the Little Canary pipeline against the built-in threat library in bulk and report pass/fail rates per threat category, helping calibrate the block threshold.
 * **API Inspector latency column:** Show per-phase latency (ms) alongside each request/verdict in the inspector, making performance bottlenecks visible.
 * **Model parameter presets:** Save and recall named parameter sets (e.g. "Creative", "Factual", "Code") from the Model Parameters panel.
 * **Chat Memory:** Store last N messages to give the LLM conversation history within a session.

@@ -10,7 +10,9 @@
     "stage:1b": "node scripts/stage.js 1b",
     "stage:2a": "node scripts/stage.js 2a",
     "stage:3a": "node scripts/stage.js 3a",
-    "stage:4a": "node scripts/stage.js 4a"
+    "stage:4a": "node scripts/stage.js 4a",
+    "stage:5a": "node scripts/stage.js 5a",
+    "canary": "python python/canary_server.py"
   },
   "keywords": [],
   "author": "",
