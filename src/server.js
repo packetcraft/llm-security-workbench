@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const fetch = require("node-fetch");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 app.use(cors());
@@ -12,6 +13,21 @@ app.use(express.json());
 // 1. Serve your custom index.html page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// 1b. Serve any dev file by prefix — e.g. GET /dev/4a serves the first
+//     file in /dev whose name starts with "4a". AIRS proxy still works.
+app.get("/dev/:prefix", (req, res) => {
+  const devDir = path.join(__dirname, "..", "dev");
+  const prefix = req.params.prefix;
+  const files = fs.readdirSync(devDir).filter(f => f.endsWith(".html"));
+  const match = files.find(f => f.startsWith(prefix));
+  if (!match) {
+    return res.status(404).send(
+      `No dev file found matching "<b>${prefix}</b>".<br>Available: ${files.map(f => `<a href="/dev/${f.split("-")[0]}">${f}</a>`).join(", ")}`
+    );
+  }
+  res.sendFile(path.join(devDir, match));
 });
 
 // 2. Expose non-sensitive config to the frontend (never exposes the key itself)

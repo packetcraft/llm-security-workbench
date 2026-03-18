@@ -1,4 +1,4 @@
-# 🛡️ Ollama Pro Workbench v2.3 (Twin-Scan Edition)
+# 🛡️ Ollama Pro Workbench v2.4 (Twin-Scan Edition)
 
 A professional, local-first web interface for interacting with Ollama LLMs, secured by **Palo Alto Networks Prisma AIRS** with enterprise-grade two-phase scanning — protecting both the prompt going in and the response coming out.
 
@@ -8,10 +8,12 @@ A professional, local-first web interface for interacting with Ollama LLMs, secu
 * **Two-Phase AIRS Scanning:** Scans the user prompt (pre-flight) AND the LLM response (post-generation) — not just one side of the conversation.
 * **DLP Response Masking:** If Prisma AIRS detects sensitive data in the LLM response, the masked version is displayed instead.
 * **Zero-CORS Security Proxy:** A local Node.js proxy routes all AIRS API calls, bypassing browser CORS restrictions.
-* **Three Enforcement Modes:** Strict (block), Audit (flag and continue), or Off — applied independently to both the guardrail and AIRS phases.
-* **API Inspector (Twin-Scan View):** Three-column debug panel showing Phase 1 request/verdict, Ollama payload, and Phase 2 request/verdict side-by-side.
+* **Three Enforcement Modes:** Strict (block), Audit (flag and continue), or Off — applied independently to both the guardrail and AIRS phases, each with a 3-state colour indicator (grey/yellow/green or purple) in the header and panel border.
+* **API Inspector (Twin-Scan View):** Four-column debug panel showing Phase 0 guardrail request/verdict, Phase 1 AIRS request/verdict, Ollama payload, and Phase 2 AIRS request/verdict side-by-side. All panels reset automatically on each new prompt.
+* **Model Parameter Controls:** Live sliders for Temperature, Top P, Top K, and Repeat Penalty — wired directly into the Ollama `options` payload with ℹ tooltip explanations on each control.
 * **Dynamic Persona Library:** Built-in and custom personas with `localStorage` persistence.
 * **Threat Library:** 19 pre-loaded adversarial prompts across categories: injection, DLP, evasion, toxic content, malicious URLs, and more.
+* **Collapsible Left Panel:** All settings panels (AIRS, Guardrail, Model Parameters, System Instructions) use expandable `<details>` sections to keep the sidebar compact — primary mode controls always visible.
 
 ---
 
@@ -122,10 +124,9 @@ It mirrors the pattern used by the [n8n LangChain Guardrails node](https://docs.
 
 | Setting | Description | Default |
 | :--- | :--- | :--- |
-| **Enable toggle** | Turns Phase 0 on/off | Off |
+| **Mode select** | Off / Audit (warn + proceed) / Strict (block on fail) — unified control matching the AIRS mode select | Off |
 | **Judge model** | Which Ollama model acts as the judge — prefer small, fast models (3B, 1B, Gemma) | Auto-selects smallest available |
 | **Confidence threshold** | Minimum confidence to trigger a block (0.50–0.95) | 0.70 |
-| **Enforcement** | Strict (block) or Audit (warn + proceed) | Strict |
 | **System prompt** | The safety instruction set given to the judge — fully editable | Pre-filled (see below) |
 
 ### Default system prompt
@@ -242,11 +243,33 @@ Open **`http://localhost:3080`** in your browser.
 
 ## 🗂️ Step 4: Choose Your Starting Point
 
-The `dev/` folder contains four HTML files that represent a progressive build-up from a bare chat to a fully secured workbench. Copy the one that matches your use case to `src/index.html` to serve it via the proxy.
+The `dev/` folder contains HTML files representing a progressive build-up from a bare chat to a fully secured workbench. There are two ways to serve them — no manual file copying needed.
+
+### Option A — Quick preview (server running, no copy)
+
+Visit any dev file directly in your browser using its prefix. The AIRS proxy works normally since the file is served by the same Express server:
+
+```
+http://localhost:3080/dev/1a    →  1a-ollama-chat-no-security.html
+http://localhost:3080/dev/2a    →  2a-mechat-airs-teaching-demo.html
+http://localhost:3080/dev/3a    →  3a-ollama-pro-workbench-twin-scan.html
+http://localhost:3080/dev/4a    →  4a-ollama-pro-workbench-including-nativeguardrail.html
+```
+
+### Option B — Stage as default (`src/index.html`)
+
+Use the `stage` script to copy any dev file to `src/index.html` — it matches by prefix so you never need to type the full filename:
 
 ```bash
-# Example — copy the teaching demo to the server
-cp dev/2a-mechat-airs-teaching-demo.html src/index.html
+npm run stage 4a        # match by prefix — works for any file in /dev
+npm run stage:4a        # named shortcut (1a, 1b, 2a, 3a, 4a)
+npm run stage           # prints all available files
+```
+
+```
+✅  Staged:  dev/4a-ollama-pro-workbench-including-nativeguardrail.html
+         →  src/index.html
+🌐  Open:   http://localhost:3080
 ```
 
 | File | Use Case | AIRS? | Key Features |
@@ -255,7 +278,7 @@ cp dev/2a-mechat-airs-teaching-demo.html src/index.html
 | `1b-mechat-no-security.html` | **Bridge** — same meChat UI before introducing AIRS | ✗ | Personas, live model dropdown, terminal theme |
 | `2a-mechat-airs-teaching-demo.html` | **Teaching demo** — introduce AIRS as a prompt gate | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments |
 | `3a-ollama-pro-workbench-twin-scan.html` | **Full workbench** — production-grade twin-scan | ✓ | Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector |
-| `4a-ollama-pro-workbench-including-nativeguardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (toggle, judge model selector, confidence threshold, editable system prompt) |
+| `4a-ollama-pro-workbench-including-nativeguardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt) |
 
 ### Recommended learning path
 
@@ -269,20 +292,20 @@ cp dev/2a-mechat-airs-teaching-demo.html src/index.html
 
 > **Config reminder:** All files (`2a`, `3a`, `4a`) expose the AIRS API key and profile as UI fields — no hardcoded values needed. Enter your `x-pan-token` and profile name directly in the interface, **or** set `AIRS_API_KEY` and `AIRS_PROFILE` in `.env` (see Step 2) to have them pre-loaded and locked automatically. The `.env` approach is recommended so credentials are not retyped on each run.
 >
-> **Note:** The `dev/` standalone HTML files (`1a`, `1b`, `2a`) open directly in a browser and do not go through the Node proxy — `.env` values are only picked up by files served via `npm start` (i.e. `src/index.html`). For `dev/` files, enter credentials in the UI.
+> **Note:** The `dev/` standalone HTML files open directly via `http://localhost:3080/dev/<prefix>` — the Node proxy handles credential injection and AIRS routing exactly as it does for `src/index.html`.
 
 ---
 
 ## 🧪 Step 5: Verification & Testing
 
 ### Test 0 — Native Guardrail (Phase 0)
-1. In the **🔒 Native Guardrail** panel, check **Enable LLM-as-Judge**.
-2. Select a small, fast judge model (e.g. `llama3.2:3b`).
-3. Leave enforcement on **Strict** and threshold at **0.70**.
+1. In the **🔒 Native Guardrail** panel, set the mode select to **Strict — block on fail**.
+2. Expand **⚙️ Guardrail Settings** and select a small, fast judge model (e.g. `llama3.2:3b`).
+3. Leave the confidence threshold at **0.70**.
 4. Select the **Jailbreak** or **Prompt Injection** threat from the Insert Threat dropdown.
 5. Click **Send Message**.
 
-*✅ Success: A purple `🔒 NATIVE GUARDRAIL — PROMPT BLOCKED (Phase 0)` alert appears with the confidence score and reason. AIRS is never called.*
+*✅ Success: A purple `🔒 NATIVE GUARDRAIL — PROMPT BLOCKED (Phase 0)` alert appears with the confidence score and reason. AIRS is never called. The Phase 0 column in the API Inspector shows the full judge request and raw verdict.*
 
 ### Test 1 — Verify Ollama
 ```bash
@@ -307,10 +330,13 @@ curl http://localhost:11434/api/tags
 *✅ Success: The LLM response is generated, then scanned. If DLP fires, the response is shown with sensitive fields masked (`XXXXXXXXXXXX`) and a `⚠️ Masked` badge appears on the bot message.*
 
 ### Test 4 — API Inspector
-Click the **🛠️ API Inspector** bar at the bottom. You'll see three columns:
-- **Phase 1** — Prompt scan request & AIRS verdict
-- **Ollama** — LLM request payload & last stream chunk
-- **Phase 2** — Response scan request & AIRS verdict
+Click the **🛠️ API Inspector** bar at the bottom. You'll see four columns:
+- **Phase 0** — Native Guardrail judge request & raw verdict JSON
+- **Phase 1** — AIRS prompt scan request & verdict
+- **Ollama** — LLM request payload (including model parameters) & last stream chunk
+- **Phase 2** — AIRS response scan request & verdict
+
+All columns reset to "Waiting..." automatically when a new prompt is sent.
 
 ### Test 5 — Personas
 | Persona | Test Prompt |
@@ -340,9 +366,11 @@ Click the **🛠️ API Inspector** bar at the bottom. You'll see three columns:
 
 * **Sidebar:** Click **◀ Sidebar** to collapse the left panel and give chat full width.
 * **Keyboard hint:** `Shift + Enter` for a new line in the prompt box.
-* **Native Guardrail:** Use the **⚙️ System Prompt** expander to tune the safety instructions given to the judge. Start with the default, then tighten by adding domain-specific forbidden patterns.
+* **Security panel modes:** Both the Prisma AIRS and Native Guardrail panels use a single mode select (Off / Audit / Strict). The panel border and header status dot change colour to reflect the current mode — grey (off), yellow (audit), red/purple (strict).
+* **Model Parameters:** Expand **⚙️ Model Parameters** under the model selector to tune Temperature, Top P, Top K, and Repeat Penalty. Hover the **ℹ** badge on any slider for an explanation of what it does.
+* **Native Guardrail:** Expand **⚙️ Guardrail Settings** to pick the judge model, set the confidence threshold, and tune the safety system prompt. Start with the default, then tighten by adding domain-specific forbidden patterns.
 * **Guardrail without AIRS:** The Native Guardrail runs entirely over `localhost:11434` — no API key needed. It can be used standalone with AIRS mode set to Off for fully offline safety testing.
 * **Insert Threat:** Use the dropdown to load pre-built adversarial prompts into the prompt box.
-* **API Inspector:** Expand at the bottom to inspect raw Phase 1, Ollama, and Phase 2 payloads in real-time.
-* **Custom Profiles:** Click **➕ Add Custom Security Profile** to enter your organisation's Prisma AIRS Profile ID.
+* **API Inspector:** Expand at the bottom to inspect all four phases (Phase 0, Phase 1, Ollama, Phase 2) in real-time. Panels clear automatically on every new prompt.
+* **Custom Profiles:** Expand **⚙️ AIRS Settings** then click **➕ Add Custom Security Profile** to enter your organisation's Prisma AIRS Profile ID.
 * **Copy response:** Each AI response has a **📋 Copy** button in the message header.

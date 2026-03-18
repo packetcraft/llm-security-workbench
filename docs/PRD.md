@@ -1,7 +1,7 @@
 # 📄 Product Requirements Document: Ollama Pro Workbench
 
-**Version:** 2.5 (Triple-Gate + Credential Management)
-**Date:** March 2026
+**Version:** 2.6 (UI Polish + Model Parameter Controls)
+**Date:** 2026-03-18
 **Status:** Feature Complete / Stable Release
 
 ---
@@ -30,10 +30,15 @@ The **Ollama Pro Workbench** is a lightweight, browser-based environment for int
 * **Real-Time Streaming:** Processes chunked responses via `ReadableStream` on `/api/chat`, with rolling buffer to prevent split-JSON parse errors.
 * **Abort Generation:** Stop button uses `AbortController` to immediately halt streaming. Phase 2 scan is skipped for incomplete responses.
 * **Identity Stamping:** Each AI response header shows the model and persona used for that turn.
+* **Model Parameter Controls:** Live sliders for Temperature (0–2), Top P (0–1), Top K (1–100), and Repeat Penalty (0.5–2) — all wired into the Ollama `options` object on every request. Default values match Ollama's recommended starting points.
 
 ### 3.2 UI/UX & Formatting
 
-* **Two-Column Layout:** Left sidebar (settings + API Inspector) and right column (chat + prompt), collapsible via header toggle.
+* **Two-Column Layout:** Left sidebar (settings) and right column (chat + prompt), collapsible via header toggle.
+* **Collapsible Settings Panels:** All secondary settings in the left column are wrapped in `<details>` elements — the primary mode control is always visible; ancillary options expand on demand. Panels: AIRS (`⚙️ AIRS Settings`), Guardrail (`⚙️ Guardrail Settings`), Model (`⚙️ Model Parameters`), Persona (`⚙️ System Instructions`).
+* **3-State Status Indicators:** Both the AIRS and Phase 0 header dots and left-panel borders reflect three states with distinct colours — Off (grey), Audit (yellow), Strict (red for AIRS / purple for Phase 0).
+* **Slider Info Tooltips:** Every slider has an `ℹ` badge. Hovering shows a body-level `position: fixed` tooltip with a plain-English explanation of the parameter's effect and recommended ranges. Implemented as a JS-positioned overlay appended to `<body>` to avoid clipping by `overflow-y: auto` containers.
+* **Streamlined Left Panel Navigation:** Three numbered steps — 1. Model Selector, 2. Persona & System Instructions, 3. Prompt — guide users through setup in order.
 * **Markdown & Syntax Highlighting:** `Marked.js` for rendering, `Highlight.js` (GitHub Dark) for code blocks.
 * **Dynamic Prompt Input:** Auto-expanding `textarea` with live character counter and `Shift+Enter` hint.
 * **Message Metadata:** Timestamps and AIRS scan badges on every user and bot message.
@@ -75,10 +80,9 @@ An **LLM-as-judge** gate that evaluates the user prompt using a locally running 
 
 | Field | Description | Default |
 | :--- | :--- | :--- |
-| Enable toggle | Opt-in — off by default | Off |
+| Mode select | Off / Audit (warn + proceed) / Strict (block on fail) — unified single control, matching the AIRS mode select pattern | Off |
 | Judge model | Any model available in Ollama; prefer small/fast (3B, 1B, Gemma) | Auto-selects smallest |
 | Confidence threshold | Slider 0.50–0.95 | 0.70 |
-| Enforcement | Strict (block) or Audit (warn + proceed) | Strict |
 | System prompt | Editable textarea, pre-filled with default safety instructions | See below |
 
 **Default system prompt:**
@@ -144,8 +148,10 @@ Runs **after** the LLM has generated its full response, before it is displayed.
 A **🔄 New Session** button in the header resets the workspace to a clean state:
 
 * Clears all chat messages from the UI.
-* Resets all four API Inspector panels (Phase 1 request/verdict, Phase 2 request/verdict) to idle.
+* Resets all eight API Inspector panels (Phase 0, Phase 1, Ollama, Phase 2 — request and verdict for each) to idle.
 * Drops a `"🔄 New session started"` notice in the chat as visual confirmation.
+
+All eight panels also reset automatically at the start of every `sendMessage()` call, so stale data from a previous prompt is never visible alongside a new one.
 
 > **Note on session IDs:** The workbench generates a fresh `tr_id` (`"wb-" + Date.now()`) on every individual scan request rather than maintaining a persistent session ID across turns. This means each scan is independently traceable in the AIRS audit trail, but consecutive turns within one conversation are not grouped under a shared session ID in the AIRS console. The New Session button therefore acts as a UI/UX reset only — no session token is rotated on the AIRS side.
 
@@ -154,17 +160,49 @@ A **🔄 New Session** button in the header resets the workspace to a clean stat
 * Select the built-in `Default Profile` or add custom profiles by name/ID via `localStorage`.
 * Profile name sent in every scan request as `ai_profile.profile_name`.
 
-### 3.6 Developer Tools — API Inspector (Twin-Scan View)
+### 3.6 Dev File Staging
 
-Collapsible full-width panel below the main layout. Displays three columns in parallel:
+The `dev/` folder holds HTML files at different stages of the security build-up. Two workflows are supported — neither requires manually copying file contents:
+
+**Option A — Quick preview via browser (no copy):**
+
+While the server is running, any dev file is accessible directly at `http://localhost:3080/dev/<prefix>`. The `/dev/:prefix` route resolves the first filename in `dev/` that starts with the prefix and serves it via `res.sendFile`. The AIRS proxy routes (`/api/config`, `/api/prisma`) work identically to `src/index.html`.
+
+```
+http://localhost:3080/dev/4a   →  4a-ollama-pro-workbench-including-nativeguardrail.html
+http://localhost:3080/dev/3a   →  3a-ollama-pro-workbench-twin-scan.html
+```
+
+**Option B — Promote to default via `scripts/stage.js`:**
+
+```bash
+npm run stage 4a      # prefix match — works for any file in /dev
+npm run stage:4a      # named shortcut
+npm run stage         # lists all available files
+```
+
+The script uses `fs.copyFileSync` (pure Node, works cross-platform on Windows and macOS) to copy the matched file to `src/index.html`. Adding new files to `dev/` is automatically supported without touching `package.json` — the generic `npm run stage <prefix>` command handles any name.
+
+| npm script | Effect |
+| :--- | :--- |
+| `npm run stage 4a` | Copies `4a-*.html` → `src/index.html` |
+| `npm run stage:1a` … `stage:4a` | Named shortcuts for the standard progression files |
+| `npm run stage` | Prints all available dev files and usage |
+
+### 3.7 Developer Tools — API Inspector (Twin-Scan View)
+
+Collapsible full-width panel below the main layout. Displays four columns in parallel:
 
 | Column | Contents |
 | :--- | :--- |
+| **Phase 0** | Native Guardrail outgoing judge request + raw verdict JSON (confidence, safe flag, reason) |
 | **Phase 1** | Outgoing AIRS prompt scan request + AIRS verdict JSON |
-| **Ollama** | Outgoing LLM request payload + last raw stream chunk |
+| **Ollama** | Outgoing LLM request payload (including model parameters) + last raw stream chunk |
 | **Phase 2** | Outgoing AIRS response scan request + AIRS verdict JSON |
 
-Real-time status indicator in the header cycles through: `🔍 Phase 1: Scanning prompt...` → `🤖 Streaming LLM...` → `🔍 Phase 2: Scanning response...` → `Done ✅`.
+All columns reset to "Waiting..." automatically at the start of each new prompt, preventing stale data from a prior exchange persisting when a phase does not run (e.g. Phase 0 blocks, so Phase 1/2 never fire).
+
+Real-time status indicator in the header cycles through: `🔒 Phase 0: Native guardrail...` → `🔍 Phase 1: Scanning prompt...` → `🤖 Streaming LLM...` → `🔍 Phase 2: Scanning response...` → `Done ✅`.
 
 ---
 
@@ -186,6 +224,7 @@ Real-time status indicator in the header cycles through: `🔍 Phase 1: Scanning
 | Route | Method | Description |
 | :--- | :--- | :--- |
 | `/` | `GET` | Serves `src/index.html` |
+| `/dev/:prefix` | `GET` | Serves the first `/dev` HTML file whose name starts with `:prefix` — e.g. `/dev/4a` serves `4a-ollama-pro-workbench-including-nativeguardrail.html`. AIRS proxy works normally. |
 | `/api/config` | `GET` | Returns `{ hasApiKey: bool, profile: string \| null }` — presence signal only, key never returned |
 | `/api/prisma` | `POST` | Proxies scan requests to Prisma AIRS; prefers `process.env.AIRS_API_KEY` over the `x-pan-token` request header |
 
@@ -336,12 +375,14 @@ Both scans use the same endpoint: `POST /v1/scan/sync/request`
 ```
 prisma-airs-with-ollama/
 ├── src/
-│   ├── index.html        # Main application (Phase 0 + Phase 1 + Phase 2)
-│   └── server.js         # CORS proxy (Express, port 3080); loads .env
+│   ├── index.html        # Active workbench (promoted via npm run stage)
+│   └── server.js         # CORS proxy (Express, port 3080); loads .env; serves /dev/:prefix
+├── scripts/
+│   └── stage.js          # CLI tool — copies a /dev file to src/index.html by prefix match
 ├── docs/
 │   ├── PRD.md            # This document
 │   └── pii-shield-testing.md
-├── dev/                  # Development iteration history
+├── dev/                  # Iteration history — serve via /dev/<prefix> or promote with npm run stage
 │   ├── 1a-ollama-chat-no-security.html
 │   ├── 1b-mechat-no-security.html
 │   ├── 2a-mechat-airs-teaching-demo.html
@@ -351,7 +392,7 @@ prisma-airs-with-ollama/
 │   └── sample_threats.json
 ├── .env.example          # Committed template — copy to .env and fill in values
 ├── .gitignore            # Excludes .env
-├── package.json
+├── package.json          # npm scripts: start, stage, stage:1a … stage:4a
 └── README.md
 ```
 
@@ -359,8 +400,9 @@ prisma-airs-with-ollama/
 
 ## 7. Future Roadmap
 
-* **Phase 0 API Inspector column:** Add a fourth column to the API Inspector showing the Phase 0 judge request, raw JSON verdict, confidence score, and latency — making it debuggable alongside Phase 1 and Phase 2.
 * **Guardrail fine-tuning helper:** A sidebar tool that runs a batch of sample threats against the current judge model + system prompt and reports pass/fail rates to help calibrate the threshold.
+* **API Inspector latency column:** Show per-phase latency (ms) alongside each request/verdict in the inspector, making performance bottlenecks visible.
+* **Model parameter presets:** Save and recall named parameter sets (e.g. "Creative", "Factual", "Code") from the Model Parameters panel.
 * **Chat Memory:** Store last N messages to give the LLM conversation history within a session.
 * **Export Engine:** Download full chat + all-phase scan logs as JSON or Markdown for audit compliance.
 * **Scan History Panel:** Persist and review previous scan verdicts within the session.

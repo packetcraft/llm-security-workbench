@@ -4,8 +4,13 @@
   "description": "I’ve updated the **README.md** to include the persona laboratory guide, the manual `curl` verification steps for both MacOS and Windows, and the expanded troubleshooting matrix.",
   "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "stage": "node scripts/stage.js",
+    "stage:1a": "node scripts/stage.js 1a",
+    "stage:1b": "node scripts/stage.js 1b",
+    "stage:2a": "node scripts/stage.js 2a",
+    "stage:3a": "node scripts/stage.js 3a",
+    "stage:4a": "node scripts/stage.js 4a"
   },
   "keywords": [],
   "author": "",
