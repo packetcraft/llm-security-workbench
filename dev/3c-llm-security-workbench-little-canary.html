@@ -2834,6 +2834,62 @@ Waiting for LLM...</pre>
             a.click(); URL.revokeObjectURL(a.href);
         }
 
+        function exportBatchResultsMD() {
+            if (!_batchResults.length) { alert("Run the batch first."); return; }
+
+            const model       = document.getElementById("model-select").value;
+            const phase0Mode  = document.getElementById("guardrail-mode").value;
+            const phase05Mode = document.getElementById("canary-mode").value;
+            const phase1Mode  = document.getElementById("airs-mode").value;
+            const airsProfile = document.getElementById("airs-profile").value;
+            const ts          = new Date().toISOString();
+
+            // Tally
+            const blocked = _batchResults.filter(r => r.status === "block").length;
+            const flagged = _batchResults.filter(r => r.status === "alert").length;
+            const allowed = _batchResults.filter(r => r.status === "allow").length;
+            const errors  = _batchResults.filter(r => r.status === "error").length;
+
+            const lines = [
+                `# Batch Threat Runner — Results`,
+                `> Generated: ${ts}`,
+                ``,
+                `## Configuration`,
+                `| Setting | Value |`,
+                `|---|---|`,
+                `| Model | \`${model}\` |`,
+                `| Phase 0 — Native Guardrail | ${phase0Mode} |`,
+                `| Phase 0.5 — Little Canary | ${phase05Mode} |`,
+                `| Phase 1 — AIRS | ${phase1Mode} |`,
+                `| AIRS Profile | ${airsProfile || "—"} |`,
+                ``,
+                `## Summary`,
+                `| 🛑 Blocked | ⚠️ Flagged | ✅ Allowed | ❌ Errors | Total |`,
+                `|---|---|---|---|---|`,
+                `| ${blocked} | ${flagged} | ${allowed} | ${errors} | ${_batchResults.length} |`,
+                ``,
+                `## Results`,
+                `| # | Threat Type | Result | Caught By | Category | Detected | Latency |`,
+                `|---|---|---|---|---|---|---|`,
+                ..._batchResults.map(r => {
+                    const result = r.status === "block" ? "🛑 Blocked"
+                                 : r.status === "alert" ? "⚠️ Flagged"
+                                 : r.status === "error" ? "❌ Error"
+                                 : "✅ Allowed";
+                    const det = r.detected?.length ? r.detected.join(", ") : "—";
+                    const lat = r.latencyMs < 1000 ? `${r.latencyMs}ms` : `${(r.latencyMs/1000).toFixed(1)}s`;
+                    return `| ${r.n} | ${r.threat} | ${result} | ${r.firstCaughtBy || "—"} | ${r.category} | ${det} | ${lat} |`;
+                }),
+            ];
+
+            const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
+            const a = Object.assign(document.createElement("a"), {
+                href: URL.createObjectURL(blob),
+                download: `batch-results-${Date.now()}.md`,
+            });
+            a.click(); URL.revokeObjectURL(a.href);
+        }
+
         // ══════════════════════════════════════════
         // SESSION EXPORT
         // ══════════════════════════════════════════
@@ -3040,6 +3096,7 @@ Waiting for LLM...</pre>
             </div>
             <div class="batch-footer">
                 <div id="batch-summary" class="batch-summary-bar" style="flex:1"></div>
+                <button class="btn-secondary" onclick="exportBatchResultsMD()" style="font-size:11px;padding:5px 10px;">📄 Export Results MD</button>
                 <button class="btn-secondary" onclick="exportBatchResults()" style="font-size:11px;padding:5px 10px;">📥 Export Results JSON</button>
             </div>
         </div>
