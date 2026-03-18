@@ -877,6 +877,95 @@
         }
         #sp-modal-close:hover { color: var(--text); }
 
+        /* Batch runner modal */
+        #batch-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        #batch-modal-backdrop.open { display: flex; }
+        #batch-modal {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            width: min(740px, 95vw);
+            max-height: 88vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        #batch-modal h3 { margin: 0; font-size: 14px; color: var(--primary); }
+        #batch-modal-close { float: right; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height:1; }
+        #batch-modal-close:hover { color: var(--text); }
+        .batch-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .batch-controls label { font-size: 12px; color: var(--text-muted); }
+        .batch-controls input[type=range] { width: 120px; }
+        #batch-delay-label { font-size: 12px; color: var(--primary); min-width: 40px; }
+        .batch-progress-wrap {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            height: 8px;
+            overflow: hidden;
+        }
+        #batch-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+            border-radius: 6px;
+        }
+        #batch-progress-label { font-size: 11px; color: var(--muted); margin-top: 3px; }
+        #batch-summary { font-size: 12px; }
+        .batch-results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        .batch-results-table th {
+            background: var(--bg);
+            color: var(--muted);
+            padding: 5px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+        }
+        .batch-results-table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            vertical-align: top;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .batch-results-table tr.batch-blocked td:nth-child(3) { color: var(--danger); font-weight: 700; }
+        .batch-results-table tr.batch-flagged td:nth-child(3) { color: var(--warning); font-weight: 700; }
+        .batch-results-table tr.batch-allowed td:nth-child(3) { color: var(--green); }
+        .batch-results-table tr.batch-error  td:nth-child(3) { color: var(--muted); }
+        .batch-results-table tr:hover td { background: rgba(255,255,255,0.03); }
+        #batch-results-wrap { max-height: 360px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+        .batch-summary-bar { display: flex; gap: 16px; font-size: 12px; padding: 6px 0; }
+        .batch-summary-bar .s-blocked { color: var(--danger); font-weight:700; }
+        .batch-summary-bar .s-flagged  { color: var(--warning); font-weight:700; }
+        .batch-summary-bar .s-allowed  { color: var(--green); font-weight:700; }
+        .batch-summary-bar .s-error    { color: var(--muted); }
+        .batch-footer { display: flex; gap: 8px; align-items: center; }
+
         /* #12 — API key visibility toggle */
         .api-key-wrapper {
             position: relative;
@@ -943,6 +1032,12 @@
 
         <!-- Zone 4: Actions -->
         <div style="display:flex; gap:8px; align-items:center; margin-left:auto; padding-left:12px; flex-shrink:0;">
+            <button class="btn-ghost" onclick="openBatchRunner()" title="Run all threat library prompts through the security pipeline">
+                ⚡ Batch Run
+            </button>
+            <button class="btn-ghost" onclick="exportSession()" title="Download session log as Markdown">
+                📥 Export
+            </button>
             <button class="btn-ghost" onclick="startNewSession()" title="Clear chat and start a new AIRS session">
                 🔄 New Session
             </button>
@@ -2545,6 +2640,238 @@ Waiting for LLM...</pre>
             _tooltip.style.top  = y + "px";
         }
 
+        // ══════════════════════════════════════════
+        // BATCH THREAT RUNNER
+        // ══════════════════════════════════════════
+        let batchStop = false;
+        let _batchResults = [];
+
+        function openBatchRunner() {
+            batchStop = false;
+            _batchResults = [];
+            document.getElementById("batch-results-body").innerHTML = "";
+            document.getElementById("batch-summary").innerHTML = "";
+            document.getElementById("batch-progress-bar").style.width = "0%";
+            document.getElementById("batch-progress-label").textContent = "Ready — configure delay and press Run";
+            document.getElementById("batch-start-btn").disabled = false;
+            document.getElementById("batch-stop-btn").disabled = true;
+            document.getElementById("batch-modal-backdrop").classList.add("open");
+        }
+
+        function closeBatchModal() {
+            batchStop = true;
+            document.getElementById("batch-modal-backdrop").classList.remove("open");
+        }
+
+        function stopBatchRun() {
+            batchStop = true;
+            document.getElementById("batch-stop-btn").disabled = true;
+        }
+
+        async function startBatchRun() {
+            const airsMode = document.getElementById("airs-mode").value;
+            if (airsMode === "off") {
+                alert("Batch runner requires AIRS to be enabled.\nSet AIRS Mode to Audit or Strict first.");
+                return;
+            }
+            const airsProfile  = document.getElementById("airs-profile").value;
+            const airsKeyEl    = document.getElementById("airs-api-key");
+            const airsApiKey   = airsKeyEl.dataset.fromEnv ? "" : airsKeyEl.value.trim();
+            const modelSelect  = document.getElementById("model-select").value;
+            const delayMs      = parseInt(document.getElementById("batch-delay").value) || 600;
+
+            const allThreats   = SAMPLE_THREATS.flatMap(g => g.threats);
+            const total        = allThreats.length;
+            let blocked = 0, flagged = 0, allowed = 0, errors = 0;
+
+            batchStop = false;
+            _batchResults = [];
+            document.getElementById("batch-results-body").innerHTML = "";
+            document.getElementById("batch-summary").innerHTML = "";
+            document.getElementById("batch-start-btn").disabled = true;
+            document.getElementById("batch-stop-btn").disabled = false;
+
+            for (let i = 0; i < total; i++) {
+                if (batchStop) break;
+                const threat = allThreats[i];
+                const pct = Math.round((i / total) * 100);
+                document.getElementById("batch-progress-bar").style.width = pct + "%";
+                document.getElementById("batch-progress-label").textContent =
+                    `${i + 1} / ${total}  —  ${threat.type}`;
+
+                const t0   = Date.now();
+                const scan = await scanWithAIRS(
+                    { prompt: threat.example }, "prompt",
+                    airsMode, airsProfile, airsApiKey, modelSelect,
+                );
+                const latMs = Date.now() - t0;
+
+                let rowClass = "batch-allowed", resultLabel = "✅ Allowed";
+                if      (scan.status === "error") { errors++;  rowClass = "batch-error";   resultLabel = "❌ Error"; }
+                else if (scan.status === "block") { blocked++; rowClass = "batch-blocked"; resultLabel = "🛑 Blocked"; }
+                else if (scan.status === "alert") { flagged++; rowClass = "batch-flagged"; resultLabel = "⚠️ Flagged"; }
+                else                              { allowed++; }
+
+                const detectedStr = scan.detected && scan.detected.length ? scan.detected.join(", ") : "—";
+                const latStr      = latMs < 1000 ? latMs + "ms" : (latMs / 1000).toFixed(1) + "s";
+
+                const tr = document.createElement("tr");
+                tr.className = rowClass;
+                tr.innerHTML = `<td>${i + 1}</td><td title="${threat.type}">${threat.type}</td>
+                    <td>${resultLabel}</td>
+                    <td>${scan.category || "—"}</td>
+                    <td title="${detectedStr}">${detectedStr}</td>
+                    <td>${latStr}</td>`;
+                document.getElementById("batch-results-body").appendChild(tr);
+                document.getElementById("batch-results-wrap").scrollTop = 9999;
+
+                _batchResults.push({
+                    n: i + 1, threat: threat.type,
+                    status: scan.status, action: scan.action || "allow",
+                    category: scan.category || "benign",
+                    detected: scan.detected || [],
+                    latencyMs: latMs, scanId: scan.scanId || null,
+                });
+
+                // Live summary
+                document.getElementById("batch-summary").innerHTML =
+                    `<span class="s-blocked">🛑 ${blocked} blocked</span>` +
+                    `<span class="s-flagged">⚠️ ${flagged} flagged</span>` +
+                    `<span class="s-allowed">✅ ${allowed} allowed</span>` +
+                    (errors ? `<span class="s-error">❌ ${errors} err</span>` : "");
+
+                if (i < total - 1 && !batchStop) await new Promise(r => setTimeout(r, delayMs));
+            }
+
+            const ran = blocked + flagged + allowed + errors;
+            document.getElementById("batch-progress-bar").style.width = "100%";
+            document.getElementById("batch-progress-label").textContent =
+                batchStop ? `Stopped after ${ran} / ${total}` : `Complete — ${total} threats tested`;
+            document.getElementById("batch-start-btn").disabled = false;
+            document.getElementById("batch-stop-btn").disabled = true;
+        }
+
+        function exportBatchResults() {
+            if (!_batchResults.length) { alert("Run the batch first."); return; }
+            const payload = {
+                exported_at: new Date().toISOString(),
+                airs_profile: document.getElementById("airs-profile").value,
+                airs_mode:    document.getElementById("airs-mode").value,
+                model:        document.getElementById("model-select").value,
+                results:      _batchResults,
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+            const a = Object.assign(document.createElement("a"), {
+                href: URL.createObjectURL(blob),
+                download: `batch-results-${Date.now()}.json`,
+            });
+            a.click(); URL.revokeObjectURL(a.href);
+        }
+
+        // ══════════════════════════════════════════
+        // SESSION EXPORT
+        // ══════════════════════════════════════════
+        function exportSession() {
+            const chatBox = document.getElementById("chat-box");
+            const messages = [];
+
+            chatBox.querySelectorAll(".message").forEach(div => {
+                // Security alert banners (not real messages)
+                if (div.classList.contains("security-alert")) return;
+
+                const userLabel = div.querySelector(".user-label");
+                const botLabel  = div.querySelector(".bot-label");
+
+                if (userLabel) {
+                    const airsBadge   = div.querySelector("[id$='-badge-airs']");
+                    const canaryBadge = div.querySelector("[id$='-badge-canary']");
+                    const guardBadge  = div.querySelector("[id$='-badge-guard']");
+                    messages.push({
+                        role: "user",
+                        ts: div.querySelector(".msg-timestamp")?.textContent?.trim() || "",
+                        prompt: div.dataset.prompt || "",
+                        airs_prompt_verdict: airsBadge?.dataset.verdict
+                            ? JSON.parse(airsBadge.dataset.verdict) : null,
+                        airs_prompt_badge: airsBadge?.textContent?.trim() || null,
+                        canary_badge: canaryBadge?.textContent?.trim() || null,
+                        guardrail_badge: guardBadge?.textContent?.trim() || null,
+                    });
+                } else if (botLabel) {
+                    const resBadge = div.querySelector(".scan-badge[id$='-badge']");
+                    messages.push({
+                        role: "assistant",
+                        ts: div.querySelector(".msg-timestamp")?.textContent?.trim() || "",
+                        content: div.querySelector(".content")?.innerText?.trim() || "",
+                        airs_response_verdict: resBadge?.dataset.verdict
+                            ? JSON.parse(resBadge.dataset.verdict) : null,
+                        airs_response_badge: resBadge?.textContent?.trim() || null,
+                    });
+                }
+            });
+
+            if (!messages.length) { alert("Nothing to export — chat is empty."); return; }
+
+            const config = {
+                model:          document.getElementById("model-select").value,
+                persona:        document.getElementById("persona-select").value,
+                system_prompt:  document.getElementById("system-prompt").value,
+                airs_mode:      document.getElementById("airs-mode").value,
+                airs_profile:   document.getElementById("airs-profile").value,
+                guardrail_mode: document.getElementById("guardrail-mode")?.value || "off",
+                canary_mode:    document.getElementById("canary-mode")?.value || "off",
+            };
+
+            // Build Markdown
+            const lines = [
+                `# AIRS Workbench Session Export`,
+                `> Generated: ${new Date().toISOString()}`,
+                ``,
+                `## Configuration`,
+                ...Object.entries(config).map(([k, v]) => `- **${k}:** ${v || "—"}`),
+                ``,
+                `## Chat Log`,
+            ];
+
+            let msgN = 0;
+            messages.forEach(m => {
+                if (m.role === "user") {
+                    msgN++;
+                    lines.push(``, `---`, `### Message ${msgN}  \`${m.ts}\``);
+                    lines.push(``, `**USER:** ${m.prompt}`);
+                    if (m.guardrail_badge && m.guardrail_badge !== "Phase 0 Off")
+                        lines.push(`- Guardrail: \`${m.guardrail_badge}\``);
+                    if (m.canary_badge)
+                        lines.push(`- Little Canary: \`${m.canary_badge}\``);
+                    if (m.airs_prompt_verdict) {
+                        const v = m.airs_prompt_verdict;
+                        lines.push(`- AIRS Prompt: \`${m.airs_prompt_badge}\` | action: ${v.action} | category: ${v.category}` +
+                            (v.detected?.length ? ` | detected: ${v.detected.join(", ")}` : "") +
+                            (v.scanId ? ` | scan_id: ${v.scanId}` : ""));
+                    }
+                } else if (m.role === "assistant") {
+                    lines.push(``, `**AI:** ${m.content.substring(0, 800)}${m.content.length > 800 ? "…" : ""}`);
+                    if (m.airs_response_verdict) {
+                        const v = m.airs_response_verdict;
+                        lines.push(`- AIRS Response: \`${m.airs_response_badge}\` | action: ${v.action} | category: ${v.category}` +
+                            (v.detected?.length ? ` | detected: ${v.detected.join(", ")}` : "") +
+                            (v.scanId ? ` | scan_id: ${v.scanId}` : ""));
+                    }
+                }
+            });
+
+            lines.push(``, `---`, ``, `<details><summary>Raw JSON</summary>`, ``, `\`\`\`json`,
+                JSON.stringify({ exported_at: new Date().toISOString(), config, messages }, null, 2),
+                `\`\`\``, `</details>`);
+
+            const md   = lines.join("\n");
+            const blob = new Blob([md], { type: "text/markdown" });
+            const a    = Object.assign(document.createElement("a"), {
+                href: URL.createObjectURL(blob),
+                download: `airs-session-${Date.now()}.md`,
+            });
+            a.click(); URL.revokeObjectURL(a.href);
+        }
+
         // Feature 1 — Replay prompt
         function replayPrompt(text) {
             const input = document.getElementById("user-input");
@@ -2616,6 +2943,41 @@ Waiting for LLM...</pre>
                     .classList.toggle("visible", notAtBottom);
             });
     </script>
+
+    <!-- Batch Threat Runner Modal -->
+    <div id="batch-modal-backdrop" onclick="if(event.target===this)closeBatchModal()">
+        <div id="batch-modal">
+            <div>
+                <button id="batch-modal-close" onclick="closeBatchModal()">✕</button>
+                <h3>⚡ Batch Threat Runner</h3>
+            </div>
+            <div class="batch-controls">
+                <label>Delay between requests:</label>
+                <input type="range" id="batch-delay" min="100" max="3000" step="100" value="600"
+                    oninput="document.getElementById('batch-delay-label').textContent=this.value+'ms'">
+                <span id="batch-delay-label">600ms</span>
+                <span style="flex:1"></span>
+                <button id="batch-start-btn" class="btn-primary" onclick="startBatchRun()">▶ Run All Threats</button>
+                <button id="batch-stop-btn" class="btn-danger" onclick="stopBatchRun()" disabled>■ Stop</button>
+            </div>
+            <div>
+                <div class="batch-progress-wrap"><div id="batch-progress-bar"></div></div>
+                <div id="batch-progress-label" style="font-size:11px;color:var(--muted);margin-top:3px;">Ready — configure delay and press Run</div>
+            </div>
+            <div id="batch-results-wrap">
+                <table class="batch-results-table">
+                    <thead><tr>
+                        <th>#</th><th>Threat Type</th><th>Result</th><th>Category</th><th>Detected</th><th>Latency</th>
+                    </tr></thead>
+                    <tbody id="batch-results-body"></tbody>
+                </table>
+            </div>
+            <div class="batch-footer">
+                <div id="batch-summary" class="batch-summary-bar" style="flex:1"></div>
+                <button class="btn-secondary" onclick="exportBatchResults()" style="font-size:11px;padding:5px 10px;">📥 Export Results JSON</button>
+            </div>
+        </div>
+    </div>
 
     <!-- System Prompt Viewer Modal -->
     <div id="sp-modal-backdrop" onclick="if(event.target===this)closeSPModal()">
