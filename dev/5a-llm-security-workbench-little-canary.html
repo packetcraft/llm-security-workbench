@@ -12,44 +12,68 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <style>
-        /* Tokyo Night Light */
+        /* ── Tokyo Night Light ── */
         :root {
-            --bg: #d8dae4;
-            --panel: #e6e7ed;
-            --text: #343b58;
-            --primary: #2959aa;
-            --border: #b0b5c8;
-            --danger: #8c4351;
-            --warning: #965027;
-            --debug: #1a1a1a;
-            /* LLM time pill — Tokyo Night navy */
+            --bg:           #d5d6db;
+            --panel:        #e1e2e7;
+            --text:         #343b58;
+            --text-muted:   #6c6e75;
+            --primary:      #2959aa;
+            --border:       #9699a3;
+            --danger:       #8c4351;
+            --warning:      #965027;
+            --green:        #587539;
+            --purple:       #5a3e8e;
+            --canary-adv:   #b15c00;
+            --canary-blk:   #7a3500;
+            --debug:        #2c2d3a;
+            /* LLM time pill */
             --llm-pill-bg:     #0f4b6e;
             --llm-pill-text:   #c0d6e8;
             --llm-pill-border: #2959aa;
             /* copy button */
-            --copy-btn-bg:     #cdd0de;
-            --copy-btn-color:  #343b58;
-            --copy-btn-hover:  #bcc0d0;
-            /* semantic */
-            --green: #385f0d;
+            --copy-btn-bg:    #ced1df;
+            --copy-btn-color: #343b58;
+            --copy-btn-hover: #bcc0d0;
+            /* sidebar toggle */
+            --sidebar-btn-bg:    #c4c7d4;
+            --sidebar-btn-color: #343b58;
+            /* param tooltip */
+            --tooltip-bg:     #343b58;
+            --tooltip-text:   #e1e2e7;
+            --tooltip-border: #5a3e8e;
         }
 
+        /* ── Tokyo Night ── */
         body.dark {
-            --bg: #121212;
-            --panel: #1e1e1e;
-            --text: #e0e0e0;
-            --primary: #3793ff;
-            --border: #3a3a3a;
-            /* LLM time pill — dark mode */
-            --llm-pill-bg:     #2d2d2d;
-            --llm-pill-text:   #b0b0b0;
-            --llm-pill-border: #555;
+            --bg:           #16161e;
+            --panel:        #1a1b26;
+            --text:         #c0caf5;
+            --text-muted:   #565f89;
+            --primary:      #7aa2f7;
+            --border:       #292e42;
+            --danger:       #f7768e;
+            --warning:      #e0af68;
+            --green:        #9ece6a;
+            --purple:       #bb9af7;
+            --canary-adv:   #ff9e64;
+            --canary-blk:   #e0804a;
+            --debug:        #16161e;
+            /* LLM time pill */
+            --llm-pill-bg:     #292e42;
+            --llm-pill-text:   #7aa2f7;
+            --llm-pill-border: #3d59a1;
             /* copy button */
-            --copy-btn-bg:     #2a2a2a;
-            --copy-btn-color:  #ccc;
-            --copy-btn-hover:  #3a3a3a;
-            /* semantic */
-            --green: #28a745;
+            --copy-btn-bg:    #292e42;
+            --copy-btn-color: #a9b1d6;
+            --copy-btn-hover: #3b4261;
+            /* sidebar toggle */
+            --sidebar-btn-bg:    #292e42;
+            --sidebar-btn-color: #a9b1d6;
+            /* param tooltip */
+            --tooltip-bg:     #1a1b26;
+            --tooltip-text:   #c0caf5;
+            --tooltip-border: #3d59a1;
         }
 
         body {
@@ -178,11 +202,11 @@
 
         /* Prisma Security Controls */
         .security-group {
-            border: 1px dashed #555;
+            border: 1px dashed var(--border);
             padding: 10px;
             border-radius: 8px;
             transition: border-color 0.3s;
-            background: rgba(220, 53, 69, 0.05);
+            background: rgba(0, 0, 0, 0.03);
         }
 
         optgroup {
@@ -229,7 +253,8 @@
         }
 
         .btn-secondary {
-            background: #4a4a4a;
+            background: var(--sidebar-btn-bg);
+            color: var(--sidebar-btn-color);
         }
 
         .btn-danger {
@@ -255,11 +280,11 @@
 
         .debug-header {
             padding: 10px 15px;
-            background: #333;
+            background: #1e2030;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
-            color: white;
+            color: #a9b1d6;
         }
 
         .debug-content {
@@ -283,20 +308,20 @@
         }
 
         .debug-label {
-            color: #569cd6;
+            color: #7aa2f7;
             font-weight: bold;
             margin-top: 15px;
             display: block;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid #292e42;
             padding-bottom: 3px;
         }
 
         .debug-security-req {
-            color: #ffb86c;
+            color: #ff9e64;
         }
 
         .debug-security-res {
-            color: #ff5555;
+            color: #f7768e;
         }
 
         /* Messaging UI */
@@ -346,19 +371,20 @@
         }
 
         pre {
-            background: #141414;
+            background: var(--debug);
             padding: 15px;
             border-radius: 8px;
             overflow-x: auto;
-            border: 1px solid #333;
+            border: 1px solid var(--border);
             margin-top: 5px;
+            color: #c0caf5;
         }
 
         .cursor {
             display: inline-block;
             width: 8px;
             height: 16px;
-            background: #28a745;
+            background: var(--green);
             margin-left: 5px;
             animation: blink 1s infinite;
             vertical-align: middle;
@@ -384,7 +410,7 @@
         }
 
         .status-dot.off {
-            background: #555;
+            background: var(--text-muted);
         }
 
         .status-dot.audit {
@@ -393,8 +419,8 @@
         }
 
         .status-dot.strict {
-            background: #28a745;
-            box-shadow: 0 0 6px #28a745;
+            background: var(--danger);
+            box-shadow: 0 0 6px var(--danger);
         }
 
         .status-dot.guardrail-audit {
@@ -403,8 +429,8 @@
         }
 
         .status-dot.guardrail-strict {
-            background: #9b59b6;
-            box-shadow: 0 0 6px #9b59b6;
+            background: var(--purple);
+            box-shadow: 0 0 6px var(--purple);
         }
 
         .security-group.mode-audit {
@@ -416,37 +442,37 @@
         }
 
         .security-group.mode-guardrail-strict {
-            border-color: #9b59b6;
+            border-color: var(--purple);
         }
 
         .status-dot.canary-advisory {
-            background: #b85c2a;
-            box-shadow: 0 0 6px #b85c2a;
+            background: var(--canary-adv);
+            box-shadow: 0 0 6px var(--canary-adv);
         }
 
         .status-dot.canary-block {
-            background: #8c3d18;
-            box-shadow: 0 0 6px #8c3d18;
+            background: var(--canary-blk);
+            box-shadow: 0 0 6px var(--canary-blk);
         }
 
         .security-group.mode-canary-advisory {
-            border-color: #b85c2a;
+            border-color: var(--canary-adv);
         }
 
         .security-group.mode-canary-block {
-            border-color: #8c3d18;
+            border-color: var(--canary-blk);
         }
 
         .scan-badge.canary-advisory {
-            background: rgba(184, 92, 42, 0.15);
-            color: #b85c2a;
-            border: 1px solid #b85c2a;
+            background: rgba(177, 92, 0, 0.12);
+            color: var(--canary-adv);
+            border: 1px solid var(--canary-adv);
         }
 
         .scan-badge.canary-block {
-            background: rgba(140, 61, 24, 0.2);
-            color: #8c3d18;
-            border: 1px solid #8c3d18;
+            background: rgba(122, 53, 0, 0.15);
+            color: var(--canary-blk);
+            border: 1px solid var(--canary-blk);
         }
 
         /* #2 — Active model badge */
@@ -530,8 +556,8 @@
             width: 13px;
             height: 13px;
             border-radius: 50%;
-            background: #555;
-            color: #fff;
+            background: var(--text-muted);
+            color: var(--panel);
             font-size: 9px;
             font-style: normal;
             font-weight: bold;
@@ -548,8 +574,8 @@
         #param-tooltip {
             position: fixed;
             z-index: 9999;
-            background: #1a1a2e;
-            color: #e0e0e0;
+            background: var(--tooltip-bg);
+            color: var(--tooltip-text);
             padding: 8px 11px;
             border-radius: 6px;
             font-size: 11px;
@@ -559,8 +585,8 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.15s;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.6);
-            border: 1px solid #333;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            border: 1px solid var(--tooltip-border);
         }
 
         #param-tooltip.visible {
@@ -618,8 +644,8 @@
         .sidebar-toggle-btn {
             font-size: 11px;
             padding: 6px 12px;
-            background: #333;
-            color: #aaa;
+            background: var(--sidebar-btn-bg);
+            color: var(--sidebar-btn-color);
         }
 
         .left-col {
@@ -687,15 +713,15 @@
         }
 
         .scan-badge.guardrail-pass {
-            background: rgba(111, 66, 193, 0.15);
-            color: #9b59b6;
-            border: 1px solid #9b59b6;
+            background: rgba(90, 62, 142, 0.12);
+            color: var(--purple);
+            border: 1px solid var(--purple);
         }
 
         .scan-badge.guardrail-block {
-            background: rgba(111, 66, 193, 0.3);
-            color: #9b59b6;
-            border: 1px solid #9b59b6;
+            background: rgba(90, 62, 142, 0.25);
+            color: var(--purple);
+            border: 1px solid var(--purple);
         }
 
         /* #12 — API key visibility toggle */
@@ -824,7 +850,7 @@ Respond ONLY with valid JSON, no other text:
 
             <!-- Little Canary (Phase 0.5) -->
             <div class="panel security-group" id="canary-panel">
-                <label style="color:#b85c2a">🐦 Little Canary (Phase 0.5)</label>
+                <label style="color:var(--canary-adv);opacity:1">🐦 Little Canary (Phase 0.5)</label>
                 <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
                     <select id="canary-mode" onchange="toggleCanarySettings()">
                         <option value="off">⚫ Off (Disabled)</option>
@@ -832,7 +858,7 @@ Respond ONLY with valid JSON, no other text:
                         <option value="full">🔴 Full — block high-confidence attacks</option>
                     </select>
                     <details style="margin-top:2px;">
-                        <summary style="font-size:11px;cursor:pointer;color:#b85c2a;">⚙️ Canary Settings</summary>
+                        <summary style="font-size:11px;cursor:pointer;color:var(--canary-adv);">⚙️ Canary Settings</summary>
                         <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
                             <select id="canary-model" disabled>
                                 <option value="">-- Select canary model --</option>
@@ -1081,7 +1107,7 @@ Waiting...</pre>
             </div>
             <!-- Phase 0.5: Little Canary -->
             <div>
-                <span class="debug-label" style="color:#b85c2a">// 🐦 PHASE 0.5 — CANARY REQUEST</span>
+                <span class="debug-label" style="color:var(--canary-adv)">// 🐦 PHASE 0.5 — CANARY REQUEST</span>
                 <pre id="debug-canary-req" style="
                             background: transparent;
                             border: none;
@@ -1089,7 +1115,7 @@ Waiting...</pre>
                             overflow-x: auto;
                         ">
 Waiting...</pre>
-                <span class="debug-label" style="color:#b85c2a">// 🐦 PHASE 0.5 — CANARY VERDICT</span>
+                <span class="debug-label" style="color:var(--canary-adv)">// 🐦 PHASE 0.5 — CANARY VERDICT</span>
                 <pre id="debug-canary-res" style="
                             background: transparent;
                             border: none;
@@ -1921,7 +1947,7 @@ Waiting for LLM...</pre>
                     canaryBadge.textContent = `🐦 BLOCKED ${_cLat}`;
                     const blockDiv = document.createElement("div");
                     blockDiv.className = "message security-alert";
-                    blockDiv.style.cssText = "color:#8c3d18;border-color:#8c3d18;background:rgba(140,61,24,0.1)";
+                    blockDiv.style.cssText = "color:var(--canary-blk);border-color:var(--canary-blk);background:rgba(122,53,0,0.1)";
                     blockDiv.innerHTML = `🐦 LITTLE CANARY — PROMPT BLOCKED (Phase 0.5)<br>
                             <em>${cResult.summary}</em><br>
                             <small>AIRS and LLM were not reached.</small>`;
@@ -1938,7 +1964,7 @@ Waiting for LLM...</pre>
                     canaryBadge.textContent = `🐦 FLAGGED ${_cLat}`;
                     const warnDiv = document.createElement("div");
                     warnDiv.className = "message security-alert";
-                    warnDiv.style.cssText = "color:#b85c2a;border-color:#b85c2a;background:rgba(184,92,42,0.1)";
+                    warnDiv.style.cssText = "color:var(--canary-adv);border-color:var(--canary-adv);background:rgba(177,92,0,0.1)";
                     warnDiv.innerHTML = `🐦 LITTLE CANARY ADVISORY — warning injected into system prompt<br><em>${cResult.summary}</em>`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
