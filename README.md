@@ -374,8 +374,8 @@ Then relaunch Ollama from the menu bar.
 **Prerequisites:** [Node.js](https://nodejs.org/) and Python 3.9+ installed.
 
 ```bash
-git clone https://github.com/packetcraft/Prisma-AIRS-with-ollama.git
-cd Prisma-AIRS-with-ollama
+git clone https://github.com/packetcraft/llm-security-workbench.git
+cd llm-security-workbench
 npm install
 ```
 
