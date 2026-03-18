@@ -36,6 +36,7 @@
             color: #565f89;
             font-size: 12px;
             margin-bottom: 16px;
+            line-height: 2.2;
         }
 
         #chat-box {
@@ -312,7 +313,7 @@
 <body>
 
     <h2>meChat</h2>
-    <p style="color:#565f89; font-size:12px; margin-bottom:16px; line-height:2.2;">
+    <p id="subtitle">
         i am a chat bot with <select id="persona-select" class="inline-select"></select> personality.<br>
         powered by <select id="model-select" class="inline-select"></select><br>
         — chat ingress secured by Prisma AIRS.
@@ -617,7 +618,7 @@
                 } catch (err) {
                     badge.className = "airs-badge blocked";
                     badge.textContent = "⚠️ Scan error";
-                    chatBox.innerHTML += `<p style="color:#ff4444; font-size:12px;">⚠️ AIRS scan failed: ${err.message}</p>`;
+                    chatBox.innerHTML += `<p style="color:#f7768e; font-size:12px;">⚠️ AIRS scan failed: ${err.message}</p>`;
                     chatBox.scrollTop = chatBox.scrollHeight;
                     return;
                 }
