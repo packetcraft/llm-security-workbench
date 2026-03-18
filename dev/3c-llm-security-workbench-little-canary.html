@@ -790,6 +790,93 @@
             border: 1px solid var(--purple);
         }
 
+        /* Replay button on user messages */
+        .replay-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--muted);
+            padding: 0 3px;
+            margin-left: 4px;
+            opacity: 0.6;
+            transition: color 0.15s, opacity 0.15s;
+            vertical-align: middle;
+        }
+        .replay-btn:hover { color: var(--primary); opacity: 1; }
+
+        /* Verdict detail expansion panel */
+        .verdict-detail {
+            margin: 6px 0 4px 0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: monospace;
+            line-height: 1.8;
+            border: 1px solid var(--border);
+            background: rgba(26, 27, 38, 0.8);
+            color: var(--text-muted);
+        }
+        .verdict-detail.blocked { border-color: var(--danger); background: rgba(247,118,142,0.08); }
+        .verdict-detail.flagged { border-color: var(--warning); background: rgba(224,175,104,0.08); }
+        .verdict-detail.allowed { border-color: var(--green); background: rgba(158,206,106,0.08); }
+        .verdict-detail table { border-collapse: collapse; width: 100%; }
+        .verdict-detail td { padding: 1px 8px 1px 0; }
+        .verdict-detail td:first-child { color: var(--muted); white-space: nowrap; }
+
+        /* System prompt viewer modal */
+        #sp-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        #sp-modal-backdrop.open { display: flex; }
+        #sp-modal {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            width: min(560px, 90vw);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        #sp-modal h3 { margin: 0 0 12px; font-size: 14px; color: var(--primary); }
+        #sp-modal pre {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--text);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #sp-modal .sp-note {
+            font-size: 11px;
+            color: var(--warning);
+            margin-top: 8px;
+            padding: 6px 10px;
+            border: 1px solid var(--warning);
+            border-radius: 6px;
+            background: rgba(224,175,104,0.08);
+        }
+        #sp-modal-close {
+            float: right;
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+        #sp-modal-close:hover { color: var(--text); }
+
         /* #12 — API key visibility toggle */
         .api-key-wrapper {
             position: relative;
@@ -1043,6 +1130,9 @@ Respond ONLY with valid JSON, no other text:
                             <textarea id="system-prompt" style="height:150px;width:100%;box-sizing:border-box;" placeholder="Define LLM behavior..."></textarea>
                             <button class="btn-secondary" style="font-size:10px;padding:5px 10px;width:100%;margin-top:6px;" onclick="saveCustomPersona()">
                                 💾 Save as Custom Persona
+                            </button>
+                            <button class="btn-secondary" style="font-size:10px;padding:5px 10px;width:100%;margin-top:6px;" onclick="viewSystemPrompt()">
+                                👁 View Active Prompt
                             </button>
                         </div>
                     </details>
@@ -1887,7 +1977,8 @@ Waiting for LLM...</pre>
             const userDiv = document.createElement("div");
             userDiv.className = "message";
             userDiv.id = msgId;
-            userDiv.innerHTML = `<span class="user-label">USER <span class="msg-timestamp">${getTimestamp()}</span><span class="scan-badge off" id="${msgId}-badge-guard"  style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-canary" style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-airs"   style="display:none"></span></span>${userPrompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
+            userDiv.dataset.prompt = userPrompt;
+            userDiv.innerHTML = `<span class="user-label">USER <span class="msg-timestamp">${getTimestamp()}</span><span class="scan-badge off" id="${msgId}-badge-guard"  style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-canary" style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-airs"   style="display:none"></span><button class="replay-btn" title="Re-inject this prompt">↩</button></span>${userPrompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
             chatBox.appendChild(userDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -2087,6 +2178,9 @@ Waiting for LLM...</pre>
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge blocked";
                     airsBadge.textContent = `🛑 BLOCKED ${_aLat}`;
+                    airsBadge.dataset.verdict = JSON.stringify(promptScan);
+                    airsBadge.title = "Click to expand";
+                    airsBadge.style.cursor = "pointer";
                     const threats = promptScan.detected.length
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
@@ -2108,6 +2202,9 @@ Waiting for LLM...</pre>
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge flagged";
                     airsBadge.textContent = `⚠️ FLAGGED ${_aLat}`;
+                    airsBadge.dataset.verdict = JSON.stringify(promptScan);
+                    airsBadge.title = "Click to expand";
+                    airsBadge.style.cursor = "pointer";
                     const threats = promptScan.detected.length
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
@@ -2122,6 +2219,9 @@ Waiting for LLM...</pre>
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge allowed";
                     airsBadge.textContent = `✅ ALLOWED ${_aLat}`;
+                    airsBadge.dataset.verdict = JSON.stringify(promptScan);
+                    airsBadge.title = "Click to expand";
+                    airsBadge.style.cursor = "pointer";
                 }
             } else {
                 [
@@ -2277,6 +2377,9 @@ Waiting for LLM...</pre>
                     if (resBadge) {
                         resBadge.className = "scan-badge";
                         resBadge.textContent = `SCAN ERR ${_rLat}`;
+                        resBadge.dataset.verdict = JSON.stringify(responseScan);
+                        resBadge.title = "Click to expand";
+                        resBadge.style.cursor = "pointer";
                     }
                     document.getElementById("debug-status").innerText =
                         "Response Scan Error";
@@ -2290,6 +2393,9 @@ Waiting for LLM...</pre>
                     if (resBadge) {
                         resBadge.className = "scan-badge blocked";
                         resBadge.textContent = `🛑 BLOCKED ${_rLat}`;
+                        resBadge.dataset.verdict = JSON.stringify(responseScan);
+                        resBadge.title = "Click to expand";
+                        resBadge.style.cursor = "pointer";
                     }
 
                     if (airsMode === "strict") {
@@ -2316,6 +2422,9 @@ Waiting for LLM...</pre>
                         if (resBadge) {
                             resBadge.className = "scan-badge flagged";
                             resBadge.textContent = `⚠️ FLAGGED ${_rLat}`;
+                            resBadge.dataset.verdict = JSON.stringify(responseScan);
+                            resBadge.title = "Click to expand";
+                            resBadge.style.cursor = "pointer";
                         }
                     }
                     document.getElementById("debug-status").innerText =
@@ -2325,6 +2434,9 @@ Waiting for LLM...</pre>
                     if (resBadge) {
                         resBadge.className = "scan-badge flagged";
                         resBadge.textContent = `⚠️ MASKED ${_rLat}`;
+                        resBadge.dataset.verdict = JSON.stringify(responseScan);
+                        resBadge.title = "Click to expand";
+                        resBadge.style.cursor = "pointer";
                     }
                     const maskHtml = `<div class="security-alert" style="color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-bottom:10px;">
                             ⚠️ AIRS: Sensitive data detected and masked in response</div>`;
@@ -2337,6 +2449,9 @@ Waiting for LLM...</pre>
                     if (resBadge) {
                         resBadge.className = "scan-badge allowed";
                         resBadge.textContent = `✅ CLEAN ${_rLat}`;
+                        resBadge.dataset.verdict = JSON.stringify(responseScan);
+                        resBadge.title = "Click to expand";
+                        resBadge.style.cursor = "pointer";
                     }
                     document.getElementById("debug-status").innerText =
                         "Done ✅";
@@ -2430,6 +2545,65 @@ Waiting for LLM...</pre>
             _tooltip.style.top  = y + "px";
         }
 
+        // Feature 1 — Replay prompt
+        function replayPrompt(text) {
+            const input = document.getElementById("user-input");
+            input.value = text;
+            input.style.height = "auto";
+            input.style.height = input.scrollHeight + "px";
+            document.getElementById("char-counter").textContent = text.length + " chars";
+            document.getElementById("send-btn").disabled = false;
+            input.focus();
+        }
+
+        // Feature 2 — View active system prompt
+        function viewSystemPrompt() {
+            const sysProm = document.getElementById("system-prompt").value.trim();
+            const canaryMode = document.getElementById("canary-mode").value;
+            const body = document.getElementById("sp-modal-body");
+            let html = `<pre>${sysProm || "(empty — no system instructions set)"}</pre>`;
+            if (canaryMode !== "off" && canaryMode !== "monitor") {
+                html += `<div class="sp-note">⚠️ Little Canary is active — a canary advisory prefix is dynamically prepended to this prompt at send time. The exact prefix appears in API Inspector → Phase 0.5 Response.</div>`;
+            }
+            body.innerHTML = html;
+            document.getElementById("sp-modal-backdrop").classList.add("open");
+        }
+        function closeSPModal() {
+            document.getElementById("sp-modal-backdrop").classList.remove("open");
+        }
+
+        // Feature 1 & 3 — Delegated click handler on chat-box
+        document.getElementById("chat-box").addEventListener("click", function(e) {
+            // Replay button
+            if (e.target.classList.contains("replay-btn")) {
+                const msgDiv = e.target.closest(".message");
+                if (msgDiv && msgDiv.dataset.prompt) replayPrompt(msgDiv.dataset.prompt);
+                return;
+            }
+            // AIRS badge expansion
+            if (e.target.classList.contains("scan-badge") && e.target.dataset.verdict) {
+                const badge = e.target;
+                const existing = badge.nextElementSibling;
+                if (existing && existing.classList.contains("verdict-detail")) {
+                    existing.remove();
+                    return;
+                }
+                let v;
+                try { v = JSON.parse(badge.dataset.verdict); } catch { return; }
+                const cls = v.action === "block" ? "blocked" : v.action === "alert" ? "flagged" : "allowed";
+                const rows = [
+                    ["Action",   v.action   || "—"],
+                    ["Category", v.category || "—"],
+                    ["Detected", (v.detected && v.detected.length) ? v.detected.join(", ") : "none"],
+                    ["Scan ID",  v.scanId   || "—"],
+                ];
+                const det = document.createElement("div");
+                det.className = `verdict-detail ${cls}`;
+                det.innerHTML = `<table>${rows.map(([k,val]) => `<tr><td>${k}</td><td>${val}</td></tr>`).join("")}</table>`;
+                badge.insertAdjacentElement("afterend", det);
+            }
+        });
+
         // #6 — Show scroll-to-bottom button when not at bottom
         document
             .getElementById("chat-box")
@@ -2442,6 +2616,15 @@ Waiting for LLM...</pre>
                     .classList.toggle("visible", notAtBottom);
             });
     </script>
+
+    <!-- System Prompt Viewer Modal -->
+    <div id="sp-modal-backdrop" onclick="if(event.target===this)closeSPModal()">
+        <div id="sp-modal">
+            <button id="sp-modal-close" onclick="closeSPModal()">✕</button>
+            <h3>👁 Active System Prompt</h3>
+            <div id="sp-modal-body"></div>
+        </div>
+    </div>
 </body>
 
 </html>
