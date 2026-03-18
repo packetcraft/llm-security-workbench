@@ -601,6 +601,21 @@
             gap: 0;
         }
 
+        /* LLM generation time pill on AI messages */
+        .llm-time-badge {
+            display: inline-block;
+            font-size: 9px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            vertical-align: middle;
+            background: #1a1a1a;
+            color: #aaa;
+            border: 1px solid #444;
+        }
+
         /* #11 — Scan badge on user messages */
         .scan-badge {
             display: inline-block;
@@ -1792,7 +1807,10 @@ Waiting for LLM...</pre>
                 guardBadge.textContent = "🔒 Scanning...";
                 document.getElementById("debug-status").innerText = "🔒 Phase 0: Native guardrail...";
 
+                const _gt0 = Date.now();
                 const gResult = await runNativeGuardrail(userPrompt, guardModel, guardSystemPrompt, guardThreshold);
+                const _gMs = Date.now() - _gt0;
+                const _gLat = _gMs < 1000 ? `· ${_gMs}ms` : `· ${(_gMs/1000).toFixed(1)}s`;
 
                 if (gResult.error) {
                     // Guardrail call failed — fail open, show warning in chat
@@ -1805,7 +1823,7 @@ Waiting for LLM...</pre>
                 } else if (gResult.blocked) {
                     if (guardEnforcement === "strict") {
                         guardBadge.className = "scan-badge guardrail-block";
-                        guardBadge.textContent = "🔒 Blocked";
+                        guardBadge.textContent = `🔒 Blocked ${_gLat}`;
                         const blockDiv = document.createElement("div");
                         blockDiv.className = "message security-alert";
                         blockDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
@@ -1820,7 +1838,7 @@ Waiting for LLM...</pre>
                     } else {
                         // Audit: flag but proceed
                         guardBadge.className = "scan-badge guardrail-block";
-                        guardBadge.textContent = "🔒 Flagged";
+                        guardBadge.textContent = `🔒 Flagged ${_gLat}`;
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
@@ -1831,7 +1849,7 @@ Waiting for LLM...</pre>
                     }
                 } else {
                     guardBadge.className = "scan-badge guardrail-pass";
-                    guardBadge.textContent = "🔒 Safe";
+                    guardBadge.textContent = `🔒 Safe ${_gLat}`;
                 }
             }
 
@@ -1851,7 +1869,10 @@ Waiting for LLM...</pre>
                 }
 
                 document.getElementById("debug-status").innerText = "🐦 Phase 0.5: Little Canary scanning...";
+                const _ct0 = Date.now();
                 const cResult = await runLittleCanary(userPrompt, canaryModel, canaryMode, canaryThreshold);
+                const _cMs = Date.now() - _ct0;
+                const _cLat = _cMs < 1000 ? `· ${_cMs}ms` : `· ${(_cMs/1000).toFixed(1)}s`;
 
                 if (cResult.error) {
                     const warnDiv = document.createElement("div");
@@ -1864,7 +1885,7 @@ Waiting for LLM...</pre>
                     // Full mode: block on unsafe OR flagged advisory
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge guardrail-block";
-                    canaryBadge.textContent = "🐦 Blocked";
+                    canaryBadge.textContent = `🐦 Blocked ${_cLat}`;
                     const blockDiv = document.createElement("div");
                     blockDiv.className = "message security-alert";
                     blockDiv.style.cssText = "color:#e67e22;border-color:#e67e22;background:rgba(230,126,34,0.1)";
@@ -1881,7 +1902,7 @@ Waiting for LLM...</pre>
                     canaryAdvisoryPrefix = cResult.advisory.system_prefix;
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge flagged";
-                    canaryBadge.textContent = "🐦 Flagged";
+                    canaryBadge.textContent = `🐦 Flagged ${_cLat}`;
                     const warnDiv = document.createElement("div");
                     warnDiv.className = "message security-alert";
                     warnDiv.style.cssText = "color:#f1c40f;border-color:#f1c40f;background:rgba(241,196,15,0.1)";
@@ -1891,7 +1912,7 @@ Waiting for LLM...</pre>
                 } else {
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge allowed";
-                    canaryBadge.textContent = "🐦 Safe";
+                    canaryBadge.textContent = `🐦 Safe ${_cLat}`;
                 }
             } else {
                 document.getElementById("debug-canary-req").innerText = "Canary Disabled.";
@@ -1917,6 +1938,7 @@ Waiting for LLM...</pre>
                 document.getElementById("debug-response-res").innerText =
                     "Waiting for Phase 2...";
 
+                const _at0 = Date.now();
                 const promptScan = await scanWithAIRS(
                     { prompt: userPrompt },
                     "prompt",
@@ -1925,11 +1947,13 @@ Waiting for LLM...</pre>
                     airsApiKey,
                     modelSelect,
                 );
+                const _aMs = Date.now() - _at0;
+                const _aLat = _aMs < 1000 ? `· ${_aMs}ms` : `· ${(_aMs/1000).toFixed(1)}s`;
 
                 if (promptScan.status === "error") {
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge";
-                    airsBadge.textContent = "Error";
+                    airsBadge.textContent = `Error ${_aLat}`;
                     const errDiv = document.createElement("div");
                     errDiv.className = "message security-alert";
                     errDiv.innerHTML = `🛑 PRISMA PROXY ERROR (Phase 1)<br>${promptScan.message}<br><small>Make sure server.js is running on localhost:3080</small>`;
@@ -1945,7 +1969,7 @@ Waiting for LLM...</pre>
                     // Strict mode: LLM never reached
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge blocked";
-                    airsBadge.textContent = "🛑 Blocked";
+                    airsBadge.textContent = `🛑 Blocked ${_aLat}`;
                     const threats = promptScan.detected.length
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
@@ -1966,7 +1990,7 @@ Waiting for LLM...</pre>
                     // Audit mode: flag but proceed to LLM
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge flagged";
-                    airsBadge.textContent = "⚠️ Flagged";
+                    airsBadge.textContent = `⚠️ Flagged ${_aLat}`;
                     const threats = promptScan.detected.length
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
@@ -1980,7 +2004,7 @@ Waiting for LLM...</pre>
                 } else {
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge allowed";
-                    airsBadge.textContent = "✅ Allowed";
+                    airsBadge.textContent = `✅ Allowed ${_aLat}`;
                 }
             } else {
                 [
@@ -2012,6 +2036,7 @@ Waiting for LLM...</pre>
                         AI
                         <span class="identity-info">(${modelSelect} — ${personaLabel})</span>
                         <span class="msg-timestamp">${getTimestamp()}</span>
+                        <span class="llm-time-badge" id="${botMsgId}-llm-time" style="display:none"></span>
                         ${airsMode !== "off" ? `<span class="scan-badge off" id="${botMsgId}-badge">Scanning resp...</span>` : ""}
                     </span>
                     <span class="content"></span><span class="cursor"></span>
@@ -2050,6 +2075,7 @@ Waiting for LLM...</pre>
 
             let fullRes = "";
             let streamError = false;
+            const _llmT0 = Date.now();
 
             try {
                 const response = await fetch(
@@ -2098,6 +2124,14 @@ Waiting for LLM...</pre>
             } finally {
                 botDiv.querySelector(".cursor")?.remove();
                 document.getElementById("stop-btn").disabled = true;
+                const _llmMs = Date.now() - _llmT0;
+                const llmTimeEl = document.getElementById(botMsgId + "-llm-time");
+                if (llmTimeEl) {
+                    llmTimeEl.textContent = _llmMs < 1000
+                        ? `🤖 ${_llmMs}ms`
+                        : `🤖 ${(_llmMs / 1000).toFixed(1)}s`;
+                    llmTimeEl.style.display = "inline-block";
+                }
             }
 
             // ══════════════════════════════════════════
@@ -2110,6 +2144,7 @@ Waiting for LLM...</pre>
                     botMsgId + "-badge",
                 );
 
+                const _r0 = Date.now();
                 const responseScan = await scanWithAIRS(
                     { prompt: userPrompt, response: fullRes },
                     "response",
@@ -2118,11 +2153,13 @@ Waiting for LLM...</pre>
                     airsApiKey,
                     modelSelect,
                 );
+                const _rMs = Date.now() - _r0;
+                const _rLat = _rMs < 1000 ? `· ${_rMs}ms` : `· ${(_rMs/1000).toFixed(1)}s`;
 
                 if (responseScan.status === "error") {
                     if (resBadge) {
                         resBadge.className = "scan-badge";
-                        resBadge.textContent = "Scan Err";
+                        resBadge.textContent = `Scan Err ${_rLat}`;
                     }
                     document.getElementById("debug-status").innerText =
                         "Response Scan Error";
@@ -2135,7 +2172,7 @@ Waiting for LLM...</pre>
                         : responseScan.category;
                     if (resBadge) {
                         resBadge.className = "scan-badge blocked";
-                        resBadge.textContent = "🛑 Blocked";
+                        resBadge.textContent = `🛑 Blocked ${_rLat}`;
                     }
 
                     if (airsMode === "strict") {
@@ -2161,7 +2198,7 @@ Waiting for LLM...</pre>
                         }
                         if (resBadge) {
                             resBadge.className = "scan-badge flagged";
-                            resBadge.textContent = "⚠️ Flagged";
+                            resBadge.textContent = `⚠️ Flagged ${_rLat}`;
                         }
                     }
                     document.getElementById("debug-status").innerText =
@@ -2170,7 +2207,7 @@ Waiting for LLM...</pre>
                     // Allowed but DLP masking applied
                     if (resBadge) {
                         resBadge.className = "scan-badge flagged";
-                        resBadge.textContent = "⚠️ Masked";
+                        resBadge.textContent = `⚠️ Masked ${_rLat}`;
                     }
                     const maskHtml = `<div class="security-alert" style="color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-bottom:10px;">
                             ⚠️ AIRS: Sensitive data detected and masked in response</div>`;
@@ -2182,7 +2219,7 @@ Waiting for LLM...</pre>
                 } else {
                     if (resBadge) {
                         resBadge.className = "scan-badge allowed";
-                        resBadge.textContent = "✅ Clean";
+                        resBadge.textContent = `✅ Clean ${_rLat}`;
                     }
                     document.getElementById("debug-status").innerText =
                         "Done ✅";

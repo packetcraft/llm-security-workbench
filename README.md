@@ -10,6 +10,7 @@ A local-first AI security testing workbench built on **Ollama**. Evaluates promp
 * **DLP Response Masking:** If Prisma AIRS detects sensitive data in the LLM response, the masked version is displayed instead.
 * **Zero-CORS Security Proxy:** A local Node.js proxy routes all AIRS API calls, bypassing browser CORS restrictions.
 * **Three Enforcement Modes:** Strict (block), Audit (flag and continue), or Off — applied independently to all security phases, each with a 3-state colour indicator in the header and panel border.
+* **Per-Phase Latency Badges:** Every scan badge shows its own round-trip time inline — e.g. `🔒 Safe · 312ms`, `🐦 Blocked · 1.4s`, `✅ Allowed · 819ms`, `🛑 Blocked · 337ms`. A separate dark pill on the AI message shows LLM generation time (`🤖 3.2s`), covering all five stages of the pipeline.
 * **API Inspector (5-Phase View):** Five-column debug panel showing Phase 0, Phase 0.5 (Canary), Phase 1 AIRS, Ollama, and Phase 2 AIRS side-by-side. All panels reset automatically on each new prompt.
 * **Model Parameter Controls:** Live sliders for Temperature, Top P, Top K, and Repeat Penalty — wired directly into the Ollama `options` payload with ℹ tooltip explanations on each control.
 * **Dynamic Persona Library:** Built-in and custom personas with `localStorage` persistence.
@@ -471,7 +472,7 @@ npm run stage           # prints all available files
 | `2a-mechat-airs-teaching-demo.html` | **Teaching demo** — introduce AIRS as a prompt gate | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments |
 | `3a-llm-security-workbench-twin-scan.html` | **Full workbench** — production-grade twin-scan | ✓ | Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector |
 | `4a-llm-security-workbench-native-guardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt) |
-| `5a-llm-security-workbench-little-canary.html` | **Five-gate workbench** — adds Phase 0.5 Little Canary | ✓ | All of 4a + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector |
+| `5a-llm-security-workbench-little-canary.html` | **Five-gate workbench** — adds Phase 0.5 Little Canary | ✓ | All of 4a + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector, per-phase latency badges + LLM generation timer |
 
 ### Recommended learning path
 
@@ -585,7 +586,8 @@ All columns reset to "Waiting..." automatically when a new prompt is sent.
 * **Native Guardrail:** Expand **⚙️ Guardrail Settings** to pick the judge model, set the confidence threshold, and tune the safety system prompt. Start with the default, then tighten by adding domain-specific forbidden patterns.
 * **Guardrail without AIRS:** The Native Guardrail runs entirely over `localhost:11434` — no API key needed. It can be used standalone with AIRS mode set to Off for fully offline safety testing.
 * **Insert Threat:** Use the dropdown to load pre-built adversarial prompts into the prompt box.
-* **API Inspector:** Expand at the bottom to inspect all four phases (Phase 0, Phase 1, Ollama, Phase 2) in real-time. Panels clear automatically on every new prompt.
+* **API Inspector:** Expand at the bottom to inspect all five phases in real-time. Panels clear automatically on every new prompt.
+* **Latency reading:** Scan badge timings measure the raw API round-trip for each security phase. The `🤖` pill on the AI message covers the full Ollama stream from first byte to last token — useful for comparing model sizes or spotting slow AIRS profiles.
 * **Custom Profiles:** Expand **⚙️ AIRS Settings** then click **➕ Add Custom Security Profile** to enter your organisation's Prisma AIRS Profile ID.
 * **Little Canary Advisory mode:** Prefer Advisory over Full when starting out — it injects a warning into the system prompt rather than hard-blocking, so you can observe how the LLM handles the flagged input while still being warned.
 * **Little Canary without AIRS:** Phase 0.5 runs entirely over `localhost` via the Flask microservice — no API key needed. It can be used standalone with AIRS mode set to Off.

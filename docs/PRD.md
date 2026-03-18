@@ -1,6 +1,6 @@
 # 📄 Product Requirements Document: Ollama Pro Workbench
 
-**Version:** 2.7 (Little Canary — Phase 0.5)
+**Version:** 2.8 (Per-Phase Latency Badges)
 **Date:** 2026-03-18
 **Status:** Feature Complete / Stable Release
 
@@ -42,6 +42,12 @@ The **Ollama Pro Workbench** is a lightweight, browser-based environment for int
 * **Markdown & Syntax Highlighting:** `Marked.js` for rendering, `Highlight.js` (GitHub Dark) for code blocks.
 * **Dynamic Prompt Input:** Auto-expanding `textarea` with live character counter and `Shift+Enter` hint.
 * **Message Metadata:** Timestamps and AIRS scan badges on every user and bot message.
+* **Per-Phase Latency Badges (Layer 1):** Every scan badge appends its own measured round-trip time inline. Sub-second values display as `ms`; one second or more as `X.Xs`. All five stages are covered:
+  * USER message — Phase 0: `🔒 Safe · 312ms` / `🔒 Blocked · 1.4s` / `🔒 Flagged · 890ms`
+  * USER message — Phase 0.5: `🐦 Safe · 2.8s` / `🐦 Blocked · 1.1s` / `🐦 Flagged · 3.2s`
+  * USER message — Phase 1: `✅ Allowed · 819ms` / `🛑 Blocked · 204ms` / `⚠️ Flagged · 611ms`
+  * AI message — Phase 2: `✅ Clean · 422ms` / `🛑 Blocked · 337ms` / `⚠️ Flagged · 290ms` / `⚠️ Masked · 445ms`
+  * AI message — LLM generation: a distinct dark pill (`background: #1a1a1a`) showing `🤖 3.2s`, covering the full Ollama stream from fetch start to last token. Revealed in `finally` so it always fires — including on user-stopped streams.
 * **Dark/Light Mode:** Toggleable theme with CSS variable theming.
 * **Scroll-to-Bottom:** Floating button appears when chat is scrolled up.
 
@@ -164,7 +170,7 @@ Runs **before** the prompt reaches the LLM. Requires Prisma AIRS API key and mod
 * **On BLOCK (Strict mode):** Halt execution. LLM is never called. Show red block alert.
 * **On BLOCK (Audit mode):** Show yellow warning, continue to LLM.
 * **On ALLOW:** Proceed to LLM with no interruption.
-* **Scan badge** on user message updated with verdict: `✅ Allowed`, `⚠️ Flagged`, or `🛑 Blocked`.
+* **Scan badge** on user message updated with verdict and latency: `✅ Allowed · 819ms`, `⚠️ Flagged · 611ms`, or `🛑 Blocked · 204ms`.
 
 #### Phase 2 — Post-Response Scan
 
@@ -175,7 +181,7 @@ Runs **after** the LLM has generated its full response, before it is displayed.
 * **On BLOCK (Audit mode):** Show warning banner; if `response_masked_data` is present, display the AIRS-masked version of the response.
 * **On DLP Masking (Allow + masked data):** Display the masked response with a `⚠️ Masked` notice.
 * **On ALLOW:** Display response normally.
-* **Scan badge** on bot message updated with verdict: `✅ Clean`, `⚠️ Flagged`, `⚠️ Masked`, or `🛑 Blocked`.
+* **Scan badge** on bot message updated with verdict and latency: `✅ Clean · 422ms`, `⚠️ Flagged · 290ms`, `⚠️ Masked · 445ms`, or `🛑 Blocked · 337ms`.
 
 #### Enforcement Modes
 
@@ -247,6 +253,8 @@ Collapsible full-width panel below the main layout. Displays five columns in par
 All columns reset to "Waiting..." automatically at the start of each new prompt, preventing stale data from a prior exchange persisting when a phase does not run (e.g. Phase 0.5 blocks, so Phase 1/2 never fire).
 
 Real-time status indicator in the header cycles through: `🔒 Phase 0: Native guardrail...` → `🐦 Phase 0.5: Little Canary scanning...` → `🔍 Phase 1: Scanning prompt...` → `🤖 Streaming LLM...` → `🔍 Phase 2: Scanning response...` → `Done ✅`.
+
+**Per-phase latency** is displayed inline on each badge as it resolves — observers can read bottlenecks without opening the API Inspector. The LLM generation pill (`🤖 Xs`) appears on the AI message header immediately after the stream ends (or is stopped), distinct from the security scan badges via its dark background style.
 
 ---
 
@@ -487,7 +495,7 @@ llm-security-workbench/
 
 * **Guardrail fine-tuning helper:** A sidebar tool that runs a batch of sample threats against the current judge model + system prompt and reports pass/fail rates to help calibrate the threshold.
 * **Canary batch evaluation:** Run the Little Canary pipeline against the built-in threat library in bulk and report pass/fail rates per threat category, helping calibrate the block threshold.
-* **API Inspector latency column:** Show per-phase latency (ms) alongside each request/verdict in the inspector, making performance bottlenecks visible.
+* **API Inspector latency column (Layer 2):** Show cumulative pipeline timing as a summary message in chat after each full pipeline run, making end-to-end cost visible at a glance. *(Layer 1 — inline badge latency — shipped in v2.8.)*
 * **Model parameter presets:** Save and recall named parameter sets (e.g. "Creative", "Factual", "Code") from the Model Parameters panel.
 * **Chat Memory:** Store last N messages to give the LLM conversation history within a session.
 * **Export Engine:** Download full chat + all-phase scan logs as JSON or Markdown for audit compliance.
