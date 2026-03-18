@@ -5,6 +5,7 @@
     <title>AIRS Teaching — Prompt Scan Gate</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        /* ── Tokyo Night ── */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -13,8 +14,8 @@
 
         body {
             font-family: "Courier New", Courier, monospace;
-            background: #0d0d0d;
-            color: #c8c8c8;
+            background: #16161e;
+            color: #c0caf5;
             max-width: 780px;
             margin: 0 auto;
             padding: 20px 20px 12px;
@@ -24,7 +25,7 @@
         }
 
         h2 {
-            color: #00ff88;
+            color: #bb9af7;
             font-size: 18px;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -32,7 +33,7 @@
         }
 
         #subtitle {
-            color: #555;
+            color: #565f89;
             font-size: 12px;
             margin-bottom: 16px;
         }
@@ -40,8 +41,8 @@
         #chat-box {
             flex: 1;
             min-height: 0;
-            border: 1px solid #2a2a2a;
-            background: #111;
+            border: 1px solid #292e42;
+            background: #1a1b26;
             overflow-y: scroll;
             padding: 14px;
             margin-bottom: 10px;
@@ -57,45 +58,45 @@
 
         #user-input {
             padding: 8px 12px;
-            background: #111;
-            border: 1px solid #333;
-            color: #c8c8c8;
+            background: #1a1b26;
+            border: 1px solid #292e42;
+            color: #c0caf5;
             font-family: inherit;
             font-size: 14px;
             outline: none;
         }
 
         #user-input:focus {
-            border-color: #00ff88;
+            border-color: #7aa2f7;
         }
 
         button {
             padding: 8px 16px;
-            background: #0d0d0d;
-            border: 1px solid #00ff88;
-            color: #00ff88;
+            background: #16161e;
+            border: 1px solid #7aa2f7;
+            color: #7aa2f7;
             font-family: inherit;
             font-size: 14px;
             cursor: pointer;
         }
 
         button:hover {
-            background: #00ff88;
-            color: #0d0d0d;
+            background: #7aa2f7;
+            color: #16161e;
         }
 
         .user {
-            color: #00aaff;
+            color: #7aa2f7;
             font-weight: bold;
         }
 
         .bot {
-            color: #00ff88;
+            color: #9ece6a;
             font-weight: bold;
         }
 
         .block {
-            color: #ff4444;
+            color: #f7768e;
             font-weight: bold;
         }
 
@@ -109,28 +110,28 @@
         }
 
         .airs-badge.scanning {
-            background: #1a1a1a;
-            color: #555;
-            border: 1px solid #333;
+            background: #1a1b26;
+            color: #565f89;
+            border: 1px solid #292e42;
         }
 
         .airs-badge.allowed {
-            background: #0a1f0a;
-            color: #00ff88;
-            border: 1px solid #00ff88;
+            background: rgba(158, 206, 106, 0.1);
+            color: #9ece6a;
+            border: 1px solid #9ece6a;
         }
 
         .airs-badge.blocked {
-            background: #1f0a0a;
-            color: #ff4444;
-            border: 1px solid #ff4444;
+            background: rgba(247, 118, 142, 0.1);
+            color: #f7768e;
+            border: 1px solid #f7768e;
         }
 
         .inline-select {
             background: transparent;
             border: none;
-            border-bottom: 1px solid #444;
-            color: #00ccff;
+            border-bottom: 1px solid #292e42;
+            color: #2ac3de;
             font-family: inherit;
             font-size: 12px;
             cursor: pointer;
@@ -139,14 +140,14 @@
         }
 
         .inline-select:focus {
-            border-bottom-color: #00ccff;
+            border-bottom-color: #2ac3de;
         }
 
         .inline-input {
             background: transparent;
             border: none;
-            border-bottom: 1px solid #444;
-            color: #00ccff;
+            border-bottom: 1px solid #292e42;
+            color: #2ac3de;
             font-family: inherit;
             font-size: 12px;
             outline: none;
@@ -155,11 +156,11 @@
         }
 
         .inline-input::placeholder {
-            color: #444;
+            color: #3b4261;
         }
 
         .inline-input:focus {
-            border-bottom-color: #00ccff;
+            border-bottom-color: #2ac3de;
         }
 
         #airs-toggle {
@@ -169,38 +170,38 @@
             font-family: inherit;
             font-size: 12px;
             cursor: pointer;
-            color: #00ccff;
+            color: #2ac3de;
         }
 
         #airs-toggle:hover {
             background: transparent;
-            color: #fff;
+            color: #c0caf5;
         }
 
         /* ── terminal markdown ── */
         .bot-content p          { margin: 4px 0; line-height: 1.6; }
-        .bot-content strong     { color: #ffffff; font-weight: bold; }
-        .bot-content em         { color: #aaaaaa; font-style: italic; }
+        .bot-content strong     { color: #c0caf5; font-weight: bold; }
+        .bot-content em         { color: #a9b1d6; font-style: italic; }
         .bot-content h1,
         .bot-content h2,
-        .bot-content h3         { color: #00ff88; letter-spacing: 1px;
+        .bot-content h3         { color: #9ece6a; letter-spacing: 1px;
                                   margin: 10px 0 4px; font-size: 13px;
                                   text-transform: uppercase; }
         .bot-content ul,
         .bot-content ol         { margin: 4px 0 4px 18px; }
         .bot-content li         { margin: 2px 0; line-height: 1.6; }
-        .bot-content code       { background: #1a1a1a; color: #00ff88;
+        .bot-content code       { background: #292e42; color: #9ece6a;
                                   padding: 1px 5px; border-radius: 2px;
                                   font-family: inherit; font-size: 12px;
-                                  border: 1px solid #2a2a2a; }
-        .bot-content pre        { background: #111; border: 1px solid #2a2a2a;
+                                  border: 1px solid #3b4261; }
+        .bot-content pre        { background: #1a1b26; border: 1px solid #292e42;
                                   padding: 10px 14px; margin: 6px 0;
                                   overflow-x: auto; border-radius: 2px; }
         .bot-content pre code   { background: none; border: none;
-                                  padding: 0; color: #c8c8c8; }
-        .bot-content blockquote { border-left: 3px solid #333; margin: 6px 0;
-                                  padding-left: 10px; color: #666; }
-        .bot-content a          { color: #00ccff; text-decoration: none; }
+                                  padding: 0; color: #a9b1d6; }
+        .bot-content blockquote { border-left: 3px solid #292e42; margin: 6px 0;
+                                  padding-left: 10px; color: #565f89; }
+        .bot-content a          { color: #7aa2f7; text-decoration: none; }
         .bot-content a:hover    { text-decoration: underline; }
 
         /* scrollbar */
@@ -209,11 +210,11 @@
         }
 
         #chat-box::-webkit-scrollbar-track {
-            background: #0d0d0d;
+            background: #16161e;
         }
 
         #chat-box::-webkit-scrollbar-thumb {
-            background: #333;
+            background: #292e42;
         }
     </style>
 </head>
@@ -221,15 +222,16 @@
 <body>
 
     <h2>meChat</h2>
-    <p style="color:#555; font-size:12px; margin-bottom:16px; line-height:2.2;">
+    <p style="color:#565f89; font-size:12px; margin-bottom:16px; line-height:2.2;">
         i am a chat bot with <select id="persona-select" class="inline-select"></select> personality.<br>
-        powered by <select id="model-select" class="inline-select"></select> — chat ingress secured by Prisma AIRS.
+        powered by <select id="model-select" class="inline-select"></select><br>
+        — chat ingress secured by Prisma AIRS.
         <button id="airs-toggle" onclick="toggleAIRS()">[ 🛡️ AIRS ON ]</button><br>
         api key <input type="password" id="airs-api-key" class="inline-input" placeholder="x-pan-token" />
-        <span id="env-key-badge" style="display:none; font-size:10px; color:#28a745;">🔒 .env</span>
+        <span id="env-key-badge" style="display:none; font-size:10px; color:#9ece6a;">🔒 .env</span>
         &nbsp;·&nbsp;
         profile <input type="text" id="airs-profile" class="inline-input" style="width:140px;" placeholder="e.g. default" />
-        <span id="env-profile-badge" style="display:none; font-size:10px; color:#28a745;">🔒 .env</span>
+        <span id="env-profile-badge" style="display:none; font-size:10px; color:#9ece6a;">🔒 .env</span>
     </p>
 
     <div id="chat-box"></div>
@@ -285,7 +287,7 @@
             airsEnabled = !airsEnabled;
             const btn = document.getElementById("airs-toggle");
             btn.textContent = airsEnabled ? "[ 🛡️ AIRS ON ]" : "[ 🔓 AIRS OFF ]";
-            btn.style.color = airsEnabled ? "#00ccff" : "#555";
+            btn.style.color = airsEnabled ? "#2ac3de" : "#565f89";
         }
 
         // Populate persona dropdown
@@ -470,7 +472,8 @@
                 if (data.error) throw new Error(data.error);
                 const responseText = data.response ?? data.message?.content ?? "";
                 if (!responseText) throw new Error("Empty response from model");
-                chatBox.innerHTML += `<p><span class="bot">${persona.name}:</span></p><div class="bot-content">${marked.parse(responseText)}</div>`;
+                const modelShort = model.split(":")[0];
+                chatBox.innerHTML += `<p><span class="bot">${persona.name} (${modelShort}):</span></p><div class="bot-content">${marked.parse(responseText)}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch (err) {
                 chatBox.innerHTML += `<p style="color:red">LLM error: ${err.message}</p>`;

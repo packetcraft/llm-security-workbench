@@ -133,7 +133,73 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 10px 18px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             margin-bottom: 15px;
+            gap: 8px;
+        }
+
+        /* Thin vertical divider between header zones */
+        .header-sep {
+            width: 1px;
+            height: 20px;
+            background: var(--border);
+            margin: 0 10px;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        /* Status chip — pill border that reacts to active state */
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            background: transparent;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .status-chip.chip-warning {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+        .status-chip.chip-danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .status-chip.chip-purple {
+            border-color: var(--purple);
+            color: var(--purple);
+        }
+        .status-chip.chip-canary-adv {
+            border-color: var(--canary-adv);
+            color: var(--canary-adv);
+        }
+        .status-chip.chip-canary-blk {
+            border-color: var(--canary-blk);
+            color: var(--canary-blk);
+        }
+
+        /* Ghost buttons for secondary header actions */
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 13px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-ghost:hover {
+            background: var(--sidebar-btn-bg);
+            border-color: var(--primary);
         }
 
         #chat-box {
@@ -757,53 +823,46 @@
 
 <body class="dark">
     <div class="header">
-        <div style="
-                    display: flex;
-                    align-items: center;
-                    gap: 14px;
-                    flex-wrap: wrap;
-                ">
-            <h2 style="margin: 0">
+        <!-- Zone 1: Title -->
+        <div style="display:flex; align-items:center; gap:0; flex-shrink:0;">
+            <h2 style="margin:0; font-size:17px; white-space:nowrap;">
                 LLM Security Workbench ⚡
-                <span style="font-size: 12px; color: var(--primary)">v2.5 🐦</span>
             </h2>
-            <span class="model-badge" id="header-model-badge">No model</span>
-            <span id="header-airs-status" style="
-                        display: flex;
-                        align-items: center;
-                        font-size: 11px;
-                        opacity: 0.7;
-                    ">
+            <span style="font-size:11px; color:var(--text-muted); margin-left:8px; white-space:nowrap;">v2.5 🐦</span>
+        </div>
+
+        <div class="header-sep"></div>
+
+        <!-- Zone 2: Active model -->
+        <span class="model-badge" id="header-model-badge" title="">⬡ No model</span>
+
+        <div class="header-sep"></div>
+
+        <!-- Zone 3: Security status chips -->
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span class="status-chip" id="header-airs-status">
                 <span class="status-dot off"></span>
                 <span id="header-airs-label">AIRS Off</span>
             </span>
-            <span id="header-guardrail-status" style="
-                        display: flex;
-                        align-items: center;
-                        font-size: 11px;
-                        opacity: 0.7;
-                    ">
+            <span class="status-chip" id="header-guardrail-status">
                 <span class="status-dot off"></span>
                 <span id="header-guardrail-label">Phase 0 Off</span>
             </span>
-            <span id="header-canary-status" style="
-                        display: flex;
-                        align-items: center;
-                        font-size: 11px;
-                        opacity: 0.7;
-                    ">
+            <span class="status-chip" id="header-canary-status">
                 <span class="status-dot off"></span>
                 <span id="header-canary-label">Canary Off</span>
             </span>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center">
-            <button onclick="startNewSession()" title="Clear chat and start a new AIRS session">
+
+        <!-- Zone 4: Actions -->
+        <div style="display:flex; gap:8px; align-items:center; margin-left:auto; padding-left:12px; flex-shrink:0;">
+            <button class="btn-ghost" onclick="startNewSession()" title="Clear chat and start a new AIRS session">
                 🔄 New Session
             </button>
-            <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">
+            <button class="btn-ghost sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">
                 ◀ Sidebar
             </button>
-            <button onclick="document.body.classList.toggle('dark')">
+            <button class="btn-ghost" onclick="document.body.classList.toggle('dark')" title="Toggle light/dark theme">
                 🌓 Theme
             </button>
         </div>
@@ -1202,17 +1261,12 @@ Waiting for LLM...</pre>
 
         // #1/#2 — Update AIRS status dot and model badge in header
         function updateHeaderStatus(mode) {
-            const dot = document.querySelector(
-                "#header-airs-status .status-dot",
-            );
+            const chip  = document.getElementById("header-airs-status");
+            const dot   = chip.querySelector(".status-dot");
             const label = document.getElementById("header-airs-label");
             dot.className = "status-dot " + mode;
-            label.textContent =
-                {
-                    off: "AIRS Off",
-                    audit: "AIRS Audit",
-                    strict: "AIRS Strict",
-                }[mode] || mode;
+            label.textContent = { off: "AIRS Off", audit: "AIRS Audit", strict: "AIRS Strict" }[mode] || mode;
+            chip.className = "status-chip " + ({ audit: "chip-warning", strict: "chip-danger" }[mode] || "");
         }
 
         function updateModelBadge() {
@@ -1220,7 +1274,7 @@ Waiting for LLM...</pre>
             const full =
                 document.getElementById("model-select").value || "No model";
             const short = full.includes("/") ? full.split("/").pop() : full;
-            badge.textContent = short;
+            badge.textContent = "⬡ " + short;
             badge.title = full; // Full name on hover
         }
 
@@ -1577,11 +1631,13 @@ Waiting for LLM...</pre>
         }
 
         function updateGuardrailStatus(mode) {
-            const dot = document.querySelector("#header-guardrail-status .status-dot");
+            const chip  = document.getElementById("header-guardrail-status");
+            const dot   = chip.querySelector(".status-dot");
             const label = document.getElementById("header-guardrail-label");
             const dotClass = { off: "off", audit: "guardrail-audit", strict: "guardrail-strict" }[mode] || "off";
             dot.className = "status-dot " + dotClass;
             label.textContent = { off: "Phase 0 Off", audit: "Phase 0 Audit", strict: "Phase 0 Strict" }[mode] || "Phase 0 Off";
+            chip.className = "status-chip " + ({ audit: "chip-warning", strict: "chip-purple" }[mode] || "");
             const panel = document.getElementById("guardrail-panel");
             panel.classList.remove("mode-audit", "mode-guardrail-strict");
             if (mode === "audit") panel.classList.add("mode-audit");
@@ -1597,11 +1653,13 @@ Waiting for LLM...</pre>
         }
 
         function updateCanaryStatus(mode) {
-            const dot = document.querySelector("#header-canary-status .status-dot");
+            const chip  = document.getElementById("header-canary-status");
+            const dot   = chip.querySelector(".status-dot");
             const label = document.getElementById("header-canary-label");
             const dotClass = { off: "off", advisory: "canary-advisory", full: "canary-block" }[mode] || "off";
             dot.className = "status-dot " + dotClass;
             label.textContent = { off: "Canary Off", advisory: "Canary Advisory", full: "Canary Full" }[mode] || "Canary Off";
+            chip.className = "status-chip " + ({ advisory: "chip-canary-adv", full: "chip-canary-blk" }[mode] || "");
             const panel = document.getElementById("canary-panel");
             panel.classList.remove("mode-canary-advisory", "mode-canary-block");
             if (mode === "advisory") panel.classList.add("mode-canary-advisory");

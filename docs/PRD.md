@@ -1,6 +1,6 @@
 # 📄 Product Requirements Document: Ollama Pro Workbench
 
-**Version:** 2.8 (Per-Phase Latency Badges)
+**Version:** 2.9 (Header Bar Redesign & Teaching Demo Improvements)
 **Date:** 2026-03-18
 **Status:** Feature Complete / Stable Release
 
@@ -48,7 +48,9 @@ The **Ollama Pro Workbench** is a lightweight, browser-based environment for int
   * USER message — Phase 1: `✅ Allowed · 819ms` / `🛑 Blocked · 204ms` / `⚠️ Flagged · 611ms`
   * AI message — Phase 2: `✅ Clean · 422ms` / `🛑 Blocked · 337ms` / `⚠️ Flagged · 290ms` / `⚠️ Masked · 445ms`
   * AI message — LLM generation: a distinct dark pill (`background: #1a1a1a`) showing `🤖 3.2s`, covering the full Ollama stream from fetch start to last token. Revealed in `finally` so it always fires — including on user-stopped streams.
-* **Dark/Light Mode:** Toggleable theme with CSS variable theming.
+* **Organised Header Bar (5a):** Header split into four logical zones — **Title**, **Model badge** (prefixed `⬡`), **Security status chips**, and **Action buttons** — separated by thin vertical dividers. Status chips use coloured pill borders that update live when enforcement modes change: grey (off), yellow (audit/advisory), red (AIRS strict), purple (Phase 0 strict), canary orange (Phase 0.5 active). Action buttons (New Session, Sidebar, Theme) share a unified ghost style — transparent background with border, hover fills.
+* **2a Teaching Demo — Tokyo Night theme:** Full CSS rework to Tokyo Night palette. AI message header now shows `Persona (model-short-name):` for at-a-glance context. AIRS status line moved to its own line in the subtitle for readability.
+* **Dark/Light Mode:** Toggleable theme with CSS variable theming (5a: Tokyo Night Dark / Tokyo Night Light).
 * **Scroll-to-Bottom:** Floating button appears when chat is scrolled up.
 
 ### 3.3 Persona Library & Management
