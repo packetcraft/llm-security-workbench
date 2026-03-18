@@ -495,6 +495,8 @@ llm-security-workbench/
 
 ## 7. Future Roadmap
 
+### Previously identified
+
 * **Guardrail fine-tuning helper:** A sidebar tool that runs a batch of sample threats against the current judge model + system prompt and reports pass/fail rates to help calibrate the threshold.
 * **Canary batch evaluation:** Run the Little Canary pipeline against the built-in threat library in bulk and report pass/fail rates per threat category, helping calibrate the block threshold.
 * **API Inspector latency column (Layer 2):** Show cumulative pipeline timing as a summary message in chat after each full pipeline run, making end-to-end cost visible at a glance. *(Layer 1 — inline badge latency — shipped in v2.8.)*
@@ -504,3 +506,26 @@ llm-security-workbench/
 * **Scan History Panel:** Persist and review previous scan verdicts within the session.
 * **Multi-turn AIRS Context:** Pass conversation history in the AIRS `contents[]` array for improved multi-turn threat detection.
 * **Response Diff View:** When DLP masking is applied, show a side-by-side diff of the original vs. masked response (debug mode only).
+
+---
+
+### 🟢 Quick wins
+
+* **Session metrics scoreboard:** A live stat bar showing running totals for the session — prompts sent, blocked per phase (Phase 0 / Phase 0.5 / AIRS), and clean-through count. Updates after every pipeline run; makes threat coverage immediately visible during demos.
+* **Canary service health indicator:** A persistent `● Online` / `● Offline` dot in the Phase 0.5 panel that pings `:5001/health` on load and on a 30-second interval. Surfaces the "canary is down" condition before a scan fails mid-flow.
+* **Threat replay button:** A small `↩ Retry` icon on each user message that re-injects that prompt into the input box with current settings — useful for re-running the same threat after adjusting the security configuration.
+* **Active system prompt viewer:** A `👁 View prompt` button on the persona panel showing a read-only popup of the exact system prompt being sent to the LLM, including any canary advisory prefix that was prepended. Removes ambiguity about what the model is actually seeing.
+* **AIRS verdict detail expansion:** Clicking an AIRS badge (`🛑 Blocked · malicious`) expands it inline to show the full detector breakdown from the API response — `prompt_detected`, `category`, `sub_category`, severity. The data is already present in the response; it is just not yet surfaced in the UI.
+
+### 🟡 Medium effort
+
+* **Multi-turn conversation history:** Pass a rolling `messages[]` array (last N turns) on every `/api/chat` call so the LLM is context-aware across turns. The AIRS Phase 1 payload could similarly include prior turns for improved multi-turn threat detection.
+* **Batch threat runner:** A "Run All Threats" button that fires all library prompts through the current pipeline sequentially (with configurable delay between requests), then renders a results table showing threat type, blocking phase, and latency. Turns the workbench into a threshold calibration tool.
+* **Chat + scan export:** A "📥 Export session" button that downloads a JSON or Markdown file containing all messages, scan verdicts, latencies, and the active security configuration. Supports audit trail and post-demo review.
+* **DLP diff view:** When Phase 2 returns `response_masked_data`, show a collapsible before/after block on the AI message — original vs. masked side-by-side — rather than silently swapping in the masked version. Makes DLP masking behaviour explicit and teachable.
+
+### 🔴 Advanced
+
+* **Model comparison mode:** A toggle that sends the same prompt to two Ollama models simultaneously in a split-pane view, running the full pipeline against both responses. Demonstrates how model choice affects threat surface and response quality.
+* **Guardrail calibration helper:** A sidebar tool that runs a curated set of safe and adversarial prompts against the current Phase 0 judge model and system prompt, then shows a confusion matrix (true positive, false positive, false negative) at each threshold value — enabling empirical threshold tuning.
+* **AIRS report deep-link:** Surface the `scan_id` / `report_id` returned in each AIRS response as a clickable link to the AIRS console report, bridging the local workbench to the cloud audit trail.
