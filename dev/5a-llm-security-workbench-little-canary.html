@@ -738,38 +738,6 @@
     <div class="two-col-layout">
         <!-- ═══ LEFT COLUMN ═══ -->
         <div class="left-col">
-            <!-- Prisma AIRS Integration -->
-            <div class="panel security-group">
-                <label style="color: var(--danger)">🛡️ Prisma AIRS Integration</label>
-                <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-                    <select id="airs-mode" onchange="toggleAIRSSettings()">
-                        <option value="off">Off (LLM Only)</option>
-                        <option value="audit">Audit Only (Twin-Scan)</option>
-                        <option value="strict">Strict (Pre-Flight Block)</option>
-                    </select>
-                    <details style="margin-top:2px;">
-                        <summary style="font-size:11px;cursor:pointer;color:var(--danger);">⚙️ AIRS Settings</summary>
-                        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-                            <div class="api-key-wrapper">
-                                <input type="password" id="airs-api-key" placeholder="AIRS API Key (x-pan-token)" disabled />
-                                <button class="api-key-toggle" onclick="toggleApiKeyVisibility()" title="Show/hide key">👁</button>
-                            </div>
-                            <span id="env-key-badge" style="display:none; font-size:10px; color:#00ff88;">🔒 .env</span>
-                            <select id="airs-profile" disabled>
-                                <optgroup label="Default Built-in">
-                                    <option value="default">Default Profile</option>
-                                </optgroup>
-                                <optgroup label="Custom Profiles" id="custom-airs-group"></optgroup>
-                            </select>
-                            <span id="env-profile-badge" style="display:none; font-size:10px; color:#00ff88;">🔒 .env</span>
-                            <button id="add-airs-btn" class="btn-secondary" style="font-size:10px;padding:5px;" onclick="addCustomAirsProfile()" disabled>
-                                ➕ Add Custom Security Profile
-                            </button>
-                        </div>
-                    </details>
-                </div>
-            </div>
-
             <!-- Native Guardrail (Phase 0) -->
             <div class="panel security-group" id="guardrail-panel">
                 <label style="color: #9b59b6">🔒 Native Guardrail (Phase 0)</label>
@@ -831,6 +799,38 @@ Respond ONLY with valid JSON, no other text:
                             <p style="font-size:10px;color:#888;margin:0;line-height:1.5;">
                                 Runs two layers: fast structural regex filter (~1ms) then a behavioural canary probe using the selected Ollama model (~250ms). Requires <code>python/canary_server.py</code> running on :5001.
                             </p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Prisma AIRS (Phase 1 & 2) -->
+            <div class="panel security-group">
+                <label style="color: var(--danger)">🛡️ Prisma AIRS (Phase 1 &amp; 2)</label>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+                    <select id="airs-mode" onchange="toggleAIRSSettings()">
+                        <option value="off">Off (LLM Only)</option>
+                        <option value="audit">Audit Only (Twin-Scan)</option>
+                        <option value="strict">Strict (Pre-Flight Block)</option>
+                    </select>
+                    <details style="margin-top:2px;">
+                        <summary style="font-size:11px;cursor:pointer;color:var(--danger);">⚙️ AIRS Settings</summary>
+                        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+                            <div class="api-key-wrapper">
+                                <input type="password" id="airs-api-key" placeholder="AIRS API Key (x-pan-token)" disabled />
+                                <button class="api-key-toggle" onclick="toggleApiKeyVisibility()" title="Show/hide key">👁</button>
+                            </div>
+                            <span id="env-key-badge" style="display:none; font-size:10px; color:#00ff88;">🔒 .env</span>
+                            <select id="airs-profile" disabled>
+                                <optgroup label="Default Built-in">
+                                    <option value="default">Default Profile</option>
+                                </optgroup>
+                                <optgroup label="Custom Profiles" id="custom-airs-group"></optgroup>
+                            </select>
+                            <span id="env-profile-badge" style="display:none; font-size:10px; color:#00ff88;">🔒 .env</span>
+                            <button id="add-airs-btn" class="btn-secondary" style="font-size:10px;padding:5px;" onclick="addCustomAirsProfile()" disabled>
+                                ➕ Add Custom Security Profile
+                            </button>
                         </div>
                     </details>
                 </div>
