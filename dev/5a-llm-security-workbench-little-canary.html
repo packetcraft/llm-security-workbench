@@ -743,9 +743,9 @@
                 <label style="color: #9b59b6">🔒 Native Guardrail (Phase 0)</label>
                 <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
                     <select id="guardrail-mode" onchange="toggleGuardrailSettings()">
-                        <option value="off">Off (Disabled)</option>
-                        <option value="audit">Audit — warn and proceed</option>
-                        <option value="strict">Strict — block on fail</option>
+                        <option value="off">⚫ Off (Disabled)</option>
+                        <option value="audit">🟡 Audit — warn and proceed</option>
+                        <option value="strict">🔴 Strict — block on fail</option>
                     </select>
                     <details style="margin-top:2px;">
                         <summary style="font-size:11px;cursor:pointer;color:#9b59b6;">⚙️ Guardrail Settings</summary>
@@ -779,9 +779,9 @@ Respond ONLY with valid JSON, no other text:
                 <label style="color:#f1c40f">🐦 Little Canary (Phase 0.5)</label>
                 <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
                     <select id="canary-mode" onchange="toggleCanarySettings()">
-                        <option value="off">Off (Disabled)</option>
-                        <option value="advisory">Advisory — flag &amp; inject warning</option>
-                        <option value="full">Full — block high-confidence attacks</option>
+                        <option value="off">⚫ Off (Disabled)</option>
+                        <option value="advisory">🟡 Advisory — flag &amp; inject warning</option>
+                        <option value="full">🔴 Full — block high-confidence attacks</option>
                     </select>
                     <details style="margin-top:2px;">
                         <summary style="font-size:11px;cursor:pointer;color:#f1c40f;">⚙️ Canary Settings</summary>
@@ -809,9 +809,9 @@ Respond ONLY with valid JSON, no other text:
                 <label style="color: var(--danger)">🛡️ Prisma AIRS (Phase 1 &amp; 2)</label>
                 <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
                     <select id="airs-mode" onchange="toggleAIRSSettings()">
-                        <option value="off">Off (LLM Only)</option>
-                        <option value="audit">Audit Only (Twin-Scan)</option>
-                        <option value="strict">Strict (Pre-Flight Block)</option>
+                        <option value="off">⚫ Off (LLM Only)</option>
+                        <option value="audit">🟡 Audit Only (Twin-Scan)</option>
+                        <option value="strict">🔴 Strict (Pre-Flight Block)</option>
                     </select>
                     <details style="margin-top:2px;">
                         <summary style="font-size:11px;cursor:pointer;color:var(--danger);">⚙️ AIRS Settings</summary>
