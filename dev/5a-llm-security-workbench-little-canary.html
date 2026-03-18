@@ -1755,7 +1755,7 @@ Waiting for LLM...</pre>
             const userDiv = document.createElement("div");
             userDiv.className = "message";
             userDiv.id = msgId;
-            userDiv.innerHTML = `<span class="user-label">USER <span class="msg-timestamp">${getTimestamp()}</span><span class="scan-badge off" id="${msgId}-badge">AIRS Off</span></span>${userPrompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
+            userDiv.innerHTML = `<span class="user-label">USER <span class="msg-timestamp">${getTimestamp()}</span><span class="scan-badge off" id="${msgId}-badge-guard"  style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-canary" style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-airs"   style="display:none"></span></span>${userPrompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
             chatBox.appendChild(userDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -1766,7 +1766,9 @@ Waiting for LLM...</pre>
             document.getElementById("threat-select").value = "";
             document.getElementById("send-btn").disabled = true;
 
-            const badge = document.getElementById(msgId + "-badge");
+            const guardBadge  = document.getElementById(msgId + "-badge-guard");
+            const canaryBadge = document.getElementById(msgId + "-badge-canary");
+            const airsBadge   = document.getElementById(msgId + "-badge-airs");
 
             // ══════════════════════════════════════════
             // PHASE 0 — NATIVE GUARDRAIL (LLM-as-judge)
@@ -1785,10 +1787,9 @@ Waiting for LLM...</pre>
                     return;
                 }
 
-                if (badge) {
-                    badge.className = "scan-badge off";
-                    badge.textContent = "🔒 Scanning...";
-                }
+                guardBadge.style.display = "inline";
+                guardBadge.className = "scan-badge off";
+                guardBadge.textContent = "🔒 Scanning...";
                 document.getElementById("debug-status").innerText = "🔒 Phase 0: Native guardrail...";
 
                 const gResult = await runNativeGuardrail(userPrompt, guardModel, guardSystemPrompt, guardThreshold);
@@ -1803,10 +1804,8 @@ Waiting for LLM...</pre>
                     chatBox.scrollTop = chatBox.scrollHeight;
                 } else if (gResult.blocked) {
                     if (guardEnforcement === "strict") {
-                        if (badge) {
-                            badge.className = "scan-badge guardrail-block";
-                            badge.textContent = "🔒 Blocked";
-                        }
+                        guardBadge.className = "scan-badge guardrail-block";
+                        guardBadge.textContent = "🔒 Blocked";
                         const blockDiv = document.createElement("div");
                         blockDiv.className = "message security-alert";
                         blockDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
@@ -1820,10 +1819,8 @@ Waiting for LLM...</pre>
                         return;
                     } else {
                         // Audit: flag but proceed
-                        if (badge) {
-                            badge.className = "scan-badge guardrail-block";
-                            badge.textContent = "🔒 Flagged";
-                        }
+                        guardBadge.className = "scan-badge guardrail-block";
+                        guardBadge.textContent = "🔒 Flagged";
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
@@ -1833,10 +1830,8 @@ Waiting for LLM...</pre>
                         chatBox.scrollTop = chatBox.scrollHeight;
                     }
                 } else {
-                    if (badge) {
-                        badge.className = "scan-badge guardrail-pass";
-                        badge.textContent = "🔒 Safe";
-                    }
+                    guardBadge.className = "scan-badge guardrail-pass";
+                    guardBadge.textContent = "🔒 Safe";
                 }
             }
 
@@ -1867,7 +1862,9 @@ Waiting for LLM...</pre>
                     chatBox.scrollTop = chatBox.scrollHeight;
                 } else if (!cResult.safe && canaryMode === "full") {
                     // Hard block
-                    if (badge) { badge.className = "scan-badge guardrail-block"; badge.textContent = "🐦 Blocked"; }
+                    canaryBadge.style.display = "inline";
+                    canaryBadge.className = "scan-badge guardrail-block";
+                    canaryBadge.textContent = "🐦 Blocked";
                     const blockDiv = document.createElement("div");
                     blockDiv.className = "message security-alert";
                     blockDiv.style.cssText = "color:#e67e22;border-color:#e67e22;background:rgba(230,126,34,0.1)";
@@ -1882,7 +1879,9 @@ Waiting for LLM...</pre>
                 } else if (cResult.advisory?.flagged) {
                     // Advisory — inject warning prefix into system prompt
                     canaryAdvisoryPrefix = cResult.advisory.system_prefix;
-                    if (badge) { badge.className = "scan-badge flagged"; badge.textContent = "🐦 Flagged"; }
+                    canaryBadge.style.display = "inline";
+                    canaryBadge.className = "scan-badge flagged";
+                    canaryBadge.textContent = "🐦 Flagged";
                     const warnDiv = document.createElement("div");
                     warnDiv.className = "message security-alert";
                     warnDiv.style.cssText = "color:#f1c40f;border-color:#f1c40f;background:rgba(241,196,15,0.1)";
@@ -1890,7 +1889,9 @@ Waiting for LLM...</pre>
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 } else {
-                    if (badge) { badge.className = "scan-badge allowed"; badge.textContent = "🐦 Safe"; }
+                    canaryBadge.style.display = "inline";
+                    canaryBadge.className = "scan-badge allowed";
+                    canaryBadge.textContent = "🐦 Safe";
                 }
             } else {
                 document.getElementById("debug-canary-req").innerText = "Canary Disabled.";
@@ -1926,10 +1927,9 @@ Waiting for LLM...</pre>
                 );
 
                 if (promptScan.status === "error") {
-                    if (badge) {
-                        badge.className = "scan-badge";
-                        badge.textContent = "Error";
-                    }
+                    airsBadge.style.display = "inline";
+                    airsBadge.className = "scan-badge";
+                    airsBadge.textContent = "Error";
                     const errDiv = document.createElement("div");
                     errDiv.className = "message security-alert";
                     errDiv.innerHTML = `🛑 PRISMA PROXY ERROR (Phase 1)<br>${promptScan.message}<br><small>Make sure server.js is running on localhost:3080</small>`;
@@ -1943,10 +1943,9 @@ Waiting for LLM...</pre>
 
                 if (promptScan.status === "block") {
                     // Strict mode: LLM never reached
-                    if (badge) {
-                        badge.className = "scan-badge blocked";
-                        badge.textContent = "🛑 Blocked";
-                    }
+                    airsBadge.style.display = "inline";
+                    airsBadge.className = "scan-badge blocked";
+                    airsBadge.textContent = "🛑 Blocked";
                     const threats = promptScan.detected.length
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
@@ -1965,10 +1964,9 @@ Waiting for LLM...</pre>
 
                 if (promptScan.status === "alert") {
                     // Audit mode: flag but proceed to LLM
-                    if (badge) {
-                        badge.className = "scan-badge flagged";
-                        badge.textContent = "⚠️ Flagged";
-                    }
+                    airsBadge.style.display = "inline";
+                    airsBadge.className = "scan-badge flagged";
+                    airsBadge.textContent = "⚠️ Flagged";
                     const threats = promptScan.detected.length
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
@@ -1980,10 +1978,9 @@ Waiting for LLM...</pre>
                             Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong>`;
                     chatBox.appendChild(warnDiv);
                 } else {
-                    if (badge) {
-                        badge.className = "scan-badge allowed";
-                        badge.textContent = "✅ Allowed";
-                    }
+                    airsBadge.style.display = "inline";
+                    airsBadge.className = "scan-badge allowed";
+                    airsBadge.textContent = "✅ Allowed";
                 }
             } else {
                 [
