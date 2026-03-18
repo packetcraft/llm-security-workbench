@@ -472,7 +472,7 @@
                 if (data.error) throw new Error(data.error);
                 const responseText = data.response ?? data.message?.content ?? "";
                 if (!responseText) throw new Error("Empty response from model");
-                const modelShort = model.split(":")[0];
+                const modelShort = model.split("/").pop().split(":")[0];
                 chatBox.innerHTML += `<p><span class="bot">${persona.name} (${modelShort}):</span></p><div class="bot-content">${marked.parse(responseText)}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch (err) {
