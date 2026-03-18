@@ -1860,8 +1860,8 @@ Waiting for LLM...</pre>
                     warnDiv.innerHTML = `⚠️ LITTLE CANARY ERROR — proceeding without Phase 0.5<br><small>${cResult.message}</small>`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
-                } else if (!cResult.safe && canaryMode === "full") {
-                    // Hard block
+                } else if (canaryMode === "full" && (!cResult.safe || cResult.advisory?.flagged)) {
+                    // Full mode: block on unsafe OR flagged advisory
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge guardrail-block";
                     canaryBadge.textContent = "🐦 Blocked";
@@ -1877,7 +1877,7 @@ Waiting for LLM...</pre>
                     document.getElementById("send-btn").disabled = false;
                     return;
                 } else if (cResult.advisory?.flagged) {
-                    // Advisory — inject warning prefix into system prompt
+                    // Advisory mode only — inject warning prefix into system prompt
                     canaryAdvisoryPrefix = cResult.advisory.system_prefix;
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge flagged";
