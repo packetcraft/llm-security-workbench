@@ -903,6 +903,30 @@
         #batch-modal h3 { margin: 0; font-size: 14px; color: var(--primary); }
         #batch-modal-close { float: right; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height:1; }
         #batch-modal-close:hover { color: var(--text); }
+        /* Batch selector row */
+        .batch-selector-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .batch-selector-row label { font-size: 12px; color: var(--text-muted); padding-top: 5px; white-space: nowrap; }
+        #batch-category-select { font-size: 12px; flex: 1; min-width: 180px; }
+        #batch-threat-list-wrap {
+            width: 100%;
+            max-height: 130px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            background: var(--bg);
+            display: none;
+        }
+        .batch-cb-controls { display: flex; gap: 8px; margin-bottom: 5px; }
+        .batch-cb-controls a { font-size: 10px; color: var(--primary); cursor: pointer; text-decoration: none; }
+        .batch-cb-controls a:hover { text-decoration: underline; }
+        .batch-threat-cb { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; cursor: pointer; }
+        .batch-threat-cb input { cursor: pointer; accent-color: var(--primary); }
         .batch-controls {
             display: flex;
             align-items: center;
@@ -959,11 +983,15 @@
         .batch-results-table tr.batch-error  td:nth-child(3) { color: var(--muted); }
         .batch-results-table tr:hover td { background: rgba(255,255,255,0.03); }
         #batch-results-wrap { max-height: 360px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
-        .batch-summary-bar { display: flex; gap: 16px; font-size: 12px; padding: 6px 0; }
-        .batch-summary-bar .s-blocked { color: var(--danger); font-weight:700; }
-        .batch-summary-bar .s-flagged  { color: var(--warning); font-weight:700; }
-        .batch-summary-bar .s-allowed  { color: var(--green); font-weight:700; }
+        .batch-summary-bar { display: flex; gap: 12px; font-size: 12px; padding: 6px 0; flex-wrap: wrap; align-items: center; }
+        .batch-summary-bar .s-blocked  { color: var(--danger);     font-weight:700; }
+        .batch-summary-bar .s-flagged  { color: var(--warning);    font-weight:700; }
+        .batch-summary-bar .s-allowed  { color: var(--green);      font-weight:700; }
         .batch-summary-bar .s-error    { color: var(--muted); }
+        .batch-summary-bar .s-phase0   { color: var(--purple); }
+        .batch-summary-bar .s-phase05  { color: var(--canary-adv); }
+        .batch-summary-bar .s-phase1   { color: var(--primary); }
+        .batch-summary-bar .s-sep      { color: var(--border); user-select: none; }
         .batch-footer { display: flex; gap: 8px; align-items: center; }
 
         /* #12 — API key visibility toggle */
@@ -2634,10 +2662,66 @@ Waiting for LLM...</pre>
             document.getElementById("batch-results-body").innerHTML = "";
             document.getElementById("batch-summary").innerHTML = "";
             document.getElementById("batch-progress-bar").style.width = "0%";
-            document.getElementById("batch-progress-label").textContent = "Ready — configure delay and press Run";
+            document.getElementById("batch-progress-label").textContent = "Ready — configure scope and delay, then press Run";
             document.getElementById("batch-start-btn").disabled = false;
             document.getElementById("batch-stop-btn").disabled = true;
+
+            // Populate category dropdown from SAMPLE_THREATS
+            const catSel = document.getElementById("batch-category-select");
+            catSel.innerHTML = "<option value=\"all\">— All Categories —</option>";
+            SAMPLE_THREATS.forEach(g => {
+                const o = document.createElement("option");
+                o.value = g.categoryId;
+                o.textContent = `${g.category} (${g.threats.length})`;
+                catSel.appendChild(o);
+            });
+            catSel.value = "all";
+            document.getElementById("batch-threat-list-wrap").style.display = "none";
+            _updateRunBtn();
+
             document.getElementById("batch-modal-backdrop").classList.add("open");
+        }
+
+        function updateBatchSelection() {
+            const val = document.getElementById("batch-category-select").value;
+            const wrap = document.getElementById("batch-threat-list-wrap");
+            const list = document.getElementById("batch-threat-list");
+            if (val === "all") {
+                wrap.style.display = "none";
+                list.innerHTML = "";
+            } else {
+                const cat = SAMPLE_THREATS.find(g => g.categoryId === val);
+                if (!cat) { wrap.style.display = "none"; return; }
+                list.innerHTML = cat.threats.map((t, i) =>
+                    `<label class="batch-threat-cb">
+                        <input type="checkbox" data-idx="${i}" checked onchange="_updateRunBtn()">
+                        ${t.type}
+                    </label>`
+                ).join("");
+                wrap.style.display = "block";
+            }
+            _updateRunBtn();
+        }
+
+        function setBatchCheckAll(checked) {
+            document.querySelectorAll("#batch-threat-list input[type=checkbox]")
+                .forEach(cb => cb.checked = checked);
+            _updateRunBtn();
+        }
+
+        function _updateRunBtn() {
+            const n = getSelectedThreats().length;
+            document.getElementById("batch-start-btn").textContent = `▶ Run (${n})`;
+        }
+
+        function getSelectedThreats() {
+            const val = document.getElementById("batch-category-select").value;
+            if (val === "all") return SAMPLE_THREATS.flatMap(g => g.threats);
+            const cat = SAMPLE_THREATS.find(g => g.categoryId === val);
+            if (!cat) return [];
+            const checks = document.querySelectorAll("#batch-threat-list input[type=checkbox]:checked");
+            if (!checks.length) return cat.threats;
+            return [...checks].map(cb => cat.threats[parseInt(cb.dataset.idx)]);
         }
 
         function closeBatchModal() {
@@ -2680,9 +2764,11 @@ Waiting for LLM...</pre>
             const phase1Active = airsMode !== "off";
 
             const delayMs    = parseInt(document.getElementById("batch-delay").value) || 600;
-            const allThreats = SAMPLE_THREATS.flatMap(g => g.threats);
+            const allThreats = getSelectedThreats();
             const total      = allThreats.length;
+            if (!total) { alert("No threats selected."); return; }
             let blocked = 0, flagged = 0, allowed = 0, errors = 0;
+            let p0 = 0, p05 = 0, p1 = 0; // phase catch counts
 
             batchStop = false;
             _batchResults = [];
@@ -2765,6 +2851,11 @@ Waiting for LLM...</pre>
                 }
 
                 // ── Tally & render ─────────────────────────────────────
+                // Count which phase caught it
+                if      (firstCaught.includes("0.5"))     p05++;
+                else if (firstCaught.startsWith("🔒"))    p0++;
+                else if (firstCaught.startsWith("🛡️"))   p1++;
+
                 let rowClass = "batch-allowed", resultLabel = "✅ Allowed";
                 if      (finalStatus === "error") { errors++;  rowClass = "batch-error";   resultLabel = "❌ Error"; }
                 else if (finalStatus === "block") { blocked++; rowClass = "batch-blocked"; resultLabel = "🛑 Blocked"; }
@@ -2799,6 +2890,10 @@ Waiting for LLM...</pre>
                 });
 
                 document.getElementById("batch-summary").innerHTML =
+                    `<span class="s-phase0" title="Caught by Phase 0 Native Guardrail">🔒 ${p0}</span>` +
+                    `<span class="s-phase05" title="Caught by Phase 0.5 Little Canary">🐦 ${p05}</span>` +
+                    `<span class="s-phase1" title="Caught by Phase 1 AIRS">🛡️ ${p1}</span>` +
+                    `<span class="s-sep">│</span>` +
                     `<span class="s-blocked">🛑 ${blocked} blocked</span>` +
                     `<span class="s-flagged">⚠️ ${flagged} flagged</span>` +
                     `<span class="s-allowed">✅ ${allowed} allowed</span>` +
@@ -3073,6 +3168,21 @@ Waiting for LLM...</pre>
                 <button id="batch-modal-close" onclick="closeBatchModal()">✕</button>
                 <h3>⚡ Batch Threat Runner</h3>
             </div>
+            <!-- Scope selector -->
+            <div class="batch-selector-row">
+                <label>Scope:</label>
+                <select id="batch-category-select" onchange="updateBatchSelection()">
+                    <option value="all">— All Categories —</option>
+                </select>
+            </div>
+            <div id="batch-threat-list-wrap">
+                <div class="batch-cb-controls">
+                    <a onclick="setBatchCheckAll(true)">Select all</a>
+                    <a onclick="setBatchCheckAll(false)">None</a>
+                </div>
+                <div id="batch-threat-list"></div>
+            </div>
+            <!-- Controls row -->
             <div class="batch-controls">
                 <label>Delay between requests:</label>
                 <input type="range" id="batch-delay" min="100" max="3000" step="100" value="600"
