@@ -17,7 +17,6 @@ def build_pipeline(model: str, mode: str, threshold: float) -> SecurityPipeline:
     return SecurityPipeline(
         canary_model=model,
         mode=mode,
-        provider="ollama",
         block_threshold=threshold,
         skip_canary_if_structural_blocks=True,
     )
