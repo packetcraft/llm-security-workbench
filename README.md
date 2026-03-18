@@ -299,6 +299,54 @@ This app uses a **split-routing architecture** to keep LLM traffic local while r
 
 The Node.js proxy exists solely to bypass CORS restrictions — your prompts and responses are never stored or forwarded anywhere else. The AIRS API key stays on the server; the browser only learns whether one is present.
 
+### Component Diagram
+
+```mermaid
+graph LR
+    subgraph LOCAL ["🖥️  localhost"]
+        direction TB
+
+        subgraph BROWSER ["Browser (workbench UI)"]
+            UI["Ollama Pro Workbench\ndev/5a · src/index.html"]
+        end
+
+        subgraph NODE ["Node.js · npm start · :3080"]
+            PROXY["Express proxy\nsrc/server.js"]
+        end
+
+        subgraph PYTHON ["Python · npm run canary · :5001"]
+            FLASK["Flask microservice\npython/canary_server.py"]
+            LC["little-canary\nSecurityPipeline"]
+            FLASK --> LC
+        end
+
+        subgraph OLLAMA ["Ollama · ollama serve · :11434"]
+            OLL["LLM inference\n/api/chat  /api/tags"]
+        end
+    end
+
+    subgraph CLOUD ["☁️  cloud"]
+        AIRS["Prisma AIRS API\nservice.api.aisecurity\n.paloaltonetworks.com"]
+    end
+
+    %% Browser → Node proxy
+    UI -- "GET /  /api/config\nPOST /api/prisma\nPOST /api/canary" --> PROXY
+
+    %% Browser → Ollama direct (streaming)
+    UI -- "POST /api/chat  streaming\nGET /api/tags\nPhase 0 judge + chat LLM" --> OLL
+
+    %% Node → Prisma AIRS (cloud)
+    PROXY -- "POST /v1/scan/sync/request\nPhase 1 prompt scan\nPhase 2 response scan" --> AIRS
+
+    %% Node → Flask (canary)
+    PROXY -- "POST /check\nPhase 0.5 canary scan" --> FLASK
+
+    %% Flask → Ollama (canary probe)
+    LC -- "POST /api/chat\ncanary LLM probe" --> OLL
+```
+
+> **Key design point:** The browser talks **directly** to Ollama for all LLM inference (Phase 0 judge calls and chat streaming) but routes through the Node proxy for AIRS and Little Canary. Direct Ollama access avoids double-buffering the streaming response; the proxy exists only to bypass CORS for cloud API calls and to keep the AIRS API key off the client.
+
 ---
 
 ## 🚀 Step 1: Configure Ollama (Required)
