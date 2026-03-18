@@ -465,14 +465,14 @@ npm run stage           # prints all available files
 🌐  Open:   http://localhost:3080
 ```
 
-| File | Use Case | AIRS? | Key Features |
-| :--- | :--- | :---: | :--- |
-| `1a-ollama-chat-no-security.html` | **Baseline** — understand Ollama chat with zero security | ✗ | Single `fetch` to Ollama, no frills |
-| `1b-mechat-no-security.html` | **Bridge** — same meChat UI before introducing AIRS | ✗ | Personas, live model dropdown, terminal theme |
-| `2a-mechat-airs-teaching-demo.html` | **Teaching demo** — introduce AIRS as a prompt gate | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments, Tokyo Night theme, AI header shows `Persona (model)` |
-| `3a-llm-security-workbench-twin-scan.html` | **Full workbench** — production-grade twin-scan | ✓ | Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector |
-| `3b-llm-security-workbench-native-guardrail.html` | **Triple-gate workbench** — adds local Phase 0 guardrail | ✓ | All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt) |
-| `3c-llm-security-workbench-little-canary.html` | **Five-gate workbench** — adds Phase 0.5 Little Canary | ✓ | All of 3b + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector, per-phase latency badges + LLM generation timer, organised header bar with live status chips |
+|   | File | Use Case | AIRS? | Key Features |
+| :---: | :--- | :--- | :---: | :--- |
+| ⭐ | **`1a-ollama-chat-no-security.html`** | **Baseline** — understand Ollama chat with zero security | ✗ | Single `fetch` to Ollama, no frills |
+|   | `1b-mechat-no-security.html` | *Bridge — same meChat UI before introducing AIRS* | ✗ | *Personas, live model dropdown, terminal theme* |
+| ⭐ | **`2a-mechat-airs-teaching-demo.html`** | **Teaching demo** — introduce AIRS as a prompt gate (customer view) | ✓ | Prompt scan, inline verdict badge, AIRS on/off toggle, curl + async explainer comments, Tokyo Night theme, AI header shows `Persona (model)` |
+|   | `3a-llm-security-workbench-twin-scan.html` | *Full workbench — production-grade twin-scan* | ✓ | *Phase 1 + Phase 2 scanning, DLP masking, strict/audit/off modes, threat library, API inspector* |
+|   | `3b-llm-security-workbench-native-guardrail.html` | *Triple-gate workbench — adds local Phase 0 guardrail* | ✓ | *All of 3a + Phase 0 LLM-as-judge (mode select, judge model, confidence threshold, editable system prompt)* |
+| ⭐ | **`3c-llm-security-workbench-little-canary.html`** | **Full workbench** — all five security gates | ✓ | All of 3b + Phase 0.5 structural + behavioural canary probe, advisory prefix injection, 5-column API inspector, per-phase latency badges + LLM generation timer, organised header bar with live status chips |
 
 ### Recommended learning path
 
