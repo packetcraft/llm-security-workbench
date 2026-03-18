@@ -14,65 +14,65 @@
     <style>
         /* ── Tokyo Night Light ── */
         :root {
-            --bg:           #d5d6db;
-            --panel:        #e1e2e7;
-            --text:         #343b58;
-            --text-muted:   #6c6e75;
-            --primary:      #2959aa;
-            --border:       #9699a3;
-            --danger:       #8c4351;
-            --warning:      #965027;
-            --green:        #587539;
-            --purple:       #5a3e8e;
-            --canary-adv:   #b15c00;
-            --canary-blk:   #7a3500;
-            --debug:        #2c2d3a;
+            --bg: #d5d6db;
+            --panel: #e1e2e7;
+            --text: #343b58;
+            --text-muted: #6c6e75;
+            --primary: #2959aa;
+            --border: #9699a3;
+            --danger: #8c4351;
+            --warning: #965027;
+            --green: #587539;
+            --purple: #5a3e8e;
+            --canary-adv: #b15c00;
+            --canary-blk: #7a3500;
+            --debug: #2c2d3a;
             /* LLM time pill */
-            --llm-pill-bg:     #0f4b6e;
-            --llm-pill-text:   #c0d6e8;
+            --llm-pill-bg: #0f4b6e;
+            --llm-pill-text: #c0d6e8;
             --llm-pill-border: #2959aa;
             /* copy button */
-            --copy-btn-bg:    #ced1df;
+            --copy-btn-bg: #ced1df;
             --copy-btn-color: #343b58;
             --copy-btn-hover: #bcc0d0;
             /* sidebar toggle */
-            --sidebar-btn-bg:    #c4c7d4;
+            --sidebar-btn-bg: #c4c7d4;
             --sidebar-btn-color: #343b58;
             /* param tooltip */
-            --tooltip-bg:     #343b58;
-            --tooltip-text:   #e1e2e7;
+            --tooltip-bg: #343b58;
+            --tooltip-text: #e1e2e7;
             --tooltip-border: #5a3e8e;
         }
 
         /* ── Tokyo Night ── */
         body.dark {
-            --bg:           #16161e;
-            --panel:        #1a1b26;
-            --text:         #c0caf5;
-            --text-muted:   #565f89;
-            --primary:      #7aa2f7;
-            --border:       #292e42;
-            --danger:       #f7768e;
-            --warning:      #e0af68;
-            --green:        #9ece6a;
-            --purple:       #bb9af7;
-            --canary-adv:   #ff9e64;
-            --canary-blk:   #e0804a;
-            --debug:        #16161e;
+            --bg: #16161e;
+            --panel: #1a1b26;
+            --text: #c0caf5;
+            --text-muted: #565f89;
+            --primary: #7aa2f7;
+            --border: #292e42;
+            --danger: #f7768e;
+            --warning: #e0af68;
+            --green: #9ece6a;
+            --purple: #bb9af7;
+            --canary-adv: #ff9e64;
+            --canary-blk: #e0804a;
+            --debug: #16161e;
             /* LLM time pill */
-            --llm-pill-bg:     #292e42;
-            --llm-pill-text:   #7aa2f7;
+            --llm-pill-bg: #292e42;
+            --llm-pill-text: #7aa2f7;
             --llm-pill-border: #3d59a1;
             /* copy button */
-            --copy-btn-bg:    #292e42;
+            --copy-btn-bg: #292e42;
             --copy-btn-color: #a9b1d6;
             --copy-btn-hover: #3b4261;
             /* sidebar toggle */
-            --sidebar-btn-bg:    #292e42;
+            --sidebar-btn-bg: #292e42;
             --sidebar-btn-color: #a9b1d6;
             /* param tooltip */
-            --tooltip-bg:     #1a1b26;
-            --tooltip-text:   #c0caf5;
+            --tooltip-bg: #1a1b26;
+            --tooltip-text: #c0caf5;
             --tooltip-border: #3d59a1;
         }
 
@@ -165,22 +165,27 @@
             background: transparent;
             transition: border-color 0.2s, color 0.2s;
         }
+
         .status-chip.chip-warning {
             border-color: var(--warning);
             color: var(--warning);
         }
+
         .status-chip.chip-danger {
             border-color: var(--danger);
             color: var(--danger);
         }
+
         .status-chip.chip-purple {
             border-color: var(--purple);
             color: var(--purple);
         }
+
         .status-chip.chip-canary-adv {
             border-color: var(--canary-adv);
             color: var(--canary-adv);
         }
+
         .status-chip.chip-canary-blk {
             border-color: var(--canary-blk);
             color: var(--canary-blk);
@@ -197,6 +202,7 @@
             cursor: pointer;
             transition: background 0.2s, border-color 0.2s;
         }
+
         .btn-ghost:hover {
             background: var(--sidebar-btn-bg);
             border-color: var(--primary);
@@ -651,7 +657,7 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.15s;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
             border: 1px solid var(--tooltip-border);
         }
 
@@ -803,7 +809,11 @@
             transition: color 0.15s, opacity 0.15s;
             vertical-align: middle;
         }
-        .replay-btn:hover { color: var(--primary); opacity: 1; }
+
+        .replay-btn:hover {
+            color: var(--primary);
+            opacity: 1;
+        }
 
         /* Verdict detail expansion panel */
         .verdict-detail {
@@ -817,24 +827,51 @@
             background: rgba(26, 27, 38, 0.8);
             color: var(--text-muted);
         }
-        .verdict-detail.blocked { border-color: var(--danger); background: rgba(247,118,142,0.08); }
-        .verdict-detail.flagged { border-color: var(--warning); background: rgba(224,175,104,0.08); }
-        .verdict-detail.allowed { border-color: var(--green); background: rgba(158,206,106,0.08); }
-        .verdict-detail table { border-collapse: collapse; width: 100%; }
-        .verdict-detail td { padding: 1px 8px 1px 0; }
-        .verdict-detail td:first-child { color: var(--muted); white-space: nowrap; }
+
+        .verdict-detail.blocked {
+            border-color: var(--danger);
+            background: rgba(247, 118, 142, 0.08);
+        }
+
+        .verdict-detail.flagged {
+            border-color: var(--warning);
+            background: rgba(224, 175, 104, 0.08);
+        }
+
+        .verdict-detail.allowed {
+            border-color: var(--green);
+            background: rgba(158, 206, 106, 0.08);
+        }
+
+        .verdict-detail table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .verdict-detail td {
+            padding: 1px 8px 1px 0;
+        }
+
+        .verdict-detail td:first-child {
+            color: var(--muted);
+            white-space: nowrap;
+        }
 
         /* System prompt viewer modal */
         #sp-modal-backdrop {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.65);
+            background: rgba(0, 0, 0, 0.65);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
-        #sp-modal-backdrop.open { display: flex; }
+
+        #sp-modal-backdrop.open {
+            display: flex;
+        }
+
         #sp-modal {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -844,7 +881,13 @@
             max-height: 80vh;
             overflow-y: auto;
         }
-        #sp-modal h3 { margin: 0 0 12px; font-size: 14px; color: var(--primary); }
+
+        #sp-modal h3 {
+            margin: 0 0 12px;
+            font-size: 14px;
+            color: var(--primary);
+        }
+
         #sp-modal pre {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -857,6 +900,7 @@
             max-height: 300px;
             overflow-y: auto;
         }
+
         #sp-modal .sp-note {
             font-size: 11px;
             color: var(--warning);
@@ -864,8 +908,9 @@
             padding: 6px 10px;
             border: 1px solid var(--warning);
             border-radius: 6px;
-            background: rgba(224,175,104,0.08);
+            background: rgba(224, 175, 104, 0.08);
         }
+
         #sp-modal-close {
             float: right;
             background: none;
@@ -875,19 +920,26 @@
             font-size: 16px;
             line-height: 1;
         }
-        #sp-modal-close:hover { color: var(--text); }
+
+        #sp-modal-close:hover {
+            color: var(--text);
+        }
 
         /* Batch runner modal */
         #batch-modal-backdrop {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
-        #batch-modal-backdrop.open { display: flex; }
+
+        #batch-modal-backdrop.open {
+            display: flex;
+        }
+
         #batch-modal {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -900,18 +952,49 @@
             flex-direction: column;
             gap: 12px;
         }
-        #batch-modal h3 { margin: 0; font-size: 14px; color: var(--primary); }
-        #batch-modal-close { float: right; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height:1; }
-        #batch-modal-close:hover { color: var(--text); }
+
+        #batch-modal h3 {
+            margin: 0;
+            font-size: 14px;
+            color: var(--primary);
+        }
+
+        #batch-modal-close {
+            float: right;
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        #batch-modal-close:hover {
+            color: var(--text);
+        }
+
         .batch-controls {
             display: flex;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
         }
-        .batch-controls label { font-size: 12px; color: var(--text-muted); }
-        .batch-controls input[type=range] { width: 120px; }
-        #batch-delay-label { font-size: 12px; color: var(--primary); min-width: 40px; }
+
+        .batch-controls label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .batch-controls input[type=range] {
+            width: 120px;
+        }
+
+        #batch-delay-label {
+            font-size: 12px;
+            color: var(--primary);
+            min-width: 40px;
+        }
+
         .batch-progress-wrap {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -919,6 +1002,7 @@
             height: 8px;
             overflow: hidden;
         }
+
         #batch-progress-bar {
             height: 100%;
             width: 0%;
@@ -926,13 +1010,23 @@
             transition: width 0.3s ease;
             border-radius: 6px;
         }
-        #batch-progress-label { font-size: 11px; color: var(--muted); margin-top: 3px; }
-        #batch-summary { font-size: 12px; }
+
+        #batch-progress-label {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        #batch-summary {
+            font-size: 12px;
+        }
+
         .batch-results-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 11px;
         }
+
         .batch-results-table th {
             background: var(--bg);
             color: var(--muted);
@@ -944,26 +1038,71 @@
             font-weight: 600;
             letter-spacing: 0.4px;
         }
+
         .batch-results-table td {
             padding: 5px 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             vertical-align: top;
             max-width: 200px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .batch-results-table tr.batch-blocked td:nth-child(3) { color: var(--danger); font-weight: 700; }
-        .batch-results-table tr.batch-flagged td:nth-child(3) { color: var(--warning); font-weight: 700; }
-        .batch-results-table tr.batch-allowed td:nth-child(3) { color: var(--green); }
-        .batch-results-table tr.batch-error  td:nth-child(3) { color: var(--muted); }
-        .batch-results-table tr:hover td { background: rgba(255,255,255,0.03); }
-        #batch-results-wrap { max-height: 360px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+
+        .batch-results-table tr.batch-blocked td:nth-child(3) {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .batch-results-table tr.batch-flagged td:nth-child(3) {
+            color: var(--warning);
+            font-weight: 700;
+        }
+
+        .batch-results-table tr.batch-allowed td:nth-child(3) {
+            color: var(--green);
+        }
+
+        .batch-results-table tr.batch-error td:nth-child(3) {
+            color: var(--muted);
+        }
+
+        .batch-results-table tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        #batch-results-wrap {
+            max-height: 360px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
         /* Batch scope — category checkboxes */
-        .batch-cat-header { display: flex; gap: 8px; align-items: center; margin-bottom: 5px; }
-        .batch-cat-header span { font-size: 12px; color: var(--text-muted); flex: 1; }
-        .batch-cat-header a { font-size: 10px; color: var(--primary); cursor: pointer; text-decoration: none; }
-        .batch-cat-header a:hover { text-decoration: underline; }
+        .batch-cat-header {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .batch-cat-header span {
+            font-size: 12px;
+            color: var(--text-muted);
+            flex: 1;
+        }
+
+        .batch-cat-header a {
+            font-size: 10px;
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .batch-cat-header a:hover {
+            text-decoration: underline;
+        }
+
         #batch-cat-wrap {
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -972,20 +1111,81 @@
             max-height: 120px;
             overflow-y: auto;
         }
-        .batch-cat-cb { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; cursor: pointer; }
-        .batch-cat-cb input { cursor: pointer; accent-color: var(--primary); }
-        .batch-cat-cb .cat-count { color: var(--muted); }
-        .batch-summary-bar { display: flex; flex-direction: column; gap: 4px; font-size: 12px; padding: 6px 0; }
-        .batch-summary-bar .s-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .batch-summary-bar .s-blocked  { color: var(--danger);     font-weight:700; }
-        .batch-summary-bar .s-flagged  { color: var(--warning);    font-weight:700; }
-        .batch-summary-bar .s-allowed  { color: var(--green);      font-weight:700; }
-        .batch-summary-bar .s-error    { color: var(--muted); }
-        .batch-summary-bar .s-phase0   { color: var(--purple); }
-        .batch-summary-bar .s-phase05  { color: var(--canary-adv); }
-        .batch-summary-bar .s-phase1   { color: var(--primary); }
-        .batch-summary-bar .s-phase2   { color: var(--primary); opacity: 0.6; }
-        .batch-footer { display: flex; gap: 8px; align-items: center; }
+
+        .batch-cat-cb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            padding: 2px 0;
+            cursor: pointer;
+        }
+
+        .batch-cat-cb input {
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .batch-cat-cb .cat-count {
+            color: var(--muted);
+        }
+
+        .batch-summary-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            padding: 6px 0;
+        }
+
+        .batch-summary-bar .s-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .batch-summary-bar .s-blocked {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .batch-summary-bar .s-flagged {
+            color: var(--warning);
+            font-weight: 700;
+        }
+
+        .batch-summary-bar .s-allowed {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .batch-summary-bar .s-error {
+            color: var(--muted);
+        }
+
+        .batch-summary-bar .s-phase0 {
+            color: var(--purple);
+        }
+
+        .batch-summary-bar .s-phase05 {
+            color: var(--canary-adv);
+        }
+
+        .batch-summary-bar .s-phase1 {
+            color: var(--primary);
+        }
+
+        .batch-summary-bar .s-phase2 {
+            color: var(--primary);
+            opacity: 0.6;
+        }
+
+        .batch-footer {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
 
         /* #12 — API key visibility toggle */
         .api-key-wrapper {
@@ -1035,7 +1235,8 @@
 
         <!-- Zone 4: Actions -->
         <div style="display:flex; gap:8px; align-items:center; margin-left:auto; padding-left:12px; flex-shrink:0;">
-            <button class="btn-ghost" onclick="openBatchRunner()" title="Run all threat library prompts through the security pipeline">
+            <button class="btn-ghost" onclick="openBatchRunner()"
+                title="Run all threat library prompts through the security pipeline">
                 ⚡ Batch Run
             </button>
             <button class="btn-ghost" onclick="exportSession()" title="Download session log as Markdown">
@@ -1072,10 +1273,13 @@
                                 <option value="">-- Select judge model (Rec: shieldgemma:2b) --</option>
                             </select>
                             <label style="font-size:11px;margin-bottom:-4px;display:flex;align-items:center;gap:5px;">
-                                <span>Confidence threshold: <strong><span id="guardrail-threshold-display">0.70</span></strong></span>
-                                <span class="param-info" data-tip="How certain the judge model must be before blocking or flagging a prompt. Higher values (e.g. 0.90) reduce false positives but may miss threats. Lower values (e.g. 0.50) are more sensitive but risk flagging safe prompts.">i</span>
+                                <span>Confidence threshold: <strong><span
+                                            id="guardrail-threshold-display">0.70</span></strong></span>
+                                <span class="param-info"
+                                    data-tip="How certain the judge model must be before blocking or flagging a prompt. Higher values (e.g. 0.90) reduce false positives but may miss threats. Lower values (e.g. 0.50) are more sensitive but risk flagging safe prompts.">i</span>
                             </label>
-                            <input type="range" id="guardrail-threshold" min="0.5" max="0.95" step="0.05" value="0.70" disabled
+                            <input type="range" id="guardrail-threshold" min="0.5" max="0.95" step="0.05" value="0.70"
+                                disabled
                                 oninput="document.getElementById('guardrail-threshold-display').textContent = parseFloat(this.value).toFixed(2)"
                                 style="width:100%;cursor:pointer;" />
                             <label style="font-size:11px;margin-bottom:-4px;">System Prompt:</label>
@@ -1106,20 +1310,26 @@ Respond ONLY with valid JSON, no other text:
                         <option value="full">🔴 Full — block high-confidence attacks</option>
                     </select>
                     <details style="margin-top:2px;">
-                        <summary style="font-size:11px;cursor:pointer;color:var(--canary-adv);">⚙️ Canary Settings</summary>
+                        <summary style="font-size:11px;cursor:pointer;color:var(--canary-adv);">⚙️ Canary Settings
+                        </summary>
                         <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
                             <select id="canary-model" disabled>
                                 <option value="">-- Select canary model (Rec: qwen2.5:1.5b) --</option>
                             </select>
                             <label style="font-size:11px;margin-bottom:-4px;display:flex;align-items:center;gap:5px;">
-                                <span>Block threshold: <strong><span id="canary-threshold-display">0.60</span></strong></span>
-                                <span class="param-info" data-tip="Risk score (0.3–0.9) above which Little Canary triggers a block or advisory. Lower values are more sensitive. Higher values only flag high-confidence attacks. Default 0.6 matches the library's recommended starting point.">i</span>
+                                <span>Block threshold: <strong><span
+                                            id="canary-threshold-display">0.60</span></strong></span>
+                                <span class="param-info"
+                                    data-tip="Risk score (0.3–0.9) above which Little Canary triggers a block or advisory. Lower values are more sensitive. Higher values only flag high-confidence attacks. Default 0.6 matches the library's recommended starting point.">i</span>
                             </label>
-                            <input type="range" id="canary-threshold" min="0.3" max="0.9" step="0.05" value="0.60" disabled
+                            <input type="range" id="canary-threshold" min="0.3" max="0.9" step="0.05" value="0.60"
+                                disabled
                                 oninput="document.getElementById('canary-threshold-display').textContent = parseFloat(this.value).toFixed(2)"
                                 style="width:100%;cursor:pointer;" />
                             <p style="font-size:10px;color:#888;margin:0;line-height:1.5;">
-                                Runs two layers: fast structural regex filter (~1ms) then a behavioural canary probe using the selected Ollama model (~250ms). Requires <code>python/canary_server.py</code> running on :5001.
+                                Runs two layers: fast structural regex filter (~1ms) then a behavioural canary probe
+                                using the selected Ollama model (~250ms). Requires <code>python/canary_server.py</code>
+                                running on :5001.
                             </p>
                         </div>
                     </details>
@@ -1139,8 +1349,10 @@ Respond ONLY with valid JSON, no other text:
                         <summary style="font-size:11px;cursor:pointer;color:var(--danger);">⚙️ AIRS Settings</summary>
                         <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
                             <div class="api-key-wrapper">
-                                <input type="password" id="airs-api-key" placeholder="AIRS API Key (x-pan-token)" disabled />
-                                <button class="api-key-toggle" onclick="toggleApiKeyVisibility()" title="Show/hide key">👁</button>
+                                <input type="password" id="airs-api-key" placeholder="AIRS API Key (x-pan-token)"
+                                    disabled />
+                                <button class="api-key-toggle" onclick="toggleApiKeyVisibility()"
+                                    title="Show/hide key">👁</button>
                             </div>
                             <span id="env-key-badge" style="display:none; font-size:10px; color:#00ff88;">🔒 .env</span>
                             <select id="airs-profile" disabled>
@@ -1149,8 +1361,10 @@ Respond ONLY with valid JSON, no other text:
                                 </optgroup>
                                 <optgroup label="Custom Profiles" id="custom-airs-group"></optgroup>
                             </select>
-                            <span id="env-profile-badge" style="display:none; font-size:10px; color:#00ff88;">🔒 .env</span>
-                            <button id="add-airs-btn" class="btn-secondary" style="font-size:10px;padding:5px;" onclick="addCustomAirsProfile()" disabled>
+                            <span id="env-profile-badge" style="display:none; font-size:10px; color:#00ff88;">🔒
+                                .env</span>
+                            <button id="add-airs-btn" class="btn-secondary" style="font-size:10px;padding:5px;"
+                                onclick="addCustomAirsProfile()" disabled>
                                 ➕ Add Custom Security Profile
                             </button>
                         </div>
@@ -1171,7 +1385,8 @@ Respond ONLY with valid JSON, no other text:
                     <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
                         <label style="font-size:11px;margin-bottom:-2px;display:flex;align-items:center;gap:5px;">
                             <span>Temperature: <strong><span id="param-temperature-display">0.80</span></strong></span>
-                            <span class="param-info" data-tip="Controls randomness. 0.0 = deterministic, always picks the most likely token. Values around 0.7–0.9 balance coherence and creativity. 1.5+ produces highly unpredictable output. Lower for factual tasks; higher for creative writing.">i</span>
+                            <span class="param-info"
+                                data-tip="Controls randomness. 0.0 = deterministic, always picks the most likely token. Values around 0.7–0.9 balance coherence and creativity. 1.5+ produces highly unpredictable output. Lower for factual tasks; higher for creative writing.">i</span>
                         </label>
                         <input type="range" id="param-temperature" min="0" max="2" step="0.05" value="0.80"
                             oninput="document.getElementById('param-temperature-display').textContent = parseFloat(this.value).toFixed(2)"
@@ -1179,7 +1394,8 @@ Respond ONLY with valid JSON, no other text:
 
                         <label style="font-size:11px;margin-bottom:-2px;display:flex;align-items:center;gap:5px;">
                             <span>Top P: <strong><span id="param-top-p-display">0.90</span></strong></span>
-                            <span class="param-info" data-tip="Nucleus sampling. The model samples only from tokens whose cumulative probability reaches this value. 0.5 = very focused output. 0.95 = broad vocabulary. Reduce together with Temperature for highly predictable responses.">i</span>
+                            <span class="param-info"
+                                data-tip="Nucleus sampling. The model samples only from tokens whose cumulative probability reaches this value. 0.5 = very focused output. 0.95 = broad vocabulary. Reduce together with Temperature for highly predictable responses.">i</span>
                         </label>
                         <input type="range" id="param-top-p" min="0" max="1" step="0.05" value="0.90"
                             oninput="document.getElementById('param-top-p-display').textContent = parseFloat(this.value).toFixed(2)"
@@ -1187,15 +1403,18 @@ Respond ONLY with valid JSON, no other text:
 
                         <label style="font-size:11px;margin-bottom:-2px;display:flex;align-items:center;gap:5px;">
                             <span>Top K: <strong><span id="param-top-k-display">40</span></strong></span>
-                            <span class="param-info" data-tip="Limits token selection to the K most probable next tokens at each step. Low values (e.g. 10) constrain vocabulary for consistent output. High values (e.g. 80–100) allow more variety. Works alongside Top P — both apply, whichever is more restrictive wins.">i</span>
+                            <span class="param-info"
+                                data-tip="Limits token selection to the K most probable next tokens at each step. Low values (e.g. 10) constrain vocabulary for consistent output. High values (e.g. 80–100) allow more variety. Works alongside Top P — both apply, whichever is more restrictive wins.">i</span>
                         </label>
                         <input type="range" id="param-top-k" min="1" max="100" step="1" value="40"
                             oninput="document.getElementById('param-top-k-display').textContent = this.value"
                             style="width:100%;cursor:pointer;" />
 
                         <label style="font-size:11px;margin-bottom:-2px;display:flex;align-items:center;gap:5px;">
-                            <span>Repeat Penalty: <strong><span id="param-repeat-penalty-display">1.10</span></strong></span>
-                            <span class="param-info" data-tip="Penalises tokens already used in the response to reduce repetition. 1.0 = no penalty. Values above 1.0 discourage loops and repeated phrases — 1.1–1.3 is a good range for most models. Values below 1.0 may actively encourage repetition.">i</span>
+                            <span>Repeat Penalty: <strong><span
+                                        id="param-repeat-penalty-display">1.10</span></strong></span>
+                            <span class="param-info"
+                                data-tip="Penalises tokens already used in the response to reduce repetition. 1.0 = no penalty. Values above 1.0 discourage loops and repeated phrases — 1.1–1.3 is a good range for most models. Values below 1.0 may actively encourage repetition.">i</span>
                         </label>
                         <input type="range" id="param-repeat-penalty" min="0.5" max="2" step="0.05" value="1.10"
                             oninput="document.getElementById('param-repeat-penalty-display').textContent = parseFloat(this.value).toFixed(2)"
@@ -1227,13 +1446,19 @@ Respond ONLY with valid JSON, no other text:
                         <optgroup label="Custom" id="custom-personas-group"></optgroup>
                     </select>
                     <details style="margin-top:8px;">
-                        <summary style="font-size:11px;cursor:pointer;color:var(--primary);">⚙️ System Instructions</summary>
+                        <summary style="font-size:11px;cursor:pointer;color:var(--primary);">⚙️ System Instructions
+                        </summary>
                         <div style="margin-top:8px;">
-                            <textarea id="system-prompt" style="height:150px;width:100%;box-sizing:border-box;" placeholder="Define LLM behavior..."></textarea>
-                            <button class="btn-secondary" style="font-size:10px;padding:5px 10px;width:100%;margin-top:6px;" onclick="saveCustomPersona()">
+                            <textarea id="system-prompt" style="height:150px;width:100%;box-sizing:border-box;"
+                                placeholder="Define LLM behavior..."></textarea>
+                            <button class="btn-secondary"
+                                style="font-size:10px;padding:5px 10px;width:100%;margin-top:6px;"
+                                onclick="saveCustomPersona()">
                                 💾 Save as Custom Persona
                             </button>
-                            <button class="btn-secondary" style="font-size:10px;padding:5px 10px;width:100%;margin-top:6px;" onclick="viewSystemPrompt()">
+                            <button class="btn-secondary"
+                                style="font-size:10px;padding:5px 10px;width:100%;margin-top:6px;"
+                                onclick="viewSystemPrompt()">
                                 👁 View Active Prompt
                             </button>
                         </div>
@@ -1453,8 +1678,8 @@ Waiting for LLM...</pre>
 
         // #1/#2 — Update AIRS status dot and model badge in header
         function updateHeaderStatus(mode) {
-            const chip  = document.getElementById("header-airs-status");
-            const dot   = chip.querySelector(".status-dot");
+            const chip = document.getElementById("header-airs-status");
+            const dot = chip.querySelector(".status-dot");
             const label = document.getElementById("header-airs-label");
             dot.className = "status-dot " + mode;
             label.textContent = { off: "AIRS Off", audit: "AIRS Audit", strict: "AIRS Strict" }[mode] || mode;
@@ -1557,7 +1782,7 @@ Waiting for LLM...</pre>
                     `<option value="${m.name}" ${m === bestCanary ? "selected" : ""}>${m.name}</option>`
                 ).join("");
 
-                guardSelector.innerHTML  = '<option value="">-- Select judge model (Rec: shieldgemma:2b) --</option>' + guardOptions;
+                guardSelector.innerHTML = '<option value="">-- Select judge model (Rec: shieldgemma:2b) --</option>' + guardOptions;
                 canarySelector.innerHTML = '<option value="">-- Select canary model (Rec: qwen2.5:1.5b) --</option>' + canaryOptions;
             } catch (e) {
                 selector.innerHTML = "<option>Offline</option>";
@@ -1732,8 +1957,8 @@ Waiting for LLM...</pre>
         }
 
         function updateGuardrailStatus(mode) {
-            const chip  = document.getElementById("header-guardrail-status");
-            const dot   = chip.querySelector(".status-dot");
+            const chip = document.getElementById("header-guardrail-status");
+            const dot = chip.querySelector(".status-dot");
             const label = document.getElementById("header-guardrail-label");
             const dotClass = { off: "off", audit: "guardrail-audit", strict: "guardrail-strict" }[mode] || "off";
             dot.className = "status-dot " + dotClass;
@@ -1754,8 +1979,8 @@ Waiting for LLM...</pre>
         }
 
         function updateCanaryStatus(mode) {
-            const chip  = document.getElementById("header-canary-status");
-            const dot   = chip.querySelector(".status-dot");
+            const chip = document.getElementById("header-canary-status");
+            const dot = chip.querySelector(".status-dot");
             const label = document.getElementById("header-canary-label");
             const dotClass = { off: "off", advisory: "canary-advisory", full: "canary-block" }[mode] || "off";
             dot.className = "status-dot " + dotClass;
@@ -1963,14 +2188,14 @@ Waiting for LLM...</pre>
             // Reset API Inspector panels at the start of every new prompt
             {
                 const resetMap = {
-                    "debug-guard-req":    "Waiting for Phase 0...",
-                    "debug-guard-res":    "Waiting for Phase 0...",
-                    "debug-canary-req":   "Waiting for Phase 0.5...",
-                    "debug-canary-res":   "Waiting for Phase 0.5...",
-                    "debug-prompt-req":   "Waiting for Phase 1...",
-                    "debug-prompt-res":   "Waiting for Phase 1...",
-                    "debug-req":          "Waiting for Ollama...",
-                    "debug-res":          "Waiting for Ollama...",
+                    "debug-guard-req": "Waiting for Phase 0...",
+                    "debug-guard-res": "Waiting for Phase 0...",
+                    "debug-canary-req": "Waiting for Phase 0.5...",
+                    "debug-canary-res": "Waiting for Phase 0.5...",
+                    "debug-prompt-req": "Waiting for Phase 1...",
+                    "debug-prompt-res": "Waiting for Phase 1...",
+                    "debug-req": "Waiting for Ollama...",
+                    "debug-res": "Waiting for Ollama...",
                     "debug-response-req": "Waiting for Phase 2...",
                     "debug-response-res": "Waiting for Phase 2...",
                 };
@@ -2002,9 +2227,9 @@ Waiting for LLM...</pre>
             document.getElementById("threat-select").value = "";
             document.getElementById("send-btn").disabled = true;
 
-            const guardBadge  = document.getElementById(msgId + "-badge-guard");
+            const guardBadge = document.getElementById(msgId + "-badge-guard");
             const canaryBadge = document.getElementById(msgId + "-badge-canary");
-            const airsBadge   = document.getElementById(msgId + "-badge-airs");
+            const airsBadge = document.getElementById(msgId + "-badge-airs");
 
             // ══════════════════════════════════════════
             // PHASE 0 — NATIVE GUARDRAIL (LLM-as-judge)
@@ -2031,7 +2256,7 @@ Waiting for LLM...</pre>
                 const _gt0 = Date.now();
                 const gResult = await runNativeGuardrail(userPrompt, guardModel, guardSystemPrompt, guardThreshold);
                 const _gMs = Date.now() - _gt0;
-                const _gLat = _gMs < 1000 ? `· ${_gMs}ms` : `· ${(_gMs/1000).toFixed(1)}s`;
+                const _gLat = _gMs < 1000 ? `· ${_gMs}ms` : `· ${(_gMs / 1000).toFixed(1)}s`;
 
                 if (gResult.error) {
                     // Guardrail call failed — fail open, show warning in chat
@@ -2080,7 +2305,7 @@ Waiting for LLM...</pre>
             let canaryAdvisoryPrefix = "";
             const canaryMode = document.getElementById("canary-mode").value;
             if (canaryMode !== "off") {
-                const canaryModel     = document.getElementById("canary-model").value;
+                const canaryModel = document.getElementById("canary-model").value;
                 const canaryThreshold = parseFloat(document.getElementById("canary-threshold").value);
 
                 if (!canaryModel) {
@@ -2093,7 +2318,7 @@ Waiting for LLM...</pre>
                 const _ct0 = Date.now();
                 const cResult = await runLittleCanary(userPrompt, canaryModel, canaryMode, canaryThreshold);
                 const _cMs = Date.now() - _ct0;
-                const _cLat = _cMs < 1000 ? `· ${_cMs}ms` : `· ${(_cMs/1000).toFixed(1)}s`;
+                const _cLat = _cMs < 1000 ? `· ${_cMs}ms` : `· ${(_cMs / 1000).toFixed(1)}s`;
 
                 if (cResult.error) {
                     const warnDiv = document.createElement("div");
@@ -2169,7 +2394,7 @@ Waiting for LLM...</pre>
                     modelSelect,
                 );
                 const _aMs = Date.now() - _at0;
-                const _aLat = _aMs < 1000 ? `· ${_aMs}ms` : `· ${(_aMs/1000).toFixed(1)}s`;
+                const _aLat = _aMs < 1000 ? `· ${_aMs}ms` : `· ${(_aMs / 1000).toFixed(1)}s`;
 
                 if (promptScan.status === "error") {
                     airsBadge.style.display = "inline";
@@ -2384,7 +2609,7 @@ Waiting for LLM...</pre>
                     modelSelect,
                 );
                 const _rMs = Date.now() - _r0;
-                const _rLat = _rMs < 1000 ? `· ${_rMs}ms` : `· ${(_rMs/1000).toFixed(1)}s`;
+                const _rLat = _rMs < 1000 ? `· ${_rMs}ms` : `· ${(_rMs / 1000).toFixed(1)}s`;
 
                 if (responseScan.status === "error") {
                     if (resBadge) {
@@ -2552,10 +2777,10 @@ Waiting for LLM...</pre>
             const th = _tooltip.offsetHeight;
             let x = e.clientX + pad;
             let y = e.clientY + pad;
-            if (x + tw > window.innerWidth - pad)  x = e.clientX - tw - pad;
+            if (x + tw > window.innerWidth - pad) x = e.clientX - tw - pad;
             if (y + th > window.innerHeight - pad) y = e.clientY - th - pad;
             _tooltip.style.left = x + "px";
-            _tooltip.style.top  = y + "px";
+            _tooltip.style.top = y + "px";
         }
 
         // ══════════════════════════════════════════
@@ -2614,9 +2839,9 @@ Waiting for LLM...</pre>
 
         async function startBatchRun() {
             // Snapshot which phases are active
-            const guardrailMode  = document.getElementById("guardrail-mode").value;
-            const canaryMode     = document.getElementById("canary-mode").value;
-            const airsMode       = document.getElementById("airs-mode").value;
+            const guardrailMode = document.getElementById("guardrail-mode").value;
+            const canaryMode = document.getElementById("canary-mode").value;
+            const airsMode = document.getElementById("airs-mode").value;
 
             if (guardrailMode === "off" && canaryMode === "off" && airsMode === "off") {
                 alert("Batch runner: enable at least one security phase (Phase 0, Phase 0.5, or AIRS Phase 1).");
@@ -2624,26 +2849,26 @@ Waiting for LLM...</pre>
             }
 
             // Phase 0 config
-            const guardModel     = document.getElementById("guardrail-model").value;
+            const guardModel = document.getElementById("guardrail-model").value;
             const guardThreshold = parseFloat(document.getElementById("guardrail-threshold").value) || 0.7;
             const guardSysPrompt = document.getElementById("guardrail-system-prompt").value;
-            const phase0Active   = guardrailMode !== "off" && !!guardModel;
+            const phase0Active = guardrailMode !== "off" && !!guardModel;
 
             // Phase 0.5 config
-            const canaryModel     = document.getElementById("canary-model").value;
+            const canaryModel = document.getElementById("canary-model").value;
             const canaryThreshold = parseFloat(document.getElementById("canary-threshold").value) || 0.7;
-            const phase05Active   = canaryMode !== "off" && !!canaryModel;
+            const phase05Active = canaryMode !== "off" && !!canaryModel;
 
             // Phase 1 config
             const airsProfile = document.getElementById("airs-profile").value;
-            const airsKeyEl   = document.getElementById("airs-api-key");
-            const airsApiKey  = airsKeyEl.dataset.fromEnv ? "" : airsKeyEl.value.trim();
+            const airsKeyEl = document.getElementById("airs-api-key");
+            const airsApiKey = airsKeyEl.dataset.fromEnv ? "" : airsKeyEl.value.trim();
             const modelSelect = document.getElementById("model-select").value;
             const phase1Active = airsMode !== "off";
 
-            const delayMs    = parseInt(document.getElementById("batch-delay").value) || 600;
+            const delayMs = parseInt(document.getElementById("batch-delay").value) || 600;
             const allThreats = getSelectedThreats();
-            const total      = allThreats.length;
+            const total = allThreats.length;
             if (!total) { alert("No threats selected."); return; }
             let blocked = 0, flagged = 0, allowed = 0, errors = 0;
             let p0 = 0, p05 = 0, p1 = 0, p2 = 0; // phase catch counts
@@ -2665,11 +2890,11 @@ Waiting for LLM...</pre>
                 const t0 = Date.now();
 
                 // Per-threat state
-                let finalStatus  = "allow"; // allow | alert | block | error
-                let firstCaught  = "—";     // phase label that first flagged/blocked
-                let category     = "—";
-                let detectedStr  = "—";
-                let scanId       = null;
+                let finalStatus = "allow"; // allow | alert | block | error
+                let firstCaught = "—";     // phase label that first flagged/blocked
+                let category = "—";
+                let detectedStr = "—";
+                let scanId = null;
 
                 // ── Phase 0: Native Guardrail ──────────────────────────
                 if (phase0Active && finalStatus !== "block") {
@@ -2691,7 +2916,7 @@ Waiting for LLM...</pre>
                     const c = await runLittleCanary(threat.example, canaryModel, canaryMode, canaryThreshold);
                     if (!c.error) {
                         const hardBlock = canaryMode === "full" && (!c.safe || c.advisory?.flagged);
-                        const softFlag  = c.advisory?.flagged;
+                        const softFlag = c.advisory?.flagged;
                         if (hardBlock || softFlag) {
                             if (firstCaught === "—") firstCaught = "🐦 Phase 0.5";
                             if (hardBlock) {
@@ -2716,8 +2941,8 @@ Waiting for LLM...</pre>
                         if (firstCaught === "—") firstCaught = "🛡️ Phase 1";
                     } else {
                         // Always capture AIRS detail fields
-                        category    = s.category || "—";
-                        scanId      = s.scanId || null;
+                        category = s.category || "—";
+                        scanId = s.scanId || null;
                         if (s.detected?.length) detectedStr = s.detected.join(", ");
                         if (s.status === "block") {
                             finalStatus = "block";
@@ -2746,7 +2971,7 @@ Waiting for LLM...</pre>
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(ollamaPayload),
-                            signal: AbortSignal.timeout(30000)
+                            signal: AbortSignal.timeout(120000)
                         });
                         const llmData = await llmRes.json();
                         const generatedText = llmData.message?.content || "";
@@ -2784,23 +3009,23 @@ Waiting for LLM...</pre>
 
                 // ── Tally & render ─────────────────────────────────────
                 // Count which phase caught it first
-                if      (firstCaught.includes("0.5"))    p05++;
+                if (firstCaught.includes("0.5")) p05++;
                 else if (firstCaught.includes("Phase 0")) p0++;
                 else if (firstCaught.includes("Phase 1")) p1++;
                 else if (firstCaught.includes("Phase 2")) p2++;
 
                 let rowClass = "batch-allowed", resultLabel = "✅ Allowed";
-                if      (finalStatus === "error") { errors++;  rowClass = "batch-error";   resultLabel = "❌ Error"; }
+                if (finalStatus === "error") { errors++; rowClass = "batch-error"; resultLabel = "❌ Error"; }
                 else if (finalStatus === "block") { blocked++; rowClass = "batch-blocked"; resultLabel = "🛑 Blocked"; }
                 else if (finalStatus === "alert") { flagged++; rowClass = "batch-flagged"; resultLabel = "⚠️ Flagged"; }
-                else                              { allowed++; }
+                else { allowed++; }
 
                 const phaseStyle = firstCaught.startsWith("🔒") ? "color:var(--purple)" :
-                                   firstCaught.startsWith("🐦") ? "color:var(--canary-adv)" :
-                                   firstCaught.startsWith("🛡️") ? "color:var(--primary)" :
-                                   "color:var(--muted)";
+                    firstCaught.startsWith("🐦") ? "color:var(--canary-adv)" :
+                        firstCaught.startsWith("🛡️") ? "color:var(--primary)" :
+                            "color:var(--muted)";
 
-                const latMs  = Date.now() - t0;
+                const latMs = Date.now() - t0;
                 const latStr = latMs < 1000 ? latMs + "ms" : (latMs / 1000).toFixed(1) + "s";
 
                 const tr = document.createElement("tr");
@@ -2824,16 +3049,16 @@ Waiting for LLM...</pre>
 
                 document.getElementById("batch-summary").innerHTML =
                     `<div class="s-row">` +
-                        `<span class="s-phase0"  title="Caught by Phase 0 Native Guardrail">🔒 ${p0}</span>` +
-                        `<span class="s-phase05" title="Caught by Phase 0.5 Little Canary">🐦 ${p05}</span>` +
-                        `<span class="s-phase1"  title="Caught by Phase 1 AIRS Prompt Scan">🛡️ AIRS-1: ${p1}</span>` +
-                        `<span class="s-phase2"  title="Caught by Phase 2 AIRS Response Scan">🛡️ AIRS-2: ${p2}</span>` +
+                    `<span class="s-phase0"  title="Caught by Phase 0 Native Guardrail">🔒 ${p0}</span>` +
+                    `<span class="s-phase05" title="Caught by Phase 0.5 Little Canary">🐦 ${p05}</span>` +
+                    `<span class="s-phase1"  title="Caught by Phase 1 AIRS Prompt Scan">🛡️ AIRS-1: ${p1}</span>` +
+                    `<span class="s-phase2"  title="Caught by Phase 2 AIRS Response Scan">🛡️ AIRS-2: ${p2}</span>` +
                     `</div>` +
                     `<div class="s-row">` +
-                        `<span class="s-blocked">🛑 ${blocked} blocked</span>` +
-                        `<span class="s-flagged">⚠️ ${flagged} flagged</span>` +
-                        `<span class="s-allowed">✅ ${allowed} allowed</span>` +
-                        (errors ? `<span class="s-error">❌ ${errors} err</span>` : "") +
+                    `<span class="s-blocked">🛑 ${blocked} blocked</span>` +
+                    `<span class="s-flagged">⚠️ ${flagged} flagged</span>` +
+                    `<span class="s-allowed">✅ ${allowed} allowed</span>` +
+                    (errors ? `<span class="s-error">❌ ${errors} err</span>` : "") +
                     `</div>`;
 
                 if (i < total - 1 && !batchStop) await new Promise(r => setTimeout(r, delayMs));
@@ -2851,13 +3076,13 @@ Waiting for LLM...</pre>
         function exportBatchResults() {
             if (!_batchResults.length) { alert("Run the batch first."); return; }
             const payload = {
-                exported_at:    new Date().toISOString(),
-                model:          document.getElementById("model-select").value,
-                phase0_mode:    document.getElementById("guardrail-mode").value,
-                phase05_mode:   document.getElementById("canary-mode").value,
-                phase1_mode:    document.getElementById("airs-mode").value,
-                airs_profile:   document.getElementById("airs-profile").value,
-                results:        _batchResults,
+                exported_at: new Date().toISOString(),
+                model: document.getElementById("model-select").value,
+                phase0_mode: document.getElementById("guardrail-mode").value,
+                phase05_mode: document.getElementById("canary-mode").value,
+                phase1_mode: document.getElementById("airs-mode").value,
+                airs_profile: document.getElementById("airs-profile").value,
+                results: _batchResults,
             };
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
             const a = Object.assign(document.createElement("a"), {
@@ -2870,24 +3095,24 @@ Waiting for LLM...</pre>
         function exportBatchResultsMD() {
             if (!_batchResults.length) { alert("Run the batch first."); return; }
 
-            const model       = document.getElementById("model-select").value;
-            const phase0Mode  = document.getElementById("guardrail-mode").value;
+            const model = document.getElementById("model-select").value;
+            const phase0Mode = document.getElementById("guardrail-mode").value;
             const phase05Mode = document.getElementById("canary-mode").value;
-            const phase1Mode  = document.getElementById("airs-mode").value;
+            const phase1Mode = document.getElementById("airs-mode").value;
             const airsProfile = document.getElementById("airs-profile").value;
-            const ts          = new Date().toISOString();
+            const ts = new Date().toISOString();
 
             // Tally
             const blocked = _batchResults.filter(r => r.status === "block").length;
             const flagged = _batchResults.filter(r => r.status === "alert").length;
             const allowed = _batchResults.filter(r => r.status === "allow").length;
-            const errors  = _batchResults.filter(r => r.status === "error").length;
-            
+            const errors = _batchResults.filter(r => r.status === "error").length;
+
             // Phase catches
-            const p0  = _batchResults.filter(r => (r.firstCaughtBy || "").includes("Phase 0") && !r.firstCaughtBy.includes("0.5")).length;
+            const p0 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("Phase 0") && !r.firstCaughtBy.includes("0.5")).length;
             const p05 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("0.5")).length;
-            const p1  = _batchResults.filter(r => (r.firstCaughtBy || "").includes("Phase 1")).length;
-            const p2  = _batchResults.filter(r => (r.firstCaughtBy || "").includes("Phase 2")).length;
+            const p1 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("Phase 1")).length;
+            const p2 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("Phase 2")).length;
 
             const lines = [
                 `# Batch Threat Runner — Results`,
@@ -2914,11 +3139,11 @@ Waiting for LLM...</pre>
                 `|---|---|---|---|---|---|---|`,
                 ..._batchResults.map(r => {
                     const result = r.status === "block" ? "🛑 Blocked"
-                                 : r.status === "alert" ? "⚠️ Flagged"
-                                 : r.status === "error" ? "❌ Error"
-                                 : "✅ Allowed";
+                        : r.status === "alert" ? "⚠️ Flagged"
+                            : r.status === "error" ? "❌ Error"
+                                : "✅ Allowed";
                     const det = r.detected?.length ? r.detected.join(", ") : "—";
-                    const lat = r.latencyMs < 1000 ? `${r.latencyMs}ms` : `${(r.latencyMs/1000).toFixed(1)}s`;
+                    const lat = r.latencyMs < 1000 ? `${r.latencyMs}ms` : `${(r.latencyMs / 1000).toFixed(1)}s`;
                     return `| ${r.n} | ${r.threat} | ${result} | ${r.firstCaughtBy || "—"} | ${r.category} | ${det} | ${lat} |`;
                 }),
             ];
@@ -2943,12 +3168,12 @@ Waiting for LLM...</pre>
                 if (div.classList.contains("security-alert")) return;
 
                 const userLabel = div.querySelector(".user-label");
-                const botLabel  = div.querySelector(".bot-label");
+                const botLabel = div.querySelector(".bot-label");
 
                 if (userLabel) {
-                    const airsBadge   = div.querySelector("[id$='-badge-airs']");
+                    const airsBadge = div.querySelector("[id$='-badge-airs']");
                     const canaryBadge = div.querySelector("[id$='-badge-canary']");
-                    const guardBadge  = div.querySelector("[id$='-badge-guard']");
+                    const guardBadge = div.querySelector("[id$='-badge-guard']");
                     messages.push({
                         role: "user",
                         ts: div.querySelector(".msg-timestamp")?.textContent?.trim() || "",
@@ -2975,13 +3200,13 @@ Waiting for LLM...</pre>
             if (!messages.length) { alert("Nothing to export — chat is empty."); return; }
 
             const config = {
-                model:          document.getElementById("model-select").value,
-                persona:        document.getElementById("persona-select").value,
-                system_prompt:  document.getElementById("system-prompt").value,
-                airs_mode:      document.getElementById("airs-mode").value,
-                airs_profile:   document.getElementById("airs-profile").value,
+                model: document.getElementById("model-select").value,
+                persona: document.getElementById("persona-select").value,
+                system_prompt: document.getElementById("system-prompt").value,
+                airs_mode: document.getElementById("airs-mode").value,
+                airs_profile: document.getElementById("airs-profile").value,
                 guardrail_mode: document.getElementById("guardrail-mode")?.value || "off",
-                canary_mode:    document.getElementById("canary-mode")?.value || "off",
+                canary_mode: document.getElementById("canary-mode")?.value || "off",
             };
 
             // Build Markdown
@@ -3026,9 +3251,9 @@ Waiting for LLM...</pre>
                 JSON.stringify({ exported_at: new Date().toISOString(), config, messages }, null, 2),
                 `\`\`\``, `</details>`);
 
-            const md   = lines.join("\n");
+            const md = lines.join("\n");
             const blob = new Blob([md], { type: "text/markdown" });
-            const a    = Object.assign(document.createElement("a"), {
+            const a = Object.assign(document.createElement("a"), {
                 href: URL.createObjectURL(blob),
                 download: `airs-session-${Date.now()}.md`,
             });
@@ -3063,7 +3288,7 @@ Waiting for LLM...</pre>
         }
 
         // Feature 1 & 3 — Delegated click handler on chat-box
-        document.getElementById("chat-box").addEventListener("click", function(e) {
+        document.getElementById("chat-box").addEventListener("click", function (e) {
             // Replay button
             if (e.target.classList.contains("replay-btn")) {
                 const msgDiv = e.target.closest(".message");
@@ -3082,14 +3307,14 @@ Waiting for LLM...</pre>
                 try { v = JSON.parse(badge.dataset.verdict); } catch { return; }
                 const cls = v.action === "block" ? "blocked" : v.action === "alert" ? "flagged" : "allowed";
                 const rows = [
-                    ["Action",   v.action   || "—"],
+                    ["Action", v.action || "—"],
                     ["Category", v.category || "—"],
                     ["Detected", (v.detected && v.detected.length) ? v.detected.join(", ") : "none"],
-                    ["Scan ID",  v.scanId   || "—"],
+                    ["Scan ID", v.scanId || "—"],
                 ];
                 const det = document.createElement("div");
                 det.className = `verdict-detail ${cls}`;
-                det.innerHTML = `<table>${rows.map(([k,val]) => `<tr><td>${k}</td><td>${val}</td></tr>`).join("")}</table>`;
+                det.innerHTML = `<table>${rows.map(([k, val]) => `<tr><td>${k}</td><td>${val}</td></tr>`).join("")}</table>`;
                 badge.insertAdjacentElement("afterend", det);
             }
         });
@@ -3134,21 +3359,34 @@ Waiting for LLM...</pre>
                 <button id="batch-stop-btn" class="btn-danger" onclick="stopBatchRun()" disabled>■ Stop</button>
             </div>
             <div>
-                <div class="batch-progress-wrap"><div id="batch-progress-bar"></div></div>
-                <div id="batch-progress-label" style="font-size:11px;color:var(--muted);margin-top:3px;">Ready — configure delay and press Run</div>
+                <div class="batch-progress-wrap">
+                    <div id="batch-progress-bar"></div>
+                </div>
+                <div id="batch-progress-label" style="font-size:11px;color:var(--muted);margin-top:3px;">Ready —
+                    configure delay and press Run</div>
             </div>
             <div id="batch-results-wrap">
                 <table class="batch-results-table">
-                    <thead><tr>
-                        <th>#</th><th>Threat Type</th><th>Result</th><th>Caught By</th><th>Category</th><th>Detected</th><th>Latency</th>
-                    </tr></thead>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Threat Type</th>
+                            <th>Result</th>
+                            <th>Caught By</th>
+                            <th>Category</th>
+                            <th>Detected</th>
+                            <th>Latency</th>
+                        </tr>
+                    </thead>
                     <tbody id="batch-results-body"></tbody>
                 </table>
             </div>
             <div class="batch-footer">
                 <div id="batch-summary" class="batch-summary-bar" style="flex:1"></div>
-                <button class="btn-secondary" onclick="exportBatchResultsMD()" style="font-size:11px;padding:5px 10px;">📄 Export Results MD</button>
-                <button class="btn-secondary" onclick="exportBatchResults()" style="font-size:11px;padding:5px 10px;">📥 Export Results JSON</button>
+                <button class="btn-secondary" onclick="exportBatchResultsMD()"
+                    style="font-size:11px;padding:5px 10px;">📄 Export Results MD</button>
+                <button class="btn-secondary" onclick="exportBatchResults()" style="font-size:11px;padding:5px 10px;">📥
+                    Export Results JSON</button>
             </div>
         </div>
     </div>
