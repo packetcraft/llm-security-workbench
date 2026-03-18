@@ -2651,19 +2651,37 @@ Waiting for LLM...</pre>
         }
 
         async function startBatchRun() {
-            const airsMode = document.getElementById("airs-mode").value;
-            if (airsMode === "off") {
-                alert("Batch runner requires AIRS to be enabled.\nSet AIRS Mode to Audit or Strict first.");
+            // Snapshot which phases are active
+            const guardrailMode  = document.getElementById("guardrail-mode").value;
+            const canaryMode     = document.getElementById("canary-mode").value;
+            const airsMode       = document.getElementById("airs-mode").value;
+
+            if (guardrailMode === "off" && canaryMode === "off" && airsMode === "off") {
+                alert("Batch runner: enable at least one security phase (Phase 0, Phase 0.5, or AIRS Phase 1).");
                 return;
             }
-            const airsProfile  = document.getElementById("airs-profile").value;
-            const airsKeyEl    = document.getElementById("airs-api-key");
-            const airsApiKey   = airsKeyEl.dataset.fromEnv ? "" : airsKeyEl.value.trim();
-            const modelSelect  = document.getElementById("model-select").value;
-            const delayMs      = parseInt(document.getElementById("batch-delay").value) || 600;
 
-            const allThreats   = SAMPLE_THREATS.flatMap(g => g.threats);
-            const total        = allThreats.length;
+            // Phase 0 config
+            const guardModel     = document.getElementById("guardrail-model").value;
+            const guardThreshold = parseFloat(document.getElementById("guardrail-threshold").value) || 0.7;
+            const guardSysPrompt = document.getElementById("guardrail-system-prompt").value;
+            const phase0Active   = guardrailMode !== "off" && !!guardModel;
+
+            // Phase 0.5 config
+            const canaryModel     = document.getElementById("canary-model").value;
+            const canaryThreshold = parseFloat(document.getElementById("canary-threshold").value) || 0.7;
+            const phase05Active   = canaryMode !== "off" && !!canaryModel;
+
+            // Phase 1 config
+            const airsProfile = document.getElementById("airs-profile").value;
+            const airsKeyEl   = document.getElementById("airs-api-key");
+            const airsApiKey  = airsKeyEl.dataset.fromEnv ? "" : airsKeyEl.value.trim();
+            const modelSelect = document.getElementById("model-select").value;
+            const phase1Active = airsMode !== "off";
+
+            const delayMs    = parseInt(document.getElementById("batch-delay").value) || 600;
+            const allThreats = SAMPLE_THREATS.flatMap(g => g.threats);
+            const total      = allThreats.length;
             let blocked = 0, flagged = 0, allowed = 0, errors = 0;
 
             batchStop = false;
@@ -2676,32 +2694,98 @@ Waiting for LLM...</pre>
             for (let i = 0; i < total; i++) {
                 if (batchStop) break;
                 const threat = allThreats[i];
-                const pct = Math.round((i / total) * 100);
-                document.getElementById("batch-progress-bar").style.width = pct + "%";
-                document.getElementById("batch-progress-label").textContent =
-                    `${i + 1} / ${total}  —  ${threat.type}`;
+                document.getElementById("batch-progress-bar").style.width = Math.round((i / total) * 100) + "%";
+                document.getElementById("batch-progress-label").textContent = `${i + 1} / ${total}  —  ${threat.type}`;
 
-                const t0   = Date.now();
-                const scan = await scanWithAIRS(
-                    { prompt: threat.example }, "prompt",
-                    airsMode, airsProfile, airsApiKey, modelSelect,
-                );
-                const latMs = Date.now() - t0;
+                const t0 = Date.now();
 
+                // Per-threat state
+                let finalStatus  = "allow"; // allow | alert | block | error
+                let firstCaught  = "—";     // phase label that first flagged/blocked
+                let category     = "—";
+                let detectedStr  = "—";
+                let scanId       = null;
+
+                // ── Phase 0: Native Guardrail ──────────────────────────
+                if (phase0Active && finalStatus !== "block") {
+                    const g = await runNativeGuardrail(threat.example, guardModel, guardSysPrompt, guardThreshold);
+                    if (!g.error && g.blocked) {
+                        if (firstCaught === "—") firstCaught = "🔒 Phase 0";
+                        if (guardrailMode === "strict") {
+                            finalStatus = "block";
+                            detectedStr = g.reason ? g.reason.substring(0, 50) : "—";
+                        } else {
+                            if (finalStatus === "allow") finalStatus = "alert";
+                            detectedStr = g.reason ? g.reason.substring(0, 50) : "—";
+                        }
+                    }
+                }
+
+                // ── Phase 0.5: Little Canary ───────────────────────────
+                if (phase05Active && finalStatus !== "block") {
+                    const c = await runLittleCanary(threat.example, canaryModel, canaryMode, canaryThreshold);
+                    if (!c.error) {
+                        const hardBlock = canaryMode === "full" && (!c.safe || c.advisory?.flagged);
+                        const softFlag  = c.advisory?.flagged;
+                        if (hardBlock || softFlag) {
+                            if (firstCaught === "—") firstCaught = "🐦 Phase 0.5";
+                            if (hardBlock) {
+                                finalStatus = "block";
+                                detectedStr = c.summary ? c.summary.substring(0, 50) : "—";
+                            } else if (finalStatus === "allow") {
+                                finalStatus = "alert";
+                                detectedStr = c.summary ? c.summary.substring(0, 50) : "—";
+                            }
+                        }
+                    }
+                }
+
+                // ── Phase 1: AIRS Prompt Scan ──────────────────────────
+                if (phase1Active && finalStatus !== "block") {
+                    const s = await scanWithAIRS(
+                        { prompt: threat.example }, "prompt",
+                        airsMode, airsProfile, airsApiKey, modelSelect,
+                    );
+                    if (s.status === "error") {
+                        finalStatus = "error";
+                        if (firstCaught === "—") firstCaught = "🛡️ Phase 1";
+                    } else {
+                        // Always capture AIRS detail fields
+                        category    = s.category || "—";
+                        scanId      = s.scanId || null;
+                        if (s.detected?.length) detectedStr = s.detected.join(", ");
+                        if (s.status === "block") {
+                            finalStatus = "block";
+                            if (firstCaught === "—") firstCaught = "🛡️ Phase 1";
+                        } else if (s.status === "alert") {
+                            if (finalStatus === "allow") finalStatus = "alert";
+                            if (firstCaught === "—") firstCaught = "🛡️ Phase 1";
+                        }
+                    }
+                }
+
+                // ── Tally & render ─────────────────────────────────────
                 let rowClass = "batch-allowed", resultLabel = "✅ Allowed";
-                if      (scan.status === "error") { errors++;  rowClass = "batch-error";   resultLabel = "❌ Error"; }
-                else if (scan.status === "block") { blocked++; rowClass = "batch-blocked"; resultLabel = "🛑 Blocked"; }
-                else if (scan.status === "alert") { flagged++; rowClass = "batch-flagged"; resultLabel = "⚠️ Flagged"; }
+                if      (finalStatus === "error") { errors++;  rowClass = "batch-error";   resultLabel = "❌ Error"; }
+                else if (finalStatus === "block") { blocked++; rowClass = "batch-blocked"; resultLabel = "🛑 Blocked"; }
+                else if (finalStatus === "alert") { flagged++; rowClass = "batch-flagged"; resultLabel = "⚠️ Flagged"; }
                 else                              { allowed++; }
 
-                const detectedStr = scan.detected && scan.detected.length ? scan.detected.join(", ") : "—";
-                const latStr      = latMs < 1000 ? latMs + "ms" : (latMs / 1000).toFixed(1) + "s";
+                const phaseStyle = firstCaught.startsWith("🔒") ? "color:var(--purple)" :
+                                   firstCaught.startsWith("🐦") ? "color:var(--canary-adv)" :
+                                   firstCaught.startsWith("🛡️") ? "color:var(--primary)" :
+                                   "color:var(--muted)";
+
+                const latMs  = Date.now() - t0;
+                const latStr = latMs < 1000 ? latMs + "ms" : (latMs / 1000).toFixed(1) + "s";
 
                 const tr = document.createElement("tr");
                 tr.className = rowClass;
-                tr.innerHTML = `<td>${i + 1}</td><td title="${threat.type}">${threat.type}</td>
+                tr.innerHTML = `<td>${i + 1}</td>
+                    <td title="${threat.type}">${threat.type}</td>
                     <td>${resultLabel}</td>
-                    <td>${scan.category || "—"}</td>
+                    <td style="${phaseStyle}">${firstCaught}</td>
+                    <td>${category}</td>
                     <td title="${detectedStr}">${detectedStr}</td>
                     <td>${latStr}</td>`;
                 document.getElementById("batch-results-body").appendChild(tr);
@@ -2709,13 +2793,11 @@ Waiting for LLM...</pre>
 
                 _batchResults.push({
                     n: i + 1, threat: threat.type,
-                    status: scan.status, action: scan.action || "allow",
-                    category: scan.category || "benign",
-                    detected: scan.detected || [],
-                    latencyMs: latMs, scanId: scan.scanId || null,
+                    status: finalStatus, firstCaughtBy: firstCaught,
+                    category, detected: detectedStr === "—" ? [] : detectedStr.split(", "),
+                    latencyMs: latMs, scanId,
                 });
 
-                // Live summary
                 document.getElementById("batch-summary").innerHTML =
                     `<span class="s-blocked">🛑 ${blocked} blocked</span>` +
                     `<span class="s-flagged">⚠️ ${flagged} flagged</span>` +
@@ -2736,11 +2818,13 @@ Waiting for LLM...</pre>
         function exportBatchResults() {
             if (!_batchResults.length) { alert("Run the batch first."); return; }
             const payload = {
-                exported_at: new Date().toISOString(),
-                airs_profile: document.getElementById("airs-profile").value,
-                airs_mode:    document.getElementById("airs-mode").value,
-                model:        document.getElementById("model-select").value,
-                results:      _batchResults,
+                exported_at:    new Date().toISOString(),
+                model:          document.getElementById("model-select").value,
+                phase0_mode:    document.getElementById("guardrail-mode").value,
+                phase05_mode:   document.getElementById("canary-mode").value,
+                phase1_mode:    document.getElementById("airs-mode").value,
+                airs_profile:   document.getElementById("airs-profile").value,
+                results:        _batchResults,
             };
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
             const a = Object.assign(document.createElement("a"), {
@@ -2949,7 +3033,7 @@ Waiting for LLM...</pre>
             <div id="batch-results-wrap">
                 <table class="batch-results-table">
                     <thead><tr>
-                        <th>#</th><th>Threat Type</th><th>Result</th><th>Category</th><th>Detected</th><th>Latency</th>
+                        <th>#</th><th>Threat Type</th><th>Result</th><th>Caught By</th><th>Category</th><th>Detected</th><th>Latency</th>
                     </tr></thead>
                     <tbody id="batch-results-body"></tbody>
                 </table>
