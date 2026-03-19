@@ -8,9 +8,10 @@ Project context and working conventions for Claude Code. Read this before making
 
 A browser-based LLM security testing workbench. A Node.js proxy (`src/server.js`) serves the UI and routes security scans. All LLM inference runs locally via Ollama. Security scanning uses a six-gate pipeline — some gates local (LLM-Guard, Semantic-Guard, Little-Canary), some cloud (Prisma AIRS).
 
-**Active workbench files:** `dev/5a` and `dev/5b` — these are the ones users run and demo.
-- `5b` uses emoji gate names (🔬 🧩 🐦 📥🛡️ 🔀🛡️) — the recommended default
-- `5a` uses legacy phase numbers (Phase 0, Phase 0.5, Phase 0.6…) — kept as a reference build
+**Active workbench files:** `dev/5b` and `dev/5c` — these are the ones users run and demo.
+- `5c` — Tokyo Night accordion sidebar, mode badge pills, persona header pill, edge handle — the recommended default
+- `5b` uses emoji gate names (🔬 🧩 🐦 📥🛡️ 🔀🛡️) — stable reference build
+- `5a` uses legacy phase numbers (Phase 0, Phase 0.5, Phase 0.6…) — archived in `dev/builds/`
 
 ---
 
@@ -21,7 +22,7 @@ src/
   server.js           # Node proxy :3080 — only backend file; loads .env
   index.html          # Promoted from dev/ via npm run stage
 
-dev/                  # Active iteration files (1a, 1b, 2a, 5a, 5b)
+dev/                  # Active iteration files (2a, 5b, 5c)
 dev/builds/           # Archived intermediate builds (3xx, 4xx) — do not edit
 
 scripts/
@@ -41,11 +42,11 @@ test/
 
 docs/                 # Project docs only at the root level
   1-SETUP-GUIDE.md    # Setup for dev/1a, 1b, 2a
-  5-SETUP-GUIDE.md    # Setup for dev/5a, 5b (full six-gate)
+  5-SETUP-GUIDE.md    # Setup for dev/5b, 5c (full six-gate)
   ARCHITECTURE.md     # Component diagram, traffic routing, flow diagrams
   SECURITY-GATES.md   # Per-gate deep dives, config tables, system prompts
   TESTING.md          # Verification tests, troubleshooting, usage tips
-  PRD.md              # Product requirements v3.1
+  PRD.md              # Product requirements v3.2
   notes/              # Personal study notes — not project documentation
 ```
 
@@ -56,9 +57,9 @@ docs/                 # Project docs only at the root level
 | Command | What it does |
 | :--- | :--- |
 | `npm start` | Start Node proxy on :3080 |
-| `npm run stage 5b` | Copy `dev/5b-*.html` → `src/index.html` |
+| `npm run stage 5c` | Copy `dev/5c-*.html` → `src/index.html` |
 | `npm run stage` | List all available dev files |
-| `npm run stage:5b` | Named shortcut (also: 1a, 1b, 2a, 3a–3c, 4a, 4c, 5a) |
+| `npm run stage:5b` | Named shortcut (also: 1a, 1b, 2a, 3a–3c, 4a, 4c, 5a, 5c) |
 | `npm run canary` | Start Little-Canary Flask sidecar on :5001 |
 | `npm run llmguard` | Start LLM Guard Flask sidecar on :5002 |
 

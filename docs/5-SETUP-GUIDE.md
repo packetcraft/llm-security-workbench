@@ -1,27 +1,28 @@
 <!--
-  SCOPE: This guide covers dev/5a and dev/5b only.
+  SCOPE: This guide covers dev/5b and dev/5c only.
   These are the full six-gate LLM security workbench files including the LLM Guard sidecar.
   For the entry-level files (dev/1a, dev/1b, dev/2a), see docs/1-SETUP-GUIDE.md.
   Files dev/3xx and dev/4xx are intermediate builds not covered by any standalone guide.
+  dev/5a (legacy phase names) is archived in dev/builds/.
 -->
 
 # LLM Security Workbench — Six-Gate Setup Guide
-### `dev/5a` · `dev/5b`
+### `dev/5b` · `dev/5c`
 
 This guide walks through a full from-scratch setup of the six-gate LLM security workbench. No prior installation is assumed.
 
 ---
 
-## 5a vs 5b
+## 5b vs 5c
 
-Both files are the same workbench. The only difference is naming:
+Both files implement the same six-gate pipeline. The difference is the sidebar UI:
 
-| File | Phase names used |
+| File | UI |
 |:---|:---|
-| `dev/5a-llm-security-workbench-llm-guard.html` | Legacy phase numbers (Phase 0, Phase 0.5, Phase 0.6 …) |
-| `dev/5b-llm-security-workbench-llm-guard.html` | New names with emojis (🔬 LLM-Guard, 🧩 Semantic-Guard, 🐦 Little-Canary …) |
+| `dev/5b-llm-security-workbench-llm-guard.html` | Flat panel sidebar with emoji gate names — stable reference build |
+| `dev/5c-llm-security-workbench-llm-guard.html` | Tokyo Night accordion sidebar, mode badge pills, persona header pill — recommended default |
 
-Use `5b` for demos and new work. `5a` is retained as a reference build.
+Use `5c` for demos and new work. `5b` is retained as a stable reference. `5a` (legacy phase numbers) is archived in `dev/builds/`.
 
 ---
 

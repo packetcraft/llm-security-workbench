@@ -1,6 +1,6 @@
 # 📄 Product Requirements Document: Ollama Pro Workbench
 
-**Version:** 3.1 (Six-Gate Pipeline — LLM Guard + Phase Rename)
+**Version:** 3.2 (5c — Tokyo Night Accordion Sidebar)
 **Date:** 2026-03-19
 **Status:** Feature Complete / Stable Release
 
@@ -583,8 +583,8 @@ llm-security-workbench/
 ├── docs/
 │   ├── PRD.md            # This document
 │   ├── 1-SETUP-GUIDE.md  # Setup guide for dev/1a, 1b, 2a
-│   ├── 5-SETUP-GUIDE.md  # Setup guide for dev/5a, 5b (six-gate pipeline)
-│   └── pii-shield-testing.md
+│   ├── 5-SETUP-GUIDE.md  # Setup guide for dev/5b, 5c (six-gate pipeline)
+│   ├── notes/            # Personal study notes (not linked from README)
 ├── dev/                  # Iteration history — serve via /dev/<prefix> or promote with npm run stage
 │   ├── 1a-ollama-chat-no-security.html
 │   ├── 1b-mechat-no-security.html
@@ -595,8 +595,9 @@ llm-security-workbench/
 │   ├── 4a-llm-security-workbench-batch-runner.html
 │   ├── 4b-llm-security-workbench-advanced-batch.html
 │   ├── 4c-llm-security-workbench-threat-import.html
-│   ├── 5a-llm-security-workbench-llm-guard.html   # six-gate pipeline (legacy phase names)
-│   └── 5b-llm-security-workbench-llm-guard.html   # six-gate pipeline (new emoji names)
+│   ├── 5a-llm-security-workbench-llm-guard.html   # archived in dev/builds/ (legacy phase names)
+│   ├── 5b-llm-security-workbench-llm-guard.html   # six-gate pipeline (emoji names, stable ref)
+│   └── 5c-llm-security-workbench-llm-guard.html   # six-gate pipeline (Tokyo Night accordion sidebar)
 ├── llm-guard/
 │   ├── .venv/            # Python 3.12 venv (gitignored)
 │   ├── llmguard_server.py # Flask sidecar :5002
@@ -615,6 +616,23 @@ llm-security-workbench/
 ---
 
 ## 7. Recently Implemented
+
+### ✅ Tokyo Night Accordion Sidebar — `dev/5c` (v3.2)
+
+**Sidebar redesign** replacing the flat left-column panel stack with a two-section Tokyo Night accordion layout:
+
+- **SECURITY PIPELINE section** — each of the six gates as a collapsible `.gate-row` accordion row; all rows collapsed on first load
+- **WORKSPACE section** — model selector, parameters, persona, threat insert, and batch runner as collapsible workspace rows
+- **Edge handle** — 18px `sidebar-handle` strip (‹/›) on the far left replaces the header toggle button; the handle icon flips direction when the sidebar is collapsed
+- **Mode badge pills** — `gate-mode-badge` pill (e.g. `Strict` / `Audit` / `Full` / `Off`) replaces the 7px status dot on each gate row header; colour-coded to match existing mode colours
+- **3-segment mode toggle buttons** — labelled `Off` / `Advisory` / `Strict` (or `Full` for Little-Canary) replace `<select>` dropdowns in each gate row body; hidden `<select>` elements are retained for JS compatibility
+- **Scanner chips** — compact toggleable pill elements replace checkbox lists for LLM-Guard input/output scanner selection; sync with hidden `<input type=checkbox>` elements
+- **Persona pill in header** — `#header-persona-badge` pill next to the model badge shows `👤 Persona: Default` or the selected persona name; updated by `applyPersona()`
+- **Null-guard startup fix** — `toggleAIRSSettings()`, `updateGuardrailStatus()`, and `updateCanaryStatus()` all added `if (panel)` guards around `classList` operations; missing panels (removed in the accordion restructure) previously caused a `TypeError` on page load that silently killed all subsequent JS, including the Batch Run modal
+
+**5c is the recommended demo file** — `5b` is retained as a stable reference build; `5a` archived in `dev/builds/`.
+
+---
 
 ### ✅ Six-Gate Pipeline + Phase Rename — `dev/5a` / `dev/5b` (v3.0–3.1)
 

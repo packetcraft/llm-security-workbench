@@ -17,7 +17,7 @@ Each gate runs independently in **Off / Advisory / Strict** mode. Local gates (L
 | :--- | :--- |
 | [Node.js](https://nodejs.org/) 18+ | Runs the proxy server |
 | [Ollama](https://ollama.com/) | Local LLM runtime |
-| Python 3.12 | Required for LLM-Guard sidecar (`dev/5a`, `dev/5b`) |
+| Python 3.12 | Required for LLM-Guard sidecar (`dev/5b`, `dev/5c`) |
 | Prisma AIRS API key | Optional — required for AIRS-Inlet and AIRS-Dual gates only |
 
 ---
@@ -64,10 +64,10 @@ The key stays server-side and never reaches the browser. See `docs/5-SETUP-GUIDE
 ```bash
 npm start                 # Node proxy on :3080 (required)
 npm run canary            # Little-Canary sidecar on :5001 (optional)
-npm run llmguard          # LLM Guard sidecar on :5002 (optional, 5a/5b only)
+npm run llmguard          # LLM Guard sidecar on :5002 (optional, 5b/5c only)
 ```
 
-Open **`http://localhost:3080/dev/5b`** — or see the dev file table below.
+Open **`http://localhost:3080/dev/5c`** — or see the dev file table below.
 
 ---
 
@@ -76,7 +76,7 @@ Open **`http://localhost:3080/dev/5b`** — or see the dev file table below.
 The `dev/` folder contains HTML files representing a progressive build-up from a bare chat to a fully secured workbench. Serve any file directly by prefix:
 
 ```
-http://localhost:3080/dev/5b    →  five-gate workbench (recommended)
+http://localhost:3080/dev/5c    →  six-gate workbench, accordion sidebar (recommended)
 http://localhost:3080/dev/1a    →  bare Ollama chat, no security
 ```
 
@@ -93,14 +93,15 @@ http://localhost:3080/dev/1a    →  bare Ollama chat, no security
 |   | `4c` — `threat-import` | garak + JailbreakBench import | ✓ |
 | ⭐ | `5a` — `llm-security-workbench-llm-guard` | Six-gate workbench (legacy phase names) | ✓ |
 | ⭐ | `5b` — `llm-security-workbench-llm-guard` | Six-gate workbench (emoji gate names) | ✓ |
+| ⭐ | `5c` — `llm-security-workbench-llm-guard` | Tokyo Night accordion sidebar, mode badges | ✓ |
 
 To make a dev file the default at `http://localhost:3080`:
 
 ```bash
-npm run stage 5b        # copies dev/5b-*.html → src/index.html
+npm run stage 5c        # copies dev/5c-*.html → src/index.html
 ```
 
-3xx and 4xx files are archived in `dev/builds/` and accessible via `/dev/3a`, `/dev/4a` etc.
+3xx, 4xx, 1xx, and 5a files are archived in `dev/builds/` and accessible via `/dev/3a`, `/dev/5a` etc.
 
 ---
 
@@ -108,7 +109,7 @@ npm run stage 5b        # copies dev/5b-*.html → src/index.html
 
 | Doc | Contents |
 | :--- | :--- |
-| [`docs/5-SETUP-GUIDE.md`](docs/5-SETUP-GUIDE.md) | Full setup for `dev/5a` / `dev/5b` — LLM Guard install, sidecar startup, HuggingFace model downloads |
+| [`docs/5-SETUP-GUIDE.md`](docs/5-SETUP-GUIDE.md) | Full setup for `dev/5b` / `dev/5c` — LLM Guard install, sidecar startup, HuggingFace model downloads |
 | [`docs/1-SETUP-GUIDE.md`](docs/1-SETUP-GUIDE.md) | Setup for `dev/1a`, `dev/1b`, `dev/2a` — Ollama, Node install, AIRS key |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Component diagram, traffic routing table, six-gate flow diagram, Node proxy design notes |
 | [`docs/SECURITY-GATES.md`](docs/SECURITY-GATES.md) | Per-gate deep dives — how each gate works, configuration tables, recommended models, system prompts |
