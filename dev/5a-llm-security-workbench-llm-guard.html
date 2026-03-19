@@ -1314,7 +1314,7 @@
                     <select id="guardrail-mode" onchange="toggleGuardrailSettings()">
                         <option value="off">⚫ Off (Disabled)</option>
                         <option value="audit">🟡 Audit — warn and proceed</option>
-                        <option value="strict">🔴 Strict — block on fail</option>
+                        <option value="strict" selected>🔴 Strict — block on fail</option>
                     </select>
                     <details style="margin-top:2px;">
                         <summary style="font-size:11px;cursor:pointer;color:#9b59b6;">⚙️ Guardrail Settings</summary>
@@ -1357,7 +1357,7 @@ Respond ONLY with valid JSON, no other text:
                     <select id="canary-mode" onchange="toggleCanarySettings()">
                         <option value="off">⚫ Off (Disabled)</option>
                         <option value="advisory">🟡 Advisory — flag &amp; inject warning</option>
-                        <option value="full">🔴 Full — block high-confidence attacks</option>
+                        <option value="full" selected>🔴 Full — block high-confidence attacks</option>
                     </select>
                     <details style="margin-top:2px;">
                         <summary style="font-size:11px;cursor:pointer;color:var(--canary-adv);">⚙️ Canary Settings
@@ -1393,7 +1393,7 @@ Respond ONLY with valid JSON, no other text:
                     <select id="llmguard-mode">
                         <option value="off">⚫ Off (Disabled)</option>
                         <option value="advisory">🟡 Advisory — flag &amp; continue</option>
-                        <option value="strict">🔴 Strict — block on fail</option>
+                        <option value="strict" selected>🔴 Strict — block on fail</option>
                     </select>
                     <details style="margin-top:2px;">
                         <summary style="font-size:11px;cursor:pointer;color:var(--llmguard);">⚙️ LLM Guard Settings</summary>
@@ -1412,6 +1412,38 @@ Respond ONLY with valid JSON, no other text:
                                     </label>
                                     <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
                                         <input type="checkbox" id="lg-scan-toxicity" checked> Toxicity
+                                    </label>
+                                    <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" id="lg-scan-bantopics" checked> BanTopics
+                                    </label>
+                                    <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" id="lg-scan-gibberish" checked> Gibberish
+                                    </label>
+                                    <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" id="lg-scan-language" checked> Language
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="llmguard-out-scanners-row" style="margin-top:6px;">
+                                <label style="font-size:11px;margin-bottom:4px;display:block;color:var(--llmguard);">Output Scanners (Phase 2.5)</label>
+                                <div style="display:flex;flex-direction:column;gap:3px;">
+                                    <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" id="lg-out-sensitive" checked> Sensitive
+                                    </label>
+                                    <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" id="lg-out-malicious" checked> MaliciousURLs
+                                    </label>
+                                    <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" id="lg-out-norefusal" checked> NoRefusal
+                                    </label>
+                                    <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" id="lg-out-bias" checked> Bias
+                                    </label>
+                                    <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" id="lg-out-relevance" checked> Relevance
+                                    </label>
+                                    <label style="font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" id="lg-out-languagesame" checked> LanguageSame
                                     </label>
                                 </div>
                             </div>
@@ -1433,7 +1465,7 @@ Respond ONLY with valid JSON, no other text:
                     <select id="airs-mode" onchange="toggleAIRSSettings()">
                         <option value="off">⚫ Off (LLM Only)</option>
                         <option value="audit">🟡 Audit Only (Twin-Scan)</option>
-                        <option value="strict">🔴 Strict (Pre-Flight Block)</option>
+                        <option value="strict" selected>🔴 Strict (Pre-Flight Block)</option>
                     </select>
                     <details style="margin-top:2px;">
                         <summary style="font-size:11px;cursor:pointer;color:var(--danger);">⚙️ AIRS Settings</summary>
@@ -1769,10 +1801,11 @@ Waiting for LLM...</pre>
         // #1/#2 — Update AIRS status dot and model badge in header
         function updateHeaderStatus(mode) {
             const chip = document.getElementById("header-airs-status");
+            if (!chip) return;
             const dot = chip.querySelector(".status-dot");
             const label = document.getElementById("header-airs-label");
-            dot.className = "status-dot " + mode;
-            label.textContent = { off: "AIRS Off", audit: "AIRS Audit", strict: "AIRS Strict" }[mode] || mode;
+            if (dot) dot.className = "status-dot " + mode;
+            if (label) label.textContent = { off: "AIRS Off", audit: "AIRS Audit", strict: "AIRS Strict" }[mode] || mode;
             chip.className = "status-chip " + ({ audit: "chip-warning", strict: "chip-danger" }[mode] || "");
         }
 
@@ -1844,22 +1877,27 @@ Waiting for LLM...</pre>
                     "http://localhost:11434/api/tags",
                 );
                 const data = await response.json();
+                const PREF_MAIN   = "goekdenizguelmez/JOSIEFIED-Qwen3:4b";
+                const PREF_GUARD  = "goekdenizguelmez/JOSIEFIED-Qwen3:4b";
+                const PREF_CANARY = "qwen2.5:1.5b";
+
+                const bestMain = data.models.find(m => m.name === PREF_MAIN) ||
+                    data.models.find(m => m.name.includes("JOSIEFIED")) ||
+                    data.models.find(m => m.name.includes("llama3.2")) ||
+                    data.models[0];
+
                 const optionsHtml = data.models
-                    .map((m) => {
-                        const isDefault =
-                            m.name.includes("llama3.2") ||
-                            m.name.includes("3b");
-                        return `<option value="${m.name}" ${isDefault ? "selected" : ""}>${m.name}</option>`;
-                    })
+                    .map((m) => `<option value="${m.name}" ${m === bestMain ? "selected" : ""}>${m.name}</option>`)
                     .join("");
                 selector.innerHTML = optionsHtml;
-                // Default models based on research
-                const bestGuard = data.models.find(m => m.name === "shieldgemma:2b") ||
+
+                const bestGuard = data.models.find(m => m.name === PREF_GUARD) ||
+                    data.models.find(m => m.name.includes("JOSIEFIED")) ||
                     data.models.find(m => m.name.includes("shieldgemma")) ||
                     data.models.find(m => m.name.includes("llama-guard3")) ||
                     data.models[0];
 
-                const bestCanary = data.models.find(m => m.name === "qwen2.5:1.5b") ||
+                const bestCanary = data.models.find(m => m.name === PREF_CANARY) ||
                     data.models.find(m => m.name.includes("qwen2.5")) ||
                     data.models.find(m => m.name.includes("phi3")) ||
                     data.models[0];
@@ -2048,6 +2086,7 @@ Waiting for LLM...</pre>
 
         function updateGuardrailStatus(mode) {
             const chip = document.getElementById("header-guardrail-status");
+            if (!chip) return;
             const dot = chip.querySelector(".status-dot");
             const label = document.getElementById("header-guardrail-label");
             const dotClass = { off: "off", audit: "guardrail-audit", strict: "guardrail-strict" }[mode] || "off";
@@ -2070,6 +2109,7 @@ Waiting for LLM...</pre>
 
         function updateCanaryStatus(mode) {
             const chip = document.getElementById("header-canary-status");
+            if (!chip) return;
             const dot = chip.querySelector(".status-dot");
             const label = document.getElementById("header-canary-label");
             const dotClass = { off: "off", advisory: "canary-advisory", full: "canary-block" }[mode] || "off";
@@ -2083,6 +2123,17 @@ Waiting for LLM...</pre>
         }
 
         // ── Phase 0.6: LLM Guard (local scanner sidecar) ──────────────
+        function _getLGOutputScanners() {
+            const out = [];
+            if (document.getElementById("lg-out-sensitive").checked)    out.push("Sensitive");
+            if (document.getElementById("lg-out-malicious").checked)    out.push("MaliciousURLs");
+            if (document.getElementById("lg-out-norefusal").checked)    out.push("NoRefusal");
+            if (document.getElementById("lg-out-bias").checked)         out.push("Bias");
+            if (document.getElementById("lg-out-relevance").checked)    out.push("Relevance");
+            if (document.getElementById("lg-out-languagesame").checked) out.push("LanguageSame");
+            return out;
+        }
+
         async function runLLMGuard(text, mode, scanners) {
             // mode: "strict" | "advisory" | "off"
             // Returns { error, valid, blocked, flagged, failingScanners, summary, results }
@@ -2532,6 +2583,9 @@ Waiting for LLM...</pre>
                 if (document.getElementById("lg-scan-secrets").checked)   lgScanners.push("Secrets");
                 if (document.getElementById("lg-scan-injection").checked) lgScanners.push("PromptInjection");
                 if (document.getElementById("lg-scan-toxicity").checked)  lgScanners.push("Toxicity");
+                if (document.getElementById("lg-scan-bantopics").checked) lgScanners.push("BanTopics");
+                if (document.getElementById("lg-scan-gibberish").checked) lgScanners.push("Gibberish");
+                if (document.getElementById("lg-scan-language").checked)  lgScanners.push("Language");
 
                 if (lgScanners.length) {
                     document.getElementById("debug-status").innerText = "🛡️ Phase 0.6: LLM Guard scanning...";
@@ -2913,6 +2967,60 @@ Waiting for LLM...</pre>
                 document.getElementById("debug-status").innerText = "Done";
             }
 
+            // ══════════════════════════════════════════
+            // PHASE 2.5 — LLM GUARD OUTPUT SCAN
+            // ══════════════════════════════════════════
+            if (lgMode !== "off" && fullRes && !streamError) {
+                const lgOutScanners = _getLGOutputScanners();
+                if (lgOutScanners.length) {
+                    document.getElementById("debug-status").innerText = "🛡️ Phase 2.5: LLM Guard output scan...";
+                    const _lg25t0 = Date.now();
+                    const lgOut = await runLLMGuardOutput(userPrompt, fullRes, lgMode, lgOutScanners);
+                    const _lg25ms = Date.now() - _lg25t0;
+                    const _lg25lat = _lg25ms < 1000 ? `· ${_lg25ms}ms` : `· ${(_lg25ms / 1000).toFixed(1)}s`;
+
+                    const resBadge = document.getElementById(botMsgId + "-badge");
+                    if (lgOut.error) {
+                        const warnDiv = document.createElement("div");
+                        warnDiv.className = "message security-alert";
+                        warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-top:6px;";
+                        warnDiv.innerHTML = `<strong>⚠️ PHASE 2.5 — LLM GUARD OUTPUT — ERROR ${_lg25lat}</strong><br>Scan failed, output shown unverified. <small>${lgOut.message}</small>`;
+                        botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
+                    } else if (lgOut.blocked) {
+                        if (resBadge) {
+                            resBadge.className = "scan-badge blocked";
+                            resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                            resBadge.textContent = `🛡️ LG-OUT BLOCKED ${_lg25lat}`;
+                        }
+                        const blockDiv = document.createElement("div");
+                        blockDiv.className = "message security-alert";
+                        blockDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1);margin-top:6px;";
+                        blockDiv.innerHTML = `<strong>🛡️ PHASE 2.5 — LLM GUARD OUTPUT — BLOCKED ${_lg25lat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`;
+                        botDiv.querySelector(".content").insertAdjacentElement("afterbegin", blockDiv);
+                        document.getElementById("debug-status").innerText = "Blocked (LLM Guard Phase 2.5)";
+                    } else if (lgOut.flagged) {
+                        if (resBadge) {
+                            resBadge.className = "scan-badge flagged";
+                            resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                            resBadge.textContent = `🛡️ LG-OUT FLAGGED ${_lg25lat}`;
+                        }
+                        const warnDiv = document.createElement("div");
+                        warnDiv.className = "message security-alert";
+                        warnDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1);margin-top:6px;";
+                        warnDiv.innerHTML = `<strong>🛡️ PHASE 2.5 — LLM GUARD OUTPUT — FLAGGED ${_lg25lat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response shown with warning.`;
+                        botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
+                        document.getElementById("debug-status").innerText = "Done (LLM Guard flagged output)";
+                    } else {
+                        if (resBadge && !resBadge.textContent.includes("AIRS-2")) {
+                            resBadge.className = "scan-badge allowed";
+                            resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                            resBadge.textContent = `🛡️ LG-OUT SAFE ${_lg25lat}`;
+                        }
+                        document.getElementById("debug-status").innerText = "Done ✅";
+                    }
+                }
+            }
+
             // Copy button
             const copyBtn = document.createElement("button");
             copyBtn.className = "copy-btn";
@@ -2970,6 +3078,10 @@ Waiting for LLM...</pre>
         loadCustomAirsProfiles();
         loadThreats();
         loadEnvConfig();
+        // Apply default mode selections (selected attr doesn't fire onchange)
+        toggleGuardrailSettings();
+        toggleCanarySettings();
+        toggleAIRSSettings();
 
         // Param info tooltip (body-level, avoids overflow clipping)
         const _tooltip = document.createElement("div");
@@ -3300,6 +3412,9 @@ Waiting for LLM...</pre>
             if (document.getElementById("lg-scan-secrets").checked)   lgScanners06.push("Secrets");
             if (document.getElementById("lg-scan-injection").checked) lgScanners06.push("PromptInjection");
             if (document.getElementById("lg-scan-toxicity").checked)  lgScanners06.push("Toxicity");
+            if (document.getElementById("lg-scan-bantopics").checked) lgScanners06.push("BanTopics");
+            if (document.getElementById("lg-scan-gibberish").checked) lgScanners06.push("Gibberish");
+            if (document.getElementById("lg-scan-language").checked)  lgScanners06.push("Language");
             const phase06Active = lgMode06 !== "off" && lgScanners06.length > 0;
 
             // Phase 1 config
@@ -3470,6 +3585,19 @@ Waiting for LLM...</pre>
                     }
                 }
 
+                // ── Phase 2.5: LLM Guard Output Scan ──────────────────
+                if (phase06Active && finalStatus !== "block" && finalStatus !== "error") {
+                    // Only run if we have a generated response from Phase 2
+                    const lgOutScanners25 = [];
+                    if (document.getElementById("lg-out-sensitive").checked)    lgOutScanners25.push("Sensitive");
+                    if (document.getElementById("lg-out-malicious").checked)    lgOutScanners25.push("MaliciousURLs");
+                    if (document.getElementById("lg-out-norefusal").checked)    lgOutScanners25.push("NoRefusal");
+                    if (document.getElementById("lg-out-bias").checked)         lgOutScanners25.push("Bias");
+                    if (document.getElementById("lg-out-relevance").checked)    lgOutScanners25.push("Relevance");
+                    if (document.getElementById("lg-out-languagesame").checked) lgOutScanners25.push("LanguageSame");
+                    // Note: batch runner doesn't store LLM response text per-threat, so skip if no response captured
+                }
+
                 // ── Tally & render ─────────────────────────────────────
                 // Count which phase caught it first
                 if (firstCaught.includes("0.5")) p05++;
@@ -3596,6 +3724,9 @@ Waiting for LLM...</pre>
             if (document.getElementById("lg-scan-secrets").checked)   lg06Scanners.push("Secrets");
             if (document.getElementById("lg-scan-injection").checked) lg06Scanners.push("PromptInjection");
             if (document.getElementById("lg-scan-toxicity").checked)  lg06Scanners.push("Toxicity");
+            if (document.getElementById("lg-scan-bantopics").checked) lg06Scanners.push("BanTopics");
+            if (document.getElementById("lg-scan-gibberish").checked) lg06Scanners.push("Gibberish");
+            if (document.getElementById("lg-scan-language").checked)  lg06Scanners.push("Language");
 
             const payload = {
                 exported_at:      new Date().toISOString(),
@@ -3605,6 +3736,16 @@ Waiting for LLM...</pre>
                 phase05_mode:     document.getElementById("canary-mode").value,
                 phase06_mode:     document.getElementById("llmguard-mode").value,
                 phase06_scanners: lg06Scanners,
+                phase06_output_scanners: (() => {
+                    const o = [];
+                    if (document.getElementById("lg-out-sensitive").checked)    o.push("Sensitive");
+                    if (document.getElementById("lg-out-malicious").checked)    o.push("MaliciousURLs");
+                    if (document.getElementById("lg-out-norefusal").checked)    o.push("NoRefusal");
+                    if (document.getElementById("lg-out-bias").checked)         o.push("Bias");
+                    if (document.getElementById("lg-out-relevance").checked)    o.push("Relevance");
+                    if (document.getElementById("lg-out-languagesame").checked) o.push("LanguageSame");
+                    return o;
+                })(),
                 phase1_mode:      document.getElementById("airs-mode").value,
                 phase2_mode:      document.getElementById("airs-mode").value !== "off" ? "active" : "off",
                 airs_profile:     document.getElementById("airs-profile").value,
@@ -3658,6 +3799,17 @@ Waiting for LLM...</pre>
             if (document.getElementById("lg-scan-secrets").checked)   lg06Scanners.push("Secrets");
             if (document.getElementById("lg-scan-injection").checked) lg06Scanners.push("PromptInjection");
             if (document.getElementById("lg-scan-toxicity").checked)  lg06Scanners.push("Toxicity");
+            if (document.getElementById("lg-scan-bantopics").checked) lg06Scanners.push("BanTopics");
+            if (document.getElementById("lg-scan-gibberish").checked) lg06Scanners.push("Gibberish");
+            if (document.getElementById("lg-scan-language").checked)  lg06Scanners.push("Language");
+
+            const lgOutScanners25MD = [];
+            if (document.getElementById("lg-out-sensitive").checked)    lgOutScanners25MD.push("Sensitive");
+            if (document.getElementById("lg-out-malicious").checked)    lgOutScanners25MD.push("MaliciousURLs");
+            if (document.getElementById("lg-out-norefusal").checked)    lgOutScanners25MD.push("NoRefusal");
+            if (document.getElementById("lg-out-bias").checked)         lgOutScanners25MD.push("Bias");
+            if (document.getElementById("lg-out-relevance").checked)    lgOutScanners25MD.push("Relevance");
+            if (document.getElementById("lg-out-languagesame").checked) lgOutScanners25MD.push("LanguageSame");
 
             const lines = [
                 `# Batch Threat Runner — Results`,
@@ -3673,6 +3825,7 @@ Waiting for LLM...</pre>
                 `| Phase 0.6 — LLM Guard | ${p06Mode}${p06Mode !== "off" ? ` (${lg06Scanners.join(", ")})` : ""} |`,
                 `| Phase 1 — AIRS Prompt Scan | ${p1Mode} |`,
                 `| Phase 2 — AIRS Response Scan | ${p1Mode !== "off" ? "active (runs after LLM)" : "off"} |`,
+                `| Phase 2.5 — LLM Guard Output | ${p06Mode}${p06Mode !== "off" ? ` (${lgOutScanners25MD.join(", ")})` : ""} |`,
                 `| AIRS Profile | ${airsProfile || "—"} |`,
                 ``,
                 `## Summary`,

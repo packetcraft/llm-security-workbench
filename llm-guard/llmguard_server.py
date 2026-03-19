@@ -3,8 +3,8 @@
 LLM Guard sidecar — Phase 0.6 (input) & Phase 2.5 (output)
 Runs on port 5002. Called by Node.js proxy via /api/llmguard-input and /api/llmguard-output.
 
-Tier 1 Input Scanners:  InvisibleText, Secrets, PromptInjection, Toxicity
-Tier 2 Output Scanners: Sensitive, MaliciousURLs, NoRefusal
+Tier 1 Input Scanners:  InvisibleText, Secrets, PromptInjection, Toxicity, BanTopics, Gibberish, Language
+Tier 2 Output Scanners: Sensitive, MaliciousURLs, NoRefusal, Bias, Relevance, LanguageSame
 
 Install:  pip install -r llm-guard/requirements.txt
 Run:      python llm-guard/llmguard_server.py
@@ -26,12 +26,22 @@ INPUT_SCANNER_MAP = {
     "Secrets":         lambda: _import("llm_guard.input_scanners", "Secrets")(),
     "PromptInjection": lambda: _import("llm_guard.input_scanners", "PromptInjection")(),
     "Toxicity":        lambda: _import("llm_guard.input_scanners", "Toxicity")(),
+    "BanTopics":       lambda: _import("llm_guard.input_scanners", "BanTopics")(
+                           topics=["violence", "self-harm", "weapons", "illegal drugs",
+                                   "terrorism", "child exploitation"],
+                           threshold=0.5),
+    "Gibberish":       lambda: _import("llm_guard.input_scanners", "Gibberish")(threshold=0.8),
+    "Language":        lambda: _import("llm_guard.input_scanners", "Language")(
+                           valid_languages=["en"], threshold=0.6),
 }
 
 OUTPUT_SCANNER_MAP = {
     "Sensitive":     lambda: _import("llm_guard.output_scanners", "Sensitive")(),
     "MaliciousURLs": lambda: _import("llm_guard.output_scanners", "MaliciousURLs")(),
     "NoRefusal":     lambda: _import("llm_guard.output_scanners", "NoRefusal")(),
+    "Bias":          lambda: _import("llm_guard.output_scanners", "Bias")(threshold=0.5),
+    "Relevance":     lambda: _import("llm_guard.output_scanners", "Relevance")(threshold=0.5),
+    "LanguageSame":  lambda: _import("llm_guard.output_scanners", "LanguageSame")(threshold=0.1),
 }
 
 def _import(module: str, cls: str):
