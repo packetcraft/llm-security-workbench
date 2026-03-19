@@ -2207,9 +2207,11 @@ Waiting for LLM...</pre>
             document.getElementById("add-airs-btn").disabled = isDisabled;
             updateHeaderStatus(mode);
             const panel = document.querySelector(".panel.security-group:not(#guardrail-panel)");
-            panel.classList.remove("mode-audit", "mode-airs-strict", "mode-guardrail-strict");
-            if (mode === "audit") panel.classList.add("mode-audit");
-            else if (mode === "strict") panel.classList.add("mode-airs-strict");
+            if (panel) {
+                panel.classList.remove("mode-audit", "mode-airs-strict", "mode-guardrail-strict");
+                if (mode === "audit") panel.classList.add("mode-audit");
+                else if (mode === "strict") panel.classList.add("mode-airs-strict");
+            }
         }
 
         function addCustomAirsProfile() {
@@ -2305,9 +2307,11 @@ Waiting for LLM...</pre>
             label.textContent = { off: "Semantic-Guard Off", audit: "Semantic-Guard Audit", strict: "Semantic-Guard Strict" }[mode] || "Semantic-Guard Off";
             chip.className = "status-chip " + ({ audit: "chip-warning", strict: "chip-purple" }[mode] || "");
             const panel = document.getElementById("guardrail-panel");
-            panel.classList.remove("mode-audit", "mode-guardrail-strict");
-            if (mode === "audit") panel.classList.add("mode-audit");
-            else if (mode === "strict") panel.classList.add("mode-guardrail-strict");
+            if (panel) {
+                panel.classList.remove("mode-audit", "mode-guardrail-strict");
+                if (mode === "audit") panel.classList.add("mode-audit");
+                else if (mode === "strict") panel.classList.add("mode-guardrail-strict");
+            }
         }
 
         // 🐦 LITTLE CANARY — Phase 0.5
@@ -2328,9 +2332,11 @@ Waiting for LLM...</pre>
             label.textContent = { off: "Canary Off", advisory: "Canary Advisory", full: "Canary Full" }[mode] || "Canary Off";
             chip.className = "status-chip " + ({ advisory: "chip-canary-adv", full: "chip-canary-blk" }[mode] || "");
             const panel = document.getElementById("canary-panel");
-            panel.classList.remove("mode-canary-advisory", "mode-canary-block");
-            if (mode === "advisory") panel.classList.add("mode-canary-advisory");
-            else if (mode === "full") panel.classList.add("mode-canary-block");
+            if (panel) {
+                panel.classList.remove("mode-canary-advisory", "mode-canary-block");
+                if (mode === "advisory") panel.classList.add("mode-canary-advisory");
+                else if (mode === "full") panel.classList.add("mode-canary-block");
+            }
         }
 
         // ── Phase 0.6: LLM Guard (local scanner sidecar) ──────────────
