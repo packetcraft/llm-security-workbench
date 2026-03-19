@@ -82,7 +82,19 @@ curl http://localhost:11434/api/tags
 
 ### Test 5 — API Inspector
 
-Click the **🛠️ API Inspector** bar at the bottom. In `dev/5b` you'll see columns for each gate showing the full request payload and raw verdict JSON. All columns reset to "Waiting..." automatically when a new prompt is sent.
+Click the **🛠️ API Inspector** bar at the bottom. In `dev/5c` (and `dev/5b`) you'll see seven columns in pipeline order — one per gate — showing the full request payload and raw verdict JSON:
+
+| Column | Shows |
+| :--- | :--- |
+| 🔬 LLM-GUARD INPUT | Scan payload + per-scanner results |
+| 🧩 SEMANTIC-GUARD | Judge request + verdict (safe, confidence, reason) |
+| 🐦 LITTLE-CANARY | Canary payload + verdict (safe, summary, advisory) |
+| 📥🛡️ AIRS-INLET | AIRS prompt scan request + verdict |
+| 🤖 OLLAMA | LLM request payload + last stream chunk |
+| 🔀🛡️ AIRS-DUAL (Phase 2) | AIRS response scan request + verdict |
+| 🔬 LLM-GUARD OUTPUT | Scan payload + per-scanner results |
+
+All columns reset to "Waiting..." when a new prompt is sent. Gates set to Off show "Disabled." immediately.
 
 ---
 

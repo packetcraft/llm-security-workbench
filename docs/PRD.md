@@ -300,10 +300,10 @@ Runs **after** the LLM has generated its full response, before it is displayed.
 A **🔄 New Session** button in the header resets the workspace to a clean state:
 
 * Clears all chat messages from the UI.
-* Resets all ten API Inspector panels (Phase 0, Phase 0.5, Phase 1, Ollama, Phase 2 — request and verdict for each) to idle.
+* Resets all fourteen API Inspector panels (LLM-Guard INPUT, Semantic-Guard, Little-Canary, AIRS-Inlet, Ollama, AIRS-Dual, LLM-Guard OUTPUT — request and verdict for each) to idle.
 * Drops a `"🔄 New session started"` notice in the chat as visual confirmation.
 
-All ten panels also reset automatically at the start of every `sendMessage()` call, so stale data from a previous prompt is never visible alongside a new one.
+All fourteen panels also reset automatically at the start of every `sendMessage()` call, so stale data from a previous prompt is never visible alongside a new one.
 
 > **Note on session IDs:** The workbench generates a fresh `tr_id` (`"wb-" + Date.now()`) on every individual scan request rather than maintaining a persistent session ID across turns. This means each scan is independently traceable in the AIRS audit trail, but consecutive turns within one conversation are not grouped under a shared session ID in the AIRS console. The New Session button therefore acts as a UI/UX reset only — no session token is rotated on the AIRS side.
 
@@ -337,27 +337,29 @@ The script uses `fs.copyFileSync` (pure Node, works cross-platform on Windows an
 
 | npm script | Effect |
 | :--- | :--- |
-| `npm run stage 5b` | Copies `5b-*.html` → `src/index.html` (recommended default) |
-| `npm run stage:1a` … `stage:5b` | Named shortcuts for the standard progression files |
+| `npm run stage 5c` | Copies `5c-*.html` → `src/index.html` (recommended default) |
+| `npm run stage:1a` … `stage:5c` | Named shortcuts for the standard progression files |
 | `npm run stage` | Prints all available dev files and usage |
 | `npm run canary` | Starts the Little-Canary Flask microservice on port `5001` |
 | `npm run llmguard` | Starts the LLM Guard Flask sidecar on port `5002` |
 
-### 3.7 Developer Tools — API Inspector (5-Phase View)
+### 3.7 Developer Tools — API Inspector (7-Gate View)
 
-Collapsible full-width panel below the main layout. Displays five columns in parallel (in `dev/3c`; four in `dev/3b` and earlier):
+Collapsible full-width panel below the main layout. Displays seven columns in pipeline order (in `dev/5b`/`dev/5c`):
 
 | Column | Contents |
 | :--- | :--- |
-| **Phase 0** | Native Guardrail outgoing judge request + raw verdict JSON (confidence, safe flag, reason) |
-| **Phase 0.5** | Little Canary request payload (input, model, mode, threshold) + verdict JSON (safe, summary, advisory) |
-| **Phase 1** | Outgoing AIRS prompt scan request + AIRS verdict JSON |
-| **Ollama** | Outgoing LLM request payload (including model parameters + any canary advisory prefix) + last raw stream chunk |
-| **Phase 2** | Outgoing AIRS response scan request + AIRS verdict JSON |
+| **🔬 LLM-Guard INPUT** | Scan payload (text + active scanners) + verdict JSON (valid, summary, per-scanner results) |
+| **🧩 Semantic-Guard** | Judge request (model, system prompt, user message) + raw verdict JSON (safe, confidence, reason) |
+| **🐦 Little-Canary** | Request payload (input, model, mode, threshold) + verdict JSON (safe, summary, advisory) |
+| **📥🛡️ AIRS-Inlet** | Outgoing AIRS prompt scan request + AIRS verdict JSON |
+| **🤖 Ollama** | Outgoing LLM request payload (model parameters + any canary advisory prefix) + last raw stream chunk |
+| **🔀🛡️ AIRS-Dual** | Outgoing AIRS response scan request + AIRS verdict JSON |
+| **🔬 LLM-Guard OUTPUT** | Scan payload (truncated prompt + response + active scanners) + verdict JSON (valid, summary, per-scanner results) |
 
-All columns reset to "Waiting..." automatically at the start of each new prompt, preventing stale data from a prior exchange persisting when a phase does not run (e.g. Phase 0.5 blocks, so Phase 1/2 never fire).
+All columns reset to "Waiting..." automatically at the start of each new prompt. When a gate is set to Off, its columns show `"Disabled."` rather than staying on `"Waiting..."`. This prevents stale data from a prior exchange persisting when a gate does not run (e.g. LLM-Guard INPUT blocks, so all subsequent gates never fire).
 
-Real-time status indicator in the header cycles through: `🔒 Phase 0: Native guardrail...` → `🐦 Phase 0.5: Little Canary scanning...` → `🔍 Phase 1: Scanning prompt...` → `🤖 Streaming LLM...` → `🔍 Phase 2: Scanning response...` → `Done ✅`.
+Real-time status indicator in the header cycles through: `🔬 LLM-Guard scanning...` → `🧩 Semantic-Guard scanning...` → `🐦 Little-Canary scanning...` → `📥🛡️ AIRS-Inlet scanning...` → `🤖 Streaming LLM...` → `🔀🛡️ AIRS-Dual scanning...` → `🔬 LLM-Guard OUTPUT scanning...` → `Done ✅`.
 
 **Per-phase latency** is displayed inline on each badge as it resolves — observers can read bottlenecks without opening the API Inspector. The LLM generation pill (`🤖 Xs`) appears on the AI message header immediately after the stream ends (or is stopped), distinct from the security scan badges via its dark background style.
 
