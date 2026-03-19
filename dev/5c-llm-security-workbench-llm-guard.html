@@ -1441,8 +1441,9 @@
 
         <div class="header-sep"></div>
 
-        <!-- Zone 2: Active model -->
+        <!-- Zone 2: Active model + persona -->
         <span class="model-badge" id="header-model-badge" title="">⬡ No model</span>
+        <span class="model-badge" id="header-persona-badge" style="border-color:var(--purple);color:var(--purple);background:rgba(90,62,142,0.10);">👤 Persona: Default</span>
 
         <!-- Zone 4: Actions -->
         <div style="display:flex; gap:8px; align-items:center; margin-left:auto; padding-left:12px; flex-shrink:0;">
@@ -1475,7 +1476,7 @@
             <div class="sidebar-panel">
 
                 <!-- 🔬 LLM-Guard -->
-                <div class="gate-row open" id="gate-llmguard">
+                <div class="gate-row" id="gate-llmguard">
                     <div class="gate-row-header" onclick="toggleGate('gate-llmguard')">
                         <span class="gate-status-dot mode-strict" id="dot-llmguard"></span>
                         <span class="gate-name" style="color:var(--llmguard)">🔬 LLM-Guard</span>
@@ -1621,7 +1622,7 @@ Respond ONLY with valid JSON, no other text:
             <div class="workspace-panel">
 
                 <!-- Model row -->
-                <div class="gate-row open" id="gate-model">
+                <div class="gate-row" id="gate-model">
                     <div class="gate-row-header" onclick="toggleGate('gate-model')">
                         <span class="gate-name">⬡ Model</span>
                         <span class="gate-chevron">›</span>
@@ -2124,6 +2125,13 @@ Waiting for LLM...</pre>
             );
             document.getElementById("system-prompt").value =
                 basePersonas[val] || custom[val] || "";
+            // Update header persona pill
+            const badge = document.getElementById("header-persona-badge");
+            if (badge) {
+                const sel = document.getElementById("persona-select");
+                const label = val ? sel.options[sel.selectedIndex].text : "Default";
+                badge.textContent = "👤 " + label;
+            }
         }
 
         function saveCustomPersona() {
