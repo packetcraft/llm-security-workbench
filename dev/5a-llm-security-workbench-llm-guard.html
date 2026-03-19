@@ -2377,7 +2377,7 @@ Waiting for LLM...</pre>
             userDiv.className = "message";
             userDiv.id = msgId;
             userDiv.dataset.prompt = userPrompt;
-            userDiv.innerHTML = `<span class="user-label">USER <span class="msg-timestamp">${getTimestamp()}</span><span class="scan-badge off" id="${msgId}-badge-guard"  style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-canary" style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-airs"   style="display:none"></span><button class="replay-btn" title="Re-inject this prompt">↩</button></span>${userPrompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
+            userDiv.innerHTML = `<span class="user-label">USER <span class="msg-timestamp">${getTimestamp()}</span><span class="scan-badge off" id="${msgId}-badge-guard"    style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-canary"  style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-llmguard" style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-airs"     style="display:none"></span><button class="replay-btn" title="Re-inject this prompt">↩</button></span>${userPrompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
             chatBox.appendChild(userDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -2388,9 +2388,10 @@ Waiting for LLM...</pre>
             document.getElementById("threat-select").value = "";
             document.getElementById("send-btn").disabled = true;
 
-            const guardBadge = document.getElementById(msgId + "-badge-guard");
-            const canaryBadge = document.getElementById(msgId + "-badge-canary");
-            const airsBadge = document.getElementById(msgId + "-badge-airs");
+            const guardBadge    = document.getElementById(msgId + "-badge-guard");
+            const canaryBadge   = document.getElementById(msgId + "-badge-canary");
+            const llmguardBadge = document.getElementById(msgId + "-badge-llmguard");
+            const airsBadge     = document.getElementById(msgId + "-badge-airs");
 
             // ══════════════════════════════════════════
             // PHASE 0 — NATIVE GUARDRAIL (LLM-as-judge)
@@ -2424,7 +2425,7 @@ Waiting for LLM...</pre>
                     const warnDiv = document.createElement("div");
                     warnDiv.className = "message security-alert";
                     warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
-                    warnDiv.innerHTML = `⚠️ NATIVE GUARDRAIL ERROR — proceeding without Phase 0<br><small>${gResult.reason}</small>`;
+                    warnDiv.innerHTML = `<strong>⚠️ PHASE 0 — NATIVE GUARDRAIL — ERROR</strong><br>Scan failed, proceeding without guardrail. <small>${gResult.reason}</small>`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 } else if (gResult.blocked) {
@@ -2434,9 +2435,7 @@ Waiting for LLM...</pre>
                         const blockDiv = document.createElement("div");
                         blockDiv.className = "message security-alert";
                         blockDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
-                        blockDiv.innerHTML = `🔒 NATIVE GUARDRAIL — PROMPT BLOCKED (Phase 0)<br>
-                                Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em><br>
-                                <small>AIRS and LLM were not reached.</small>`;
+                        blockDiv.innerHTML = `<strong>🔒 PHASE 0 — NATIVE GUARDRAIL — BLOCKED ${_gLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; AIRS and LLM not reached.`;
                         chatBox.appendChild(blockDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
                         document.getElementById("debug-status").innerText = "Blocked (Guardrail Phase 0)";
@@ -2449,8 +2448,7 @@ Waiting for LLM...</pre>
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
-                        warnDiv.innerHTML = `🔒 NATIVE GUARDRAIL WARNING (Audit) — proceeding to AIRS<br>
-                                Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em>`;
+                        warnDiv.innerHTML = `<strong>🔒 PHASE 0 — NATIVE GUARDRAIL — FLAGGED ${_gLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Proceeding to Phase 0.5.`;
                         chatBox.appendChild(warnDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
                     }
@@ -2485,7 +2483,7 @@ Waiting for LLM...</pre>
                     const warnDiv = document.createElement("div");
                     warnDiv.className = "message security-alert";
                     warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
-                    warnDiv.innerHTML = `⚠️ LITTLE CANARY ERROR — proceeding without Phase 0.5<br><small>${cResult.message}</small>`;
+                    warnDiv.innerHTML = `<strong>⚠️ PHASE 0.5 — LITTLE CANARY — ERROR</strong><br>Scan failed, proceeding without canary. <small>${cResult.message}</small>`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 } else if (canaryMode === "full" && (!cResult.safe || cResult.advisory?.flagged)) {
@@ -2496,9 +2494,7 @@ Waiting for LLM...</pre>
                     const blockDiv = document.createElement("div");
                     blockDiv.className = "message security-alert";
                     blockDiv.style.cssText = "color:var(--canary-blk);border-color:var(--canary-blk);background:rgba(122,53,0,0.1)";
-                    blockDiv.innerHTML = `🐦 LITTLE CANARY — PROMPT BLOCKED (Phase 0.5)<br>
-                            <em>${cResult.summary}</em><br>
-                            <small>AIRS and LLM were not reached.</small>`;
+                    blockDiv.innerHTML = `<strong>🐦 PHASE 0.5 — LITTLE CANARY — BLOCKED ${_cLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; AIRS and LLM not reached.`;
                     chatBox.appendChild(blockDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                     document.getElementById("debug-status").innerText = "Blocked (Little Canary Phase 0.5)";
@@ -2513,7 +2509,7 @@ Waiting for LLM...</pre>
                     const warnDiv = document.createElement("div");
                     warnDiv.className = "message security-alert";
                     warnDiv.style.cssText = "color:var(--canary-adv);border-color:var(--canary-adv);background:rgba(177,92,0,0.1)";
-                    warnDiv.innerHTML = `🐦 LITTLE CANARY ADVISORY — warning injected into system prompt<br><em>${cResult.summary}</em>`;
+                    warnDiv.innerHTML = `<strong>🐦 PHASE 0.5 — LITTLE CANARY — FLAGGED ${_cLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; Warning injected into system prompt.`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 } else {
@@ -2539,34 +2535,52 @@ Waiting for LLM...</pre>
 
                 if (lgScanners.length) {
                     document.getElementById("debug-status").innerText = "🛡️ Phase 0.6: LLM Guard scanning...";
+                    const _lg0 = Date.now();
                     const lg = await runLLMGuard(userPrompt, lgMode, lgScanners);
+                    const _lgMs = Date.now() - _lg0;
+                    const _lgLat = _lgMs < 1000 ? `· ${_lgMs}ms` : `· ${(_lgMs / 1000).toFixed(1)}s`;
 
                     if (lg.error) {
+                        llmguardBadge.style.display = "";
+                        llmguardBadge.className = "scan-badge";
+                        llmguardBadge.style.cssText = "border-color:var(--warning);color:var(--warning)";
+                        llmguardBadge.textContent = `🛡️ LG ERROR ${_lgLat}`;
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
-                        warnDiv.innerHTML = `⚠️ LLM GUARD ERROR — proceeding without Phase 0.6<br><small>${lg.message}</small>`;
+                        warnDiv.innerHTML = `<strong>⚠️ PHASE 0.6 — LLM GUARD — ERROR ${_lgLat}</strong><br>Scan failed, proceeding without LLM Guard. <small>${lg.message}</small>`;
                         chatBox.appendChild(warnDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
                     } else if (lg.blocked) {
+                        llmguardBadge.style.display = "";
+                        llmguardBadge.className = "scan-badge blocked";
+                        llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                        llmguardBadge.textContent = `🛡️ LG BLOCKED ${_lgLat}`;
                         const blockDiv = document.createElement("div");
                         blockDiv.className = "message security-alert";
                         blockDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1)";
-                        blockDiv.innerHTML = `🛡️ LLM GUARD — PROMPT BLOCKED (Phase 0.6)<br>
-                                <em>${lg.summary}</em><br>
-                                <small>AIRS and LLM were not reached.</small>`;
+                        blockDiv.innerHTML = `<strong>🛡️ PHASE 0.6 — LLM GUARD — BLOCKED ${_lgLat}</strong><br>${lg.summary} &nbsp;|&nbsp; AIRS and LLM not reached.`;
                         chatBox.appendChild(blockDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
                         document.getElementById("debug-status").innerText = "Blocked (LLM Guard Phase 0.6)";
                         document.getElementById("send-btn").disabled = false;
                         return;
                     } else if (lg.flagged) {
+                        llmguardBadge.style.display = "";
+                        llmguardBadge.className = "scan-badge flagged";
+                        llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                        llmguardBadge.textContent = `🛡️ LG FLAGGED ${_lgLat}`;
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1)";
-                        warnDiv.innerHTML = `🛡️ LLM GUARD ADVISORY (Phase 0.6) — flagged but continuing<br><em>${lg.summary}</em>`;
+                        warnDiv.innerHTML = `<strong>🛡️ PHASE 0.6 — LLM GUARD — FLAGGED ${_lgLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Proceeding to AIRS.`;
                         chatBox.appendChild(warnDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
+                    } else {
+                        llmguardBadge.style.display = "";
+                        llmguardBadge.className = "scan-badge allowed";
+                        llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                        llmguardBadge.textContent = `🛡️ LG SAFE ${_lgLat}`;
                     }
                 }
             }
@@ -2605,10 +2619,10 @@ Waiting for LLM...</pre>
                 if (promptScan.status === "error") {
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge";
-                    airsBadge.textContent = `ERROR ${_aLat}`;
+                    airsBadge.textContent = `🛡️ AIRS-1 ERR ${_aLat}`;
                     const errDiv = document.createElement("div");
                     errDiv.className = "message security-alert";
-                    errDiv.innerHTML = `🛑 PRISMA PROXY ERROR (Phase 1)<br>${promptScan.message}<br><small>Make sure server.js is running on localhost:3080</small>`;
+                    errDiv.innerHTML = `<strong>🛡️ PHASE 1 — AIRS PROMPT SCAN — ERROR ${_aLat}</strong><br>${promptScan.message} &nbsp;|&nbsp; Prompt aborted. <small>Ensure server.js is running on :3080.</small>`;
                     chatBox.appendChild(errDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                     document.getElementById("debug-status").innerText =
@@ -2621,7 +2635,7 @@ Waiting for LLM...</pre>
                     // Strict mode: LLM never reached
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge blocked";
-                    airsBadge.textContent = `🛑 BLOCKED ${_aLat}`;
+                    airsBadge.textContent = `🛡️ AIRS-1 BLOCKED ${_aLat}`;
                     airsBadge.dataset.verdict = JSON.stringify(promptScan);
                     airsBadge.title = "Click to expand";
                     airsBadge.style.cursor = "pointer";
@@ -2630,9 +2644,7 @@ Waiting for LLM...</pre>
                         : promptScan.category;
                     const blockDiv = document.createElement("div");
                     blockDiv.className = "message security-alert";
-                    blockDiv.innerHTML = `🛑 PRISMA AIRS — PROMPT BLOCKED<br>
-                            LLM was not reached. Request terminated by pre-flight scan.<br>
-                            Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong>`;
+                    blockDiv.innerHTML = `<strong>🛡️ PHASE 1 — AIRS PROMPT SCAN — BLOCKED ${_aLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`;
                     chatBox.appendChild(blockDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                     document.getElementById("debug-status").innerText =
@@ -2645,7 +2657,7 @@ Waiting for LLM...</pre>
                     // Audit mode: flag but proceed to LLM
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge flagged";
-                    airsBadge.textContent = `⚠️ FLAGGED ${_aLat}`;
+                    airsBadge.textContent = `🛡️ AIRS-1 FLAGGED ${_aLat}`;
                     airsBadge.dataset.verdict = JSON.stringify(promptScan);
                     airsBadge.title = "Click to expand";
                     airsBadge.style.cursor = "pointer";
@@ -2656,13 +2668,12 @@ Waiting for LLM...</pre>
                     warnDiv.className = "message security-alert";
                     warnDiv.style.cssText =
                         "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
-                    warnDiv.innerHTML = `⚠️ AIRS PROMPT WARNING (Audit Mode) — Proceeding to LLM<br>
-                            Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong>`;
+                    warnDiv.innerHTML = `<strong>🛡️ PHASE 1 — AIRS PROMPT SCAN — FLAGGED ${_aLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Proceeding to LLM.`;
                     chatBox.appendChild(warnDiv);
                 } else {
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge allowed";
-                    airsBadge.textContent = `✅ ALLOWED ${_aLat}`;
+                    airsBadge.textContent = `🛡️ AIRS-1 SAFE ${_aLat}`;
                     airsBadge.dataset.verdict = JSON.stringify(promptScan);
                     airsBadge.title = "Click to expand";
                     airsBadge.style.cursor = "pointer";
@@ -2820,7 +2831,7 @@ Waiting for LLM...</pre>
                 if (responseScan.status === "error") {
                     if (resBadge) {
                         resBadge.className = "scan-badge";
-                        resBadge.textContent = `SCAN ERR ${_rLat}`;
+                        resBadge.textContent = `🛡️ AIRS-2 ERR ${_rLat}`;
                         resBadge.dataset.verdict = JSON.stringify(responseScan);
                         resBadge.title = "Click to expand";
                         resBadge.style.cursor = "pointer";
@@ -2836,7 +2847,7 @@ Waiting for LLM...</pre>
                         : responseScan.category;
                     if (resBadge) {
                         resBadge.className = "scan-badge blocked";
-                        resBadge.textContent = `🛑 BLOCKED ${_rLat}`;
+                        resBadge.textContent = `🛡️ AIRS-2 BLOCKED ${_rLat}`;
                         resBadge.dataset.verdict = JSON.stringify(responseScan);
                         resBadge.title = "Click to expand";
                         resBadge.style.cursor = "pointer";
@@ -2846,14 +2857,12 @@ Waiting for LLM...</pre>
                         // Replace LLM response entirely
                         botDiv.querySelector(".content").innerHTML = `
                                 <div class="security-alert">
-                                    🛑 PRISMA AIRS — RESPONSE BLOCKED<br>
-                                    The LLM response was intercepted and withheld.<br>
-                                    Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong>
+                                    <strong>🛡️ PHASE 2 — AIRS RESPONSE SCAN — BLOCKED ${_rLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response withheld.
                                 </div>`;
                     } else {
                         // Audit: warn + show masked version if available, else keep response
                         const warnHtml = `<div class="security-alert" style="color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-bottom:10px;">
-                                ⚠️ AIRS RESPONSE WARNING (Audit Mode)<br>Threats: <strong>${threats.toUpperCase()}</strong></div>`;
+                                <strong>🛡️ PHASE 2 — AIRS RESPONSE SCAN — FLAGGED ${_rLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response shown with warning.</div>`;
                         if (responseScan.maskedData) {
                             botDiv.querySelector(".content").innerHTML =
                                 warnHtml +
@@ -2865,7 +2874,7 @@ Waiting for LLM...</pre>
                         }
                         if (resBadge) {
                             resBadge.className = "scan-badge flagged";
-                            resBadge.textContent = `⚠️ FLAGGED ${_rLat}`;
+                            resBadge.textContent = `🛡️ AIRS-2 FLAGGED ${_rLat}`;
                             resBadge.dataset.verdict = JSON.stringify(responseScan);
                             resBadge.title = "Click to expand";
                             resBadge.style.cursor = "pointer";
@@ -2877,13 +2886,13 @@ Waiting for LLM...</pre>
                     // Allowed but DLP masking applied
                     if (resBadge) {
                         resBadge.className = "scan-badge flagged";
-                        resBadge.textContent = `⚠️ MASKED ${_rLat}`;
+                        resBadge.textContent = `🛡️ AIRS-2 MASKED ${_rLat}`;
                         resBadge.dataset.verdict = JSON.stringify(responseScan);
                         resBadge.title = "Click to expand";
                         resBadge.style.cursor = "pointer";
                     }
                     const maskHtml = `<div class="security-alert" style="color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-bottom:10px;">
-                            ⚠️ AIRS: Sensitive data detected and masked in response</div>`;
+                            <strong>🛡️ PHASE 2 — AIRS RESPONSE SCAN — DLP MASKED ${_rLat}</strong><br>Sensitive data detected and redacted from response.</div>`;
                     botDiv.querySelector(".content").innerHTML =
                         maskHtml +
                         marked.parse(responseScan.maskedData.data);
@@ -2892,7 +2901,7 @@ Waiting for LLM...</pre>
                 } else {
                     if (resBadge) {
                         resBadge.className = "scan-badge allowed";
-                        resBadge.textContent = `✅ CLEAN ${_rLat}`;
+                        resBadge.textContent = `🛡️ AIRS-2 CLEAN ${_rLat}`;
                         resBadge.dataset.verdict = JSON.stringify(responseScan);
                         resBadge.title = "Click to expand";
                         resBadge.style.cursor = "pointer";
@@ -3465,7 +3474,7 @@ Waiting for LLM...</pre>
                 // Count which phase caught it first
                 if (firstCaught.includes("0.5")) p05++;
                 else if (firstCaught.includes("0.6")) p06++;
-                else if (firstCaught.includes("Phase 0")) p0++;
+                else if (firstCaught.includes("Phase 0") && !firstCaught.includes("0.6")) p0++;
                 else if (firstCaught.includes("Phase 1")) p1++;
                 else if (firstCaught.includes("Phase 2")) p2++;
 
@@ -3576,10 +3585,17 @@ Waiting for LLM...</pre>
             const errors  = _batchResults.filter(r => r.status === "error").length;
             const gaps    = _batchResults.filter(r => r.isGap).length;
             const fps     = _batchResults.filter(r => r.isFp).length;
-            const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 0") && !(r.firstCaughtBy||"").includes("0.5")).length;
+            const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 0") && !(r.firstCaughtBy||"").includes("0.5") && !(r.firstCaughtBy||"").includes("0.6")).length;
             const p05 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.5")).length;
+            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.6")).length;
             const p1  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 1")).length;
             const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2")).length;
+
+            const lg06Scanners = [];
+            if (document.getElementById("lg-scan-invisible").checked) lg06Scanners.push("InvisibleText");
+            if (document.getElementById("lg-scan-secrets").checked)   lg06Scanners.push("Secrets");
+            if (document.getElementById("lg-scan-injection").checked) lg06Scanners.push("PromptInjection");
+            if (document.getElementById("lg-scan-toxicity").checked)  lg06Scanners.push("Toxicity");
 
             const payload = {
                 exported_at:      new Date().toISOString(),
@@ -3587,14 +3603,20 @@ Waiting for LLM...</pre>
                 severity_filter:  _severityFilter,
                 phase0_mode:      document.getElementById("guardrail-mode").value,
                 phase05_mode:     document.getElementById("canary-mode").value,
+                phase06_mode:     document.getElementById("llmguard-mode").value,
+                phase06_scanners: lg06Scanners,
                 phase1_mode:      document.getElementById("airs-mode").value,
+                phase2_mode:      document.getElementById("airs-mode").value !== "off" ? "active" : "off",
                 airs_profile:     document.getElementById("airs-profile").value,
                 summary: {
                     total: _batchResults.length,
                     blocked, flagged, allowed, errors,
-                    phase0_catches: p0, phase05_catches: p05,
-                    airs1_catches: p1, airs2_catches: p2,
-                    possible_security_gaps: gaps,
+                    phase0_catches:  p0,
+                    phase05_catches: p05,
+                    phase06_catches: p06,
+                    airs1_catches:   p1,
+                    airs2_catches:   p2,
+                    possible_security_gaps:   gaps,
                     possible_false_positives: fps,
                 },
                 results: _batchResults,
@@ -3624,10 +3646,18 @@ Waiting for LLM...</pre>
             const errors  = _batchResults.filter(r => r.status === "error").length;
             const gaps    = _batchResults.filter(r => r.isGap).length;
             const fps     = _batchResults.filter(r => r.isFp).length;
-            const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 0") && !(r.firstCaughtBy||"").includes("0.5")).length;
+            const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 0") && !(r.firstCaughtBy||"").includes("0.5") && !(r.firstCaughtBy||"").includes("0.6")).length;
             const p05 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.5")).length;
+            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.6")).length;
             const p1  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 1")).length;
             const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2")).length;
+
+            const p06Mode     = document.getElementById("llmguard-mode").value;
+            const lg06Scanners = [];
+            if (document.getElementById("lg-scan-invisible").checked) lg06Scanners.push("InvisibleText");
+            if (document.getElementById("lg-scan-secrets").checked)   lg06Scanners.push("Secrets");
+            if (document.getElementById("lg-scan-injection").checked) lg06Scanners.push("PromptInjection");
+            if (document.getElementById("lg-scan-toxicity").checked)  lg06Scanners.push("Toxicity");
 
             const lines = [
                 `# Batch Threat Runner — Results`,
@@ -3640,12 +3670,13 @@ Waiting for LLM...</pre>
                 `| Severity Filter | ${_severityFilter === "all" ? "All" : _severityFilter} |`,
                 `| Phase 0 — Native Guardrail | ${p0Mode} |`,
                 `| Phase 0.5 — Little Canary | ${p05Mode} |`,
+                `| Phase 0.6 — LLM Guard | ${p06Mode}${p06Mode !== "off" ? ` (${lg06Scanners.join(", ")})` : ""} |`,
                 `| Phase 1 — AIRS Prompt Scan | ${p1Mode} |`,
                 `| Phase 2 — AIRS Response Scan | ${p1Mode !== "off" ? "active (runs after LLM)" : "off"} |`,
                 `| AIRS Profile | ${airsProfile || "—"} |`,
                 ``,
                 `## Summary`,
-                `**Phase Catches:** 🔒 Phase 0: ${p0} &nbsp;|&nbsp; 🐦 Phase 0.5: ${p05} &nbsp;|&nbsp; 🛡️ AIRS-1: ${p1} &nbsp;|&nbsp; 🛡️ AIRS-2: ${p2}`,
+                `**Phase Catches:** 🔒 Phase 0: ${p0} &nbsp;|&nbsp; 🐦 Phase 0.5: ${p05} &nbsp;|&nbsp; 🛡️ LLM Guard: ${p06} &nbsp;|&nbsp; 🛡️ AIRS-1: ${p1} &nbsp;|&nbsp; 🛡️ AIRS-2: ${p2}`,
                 ``,
                 `| 🛑 Blocked | ⚠️ Flagged | ✅ Allowed | ❌ Errors | Total |`,
                 `|---|---|---|---|---|`,

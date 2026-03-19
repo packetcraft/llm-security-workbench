@@ -16,7 +16,7 @@
     "stage:4c": "node scripts/stage.js 4c",
     "stage:5a": "node scripts/stage.js 5a",
     "canary": "python python/canary_server.py",
-    "llmguard": "python llm-guard/llmguard_server.py"
+    "llmguard": "node scripts/llmguard.js"
   },
   "keywords": [],
   "author": "",

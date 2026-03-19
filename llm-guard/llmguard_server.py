@@ -42,17 +42,23 @@ def _get_input_scanner(name: str):
     if name not in _input_cache:
         factory = INPUT_SCANNER_MAP.get(name)
         if factory is None:
-            return None
-        _input_cache[name] = factory()
-    return _input_cache[name]
+            return None, f"Unknown scanner: {name}"
+        try:
+            _input_cache[name] = factory()
+        except Exception as exc:
+            return None, str(exc)
+    return _input_cache[name], None
 
 def _get_output_scanner(name: str):
     if name not in _output_cache:
         factory = OUTPUT_SCANNER_MAP.get(name)
         if factory is None:
-            return None
-        _output_cache[name] = factory()
-    return _output_cache[name]
+            return None, f"Unknown scanner: {name}"
+        try:
+            _output_cache[name] = factory()
+        except Exception as exc:
+            return None, str(exc)
+    return _output_cache[name], None
 
 
 # ── Health ────────────────────────────────────────────────────────────────────
@@ -77,9 +83,10 @@ def scan_input():
     is_valid:  bool = True
 
     for name in scanners:
-        scanner = _get_input_scanner(name)
+        scanner, load_err = _get_input_scanner(name)
         if scanner is None:
-            results[name] = {"error": f"Unknown or unsupported scanner: {name}"}
+            results[name] = {"error": load_err or f"Unknown or unsupported scanner: {name}"}
+            is_valid = False
             continue
         try:
             t0 = time.time()
@@ -111,9 +118,10 @@ def scan_output():
     is_valid:  bool = True
 
     for name in scanners:
-        scanner = _get_output_scanner(name)
+        scanner, load_err = _get_output_scanner(name)
         if scanner is None:
-            results[name] = {"error": f"Unknown or unsupported scanner: {name}"}
+            results[name] = {"error": load_err or f"Unknown or unsupported scanner: {name}"}
+            is_valid = False
             continue
         try:
             t0 = time.time()
