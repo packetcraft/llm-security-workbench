@@ -2462,14 +2462,15 @@ Waiting for LLM...</pre>
                     document.getElementById("debug-status").innerText = "🔬 LLM-Guard scanning...";
                     const _lg0 = Date.now();
                     const lg = await runLLMGuard(userPrompt, lgMode, lgScanners);
-                    const _lgMs = Date.now() - _lg0;
-                    const _lgLat = _lgMs < 1000 ? `· ${_lgMs}ms` : `· ${(_lgMs / 1000).toFixed(1)}s`;
+                    const _lgMs  = Date.now() - _lg0;
+                    const _lgLat  = _lgMs < 1000 ? `· ${_lgMs}ms` : `· ${(_lgMs / 1000).toFixed(1)}s`;
+                    const _lgShrt = _lgMs < 1000 ? `-${_lgMs}ms`  : `-${(_lgMs / 1000).toFixed(1)}s`;
 
                     if (lg.error) {
                         llmguardBadge.style.display = "";
                         llmguardBadge.className = "scan-badge";
                         llmguardBadge.style.cssText = "border-color:var(--warning);color:var(--warning)";
-                        llmguardBadge.textContent = `🔬 LG ERROR ${_lgLat}`;
+                        llmguardBadge.textContent = `🔬 Error${_lgShrt}`;
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
@@ -2480,7 +2481,7 @@ Waiting for LLM...</pre>
                         llmguardBadge.style.display = "";
                         llmguardBadge.className = "scan-badge blocked";
                         llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
-                        llmguardBadge.textContent = `🔬 LG BLOCKED ${_lgLat}`;
+                        llmguardBadge.textContent = `🔬 Blocked${_lgShrt}`;
                         const blockDiv = document.createElement("div");
                         blockDiv.className = "message security-alert";
                         blockDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1)";
@@ -2494,7 +2495,7 @@ Waiting for LLM...</pre>
                         llmguardBadge.style.display = "";
                         llmguardBadge.className = "scan-badge flagged";
                         llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
-                        llmguardBadge.textContent = `🔬 LG FLAGGED ${_lgLat}`;
+                        llmguardBadge.textContent = `🔬 Flagged${_lgShrt}`;
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1)";
@@ -2505,7 +2506,7 @@ Waiting for LLM...</pre>
                         llmguardBadge.style.display = "";
                         llmguardBadge.className = "scan-badge allowed";
                         llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
-                        llmguardBadge.textContent = `🔬 LG SAFE ${_lgLat}`;
+                        llmguardBadge.textContent = `🔬 Safe${_lgShrt}`;
                     }
                 }
             }
@@ -2534,8 +2535,9 @@ Waiting for LLM...</pre>
 
                 const _gt0 = Date.now();
                 const gResult = await runNativeGuardrail(userPrompt, guardModel, guardSystemPrompt, guardThreshold);
-                const _gMs = Date.now() - _gt0;
-                const _gLat = _gMs < 1000 ? `· ${_gMs}ms` : `· ${(_gMs / 1000).toFixed(1)}s`;
+                const _gMs  = Date.now() - _gt0;
+                const _gLat  = _gMs < 1000 ? `· ${_gMs}ms` : `· ${(_gMs / 1000).toFixed(1)}s`;
+                const _gShrt = _gMs < 1000 ? `-${_gMs}ms`  : `-${(_gMs / 1000).toFixed(1)}s`;
 
                 if (gResult.error) {
                     // Guardrail call failed — fail open, show warning in chat
@@ -2548,7 +2550,7 @@ Waiting for LLM...</pre>
                 } else if (gResult.blocked) {
                     if (guardEnforcement === "strict") {
                         guardBadge.className = "scan-badge guardrail-block";
-                        guardBadge.textContent = `🧩 BLOCKED ${_gLat}`;
+                        guardBadge.textContent = `🧩 Blocked${_gShrt}`;
                         const blockDiv = document.createElement("div");
                         blockDiv.className = "message security-alert";
                         blockDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
@@ -2561,7 +2563,7 @@ Waiting for LLM...</pre>
                     } else {
                         // Audit: flag but proceed
                         guardBadge.className = "scan-badge guardrail-block";
-                        guardBadge.textContent = `🧩 FLAGGED ${_gLat}`;
+                        guardBadge.textContent = `🧩 Flagged${_gShrt}`;
                         const warnDiv = document.createElement("div");
                         warnDiv.className = "message security-alert";
                         warnDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
@@ -2571,7 +2573,7 @@ Waiting for LLM...</pre>
                     }
                 } else {
                     guardBadge.className = "scan-badge guardrail-pass";
-                    guardBadge.textContent = `🧩 SAFE ${_gLat}`;
+                    guardBadge.textContent = `🧩 Safe${_gShrt}`;
                 }
             }
 
@@ -2593,8 +2595,9 @@ Waiting for LLM...</pre>
                 document.getElementById("debug-status").innerText = "🐦 Little-Canary scanning...";
                 const _ct0 = Date.now();
                 const cResult = await runLittleCanary(userPrompt, canaryModel, canaryMode, canaryThreshold);
-                const _cMs = Date.now() - _ct0;
-                const _cLat = _cMs < 1000 ? `· ${_cMs}ms` : `· ${(_cMs / 1000).toFixed(1)}s`;
+                const _cMs  = Date.now() - _ct0;
+                const _cLat  = _cMs < 1000 ? `· ${_cMs}ms` : `· ${(_cMs / 1000).toFixed(1)}s`;
+                const _cShrt = _cMs < 1000 ? `-${_cMs}ms`  : `-${(_cMs / 1000).toFixed(1)}s`;
 
                 if (cResult.error) {
                     const warnDiv = document.createElement("div");
@@ -2607,7 +2610,7 @@ Waiting for LLM...</pre>
                     // Full mode: block on unsafe OR flagged advisory
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge canary-block";
-                    canaryBadge.textContent = `🐦 BLOCKED ${_cLat}`;
+                    canaryBadge.textContent = `🐦 Blocked${_cShrt}`;
                     const blockDiv = document.createElement("div");
                     blockDiv.className = "message security-alert";
                     blockDiv.style.cssText = "color:var(--canary-blk);border-color:var(--canary-blk);background:rgba(122,53,0,0.1)";
@@ -2622,7 +2625,7 @@ Waiting for LLM...</pre>
                     canaryAdvisoryPrefix = cResult.advisory.system_prefix;
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge canary-advisory";
-                    canaryBadge.textContent = `🐦 FLAGGED ${_cLat}`;
+                    canaryBadge.textContent = `🐦 Flagged${_cShrt}`;
                     const warnDiv = document.createElement("div");
                     warnDiv.className = "message security-alert";
                     warnDiv.style.cssText = "color:var(--canary-adv);border-color:var(--canary-adv);background:rgba(177,92,0,0.1)";
@@ -2632,7 +2635,7 @@ Waiting for LLM...</pre>
                 } else {
                     canaryBadge.style.display = "inline";
                     canaryBadge.className = "scan-badge allowed";
-                    canaryBadge.textContent = `🐦 SAFE ${_cLat}`;
+                    canaryBadge.textContent = `🐦 Safe${_cShrt}`;
                 }
             } else {
                 document.getElementById("debug-canary-req").innerText = "Canary Disabled.";
@@ -2667,13 +2670,14 @@ Waiting for LLM...</pre>
                     airsApiKey,
                     modelSelect,
                 );
-                const _aMs = Date.now() - _at0;
-                const _aLat = _aMs < 1000 ? `· ${_aMs}ms` : `· ${(_aMs / 1000).toFixed(1)}s`;
+                const _aMs  = Date.now() - _at0;
+                const _aLat  = _aMs < 1000 ? `· ${_aMs}ms` : `· ${(_aMs / 1000).toFixed(1)}s`;
+                const _aShrt = _aMs < 1000 ? `-${_aMs}ms`  : `-${(_aMs / 1000).toFixed(1)}s`;
 
                 if (promptScan.status === "error") {
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge";
-                    airsBadge.textContent = `📥🛡️ AIRS-Inlet ERR ${_aLat}`;
+                    airsBadge.textContent = `📥🛡️ Error${_aShrt}`;
                     const errDiv = document.createElement("div");
                     errDiv.className = "message security-alert";
                     errDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — ERROR ${_aLat}</strong><br>${promptScan.message} &nbsp;|&nbsp; Prompt aborted. <small>Ensure server.js is running on :3080.</small>`;
@@ -2689,7 +2693,7 @@ Waiting for LLM...</pre>
                     // Strict mode: LLM never reached
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge blocked";
-                    airsBadge.textContent = `📥🛡️ AIRS-Inlet BLOCKED ${_aLat}`;
+                    airsBadge.textContent = `📥🛡️ Blocked${_aShrt}`;
                     airsBadge.dataset.verdict = JSON.stringify(promptScan);
                     airsBadge.title = "Click to expand";
                     airsBadge.style.cursor = "pointer";
@@ -2711,7 +2715,7 @@ Waiting for LLM...</pre>
                     // Audit mode: flag but proceed to LLM
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge flagged";
-                    airsBadge.textContent = `📥🛡️ AIRS-Inlet FLAGGED ${_aLat}`;
+                    airsBadge.textContent = `📥🛡️ Flagged${_aShrt}`;
                     airsBadge.dataset.verdict = JSON.stringify(promptScan);
                     airsBadge.title = "Click to expand";
                     airsBadge.style.cursor = "pointer";
@@ -2727,7 +2731,7 @@ Waiting for LLM...</pre>
                 } else {
                     airsBadge.style.display = "inline";
                     airsBadge.className = "scan-badge allowed";
-                    airsBadge.textContent = `📥🛡️ AIRS-Inlet SAFE ${_aLat}`;
+                    airsBadge.textContent = `📥🛡️ Safe${_aShrt}`;
                     airsBadge.dataset.verdict = JSON.stringify(promptScan);
                     airsBadge.title = "Click to expand";
                     airsBadge.style.cursor = "pointer";
@@ -3429,7 +3433,7 @@ Waiting for LLM...</pre>
             const total = allThreats.length;
             if (!total) { alert("No threats selected."); return; }
             let blocked = 0, flagged = 0, allowed = 0, errors = 0;
-            let p0 = 0, p05 = 0, p06 = 0, p1 = 0, p2 = 0; // phase catch counts
+            let p0 = 0, p05 = 0, p06 = 0, p1 = 0, p2 = 0, p25 = 0; // phase catch counts
             let gaps = 0, fps = 0; // security gaps and false positives
 
             batchStop = false;
@@ -3532,7 +3536,8 @@ Waiting for LLM...</pre>
                     }
                 }
 
-                // ── Phase 2: AIRS Response Scan ────────────────────────
+                // ── Phase 2: AIRS-Dual Response Scan ──────────────────
+                let batchGeneratedText = "";
                 if (phase1Active && finalStatus !== "block" && finalStatus !== "error") {
                     document.getElementById("batch-progress-label").textContent = `${i + 1} / ${total}  —  ${threat.type} (Generating LLM Response...)`;
                     try {
@@ -3552,11 +3557,11 @@ Waiting for LLM...</pre>
                             signal: AbortSignal.timeout(120000)
                         });
                         const llmData = await llmRes.json();
-                        const generatedText = llmData.message?.content || "";
+                        batchGeneratedText = llmData.message?.content || "";
 
-                        if (generatedText) {
+                        if (batchGeneratedText) {
                             const s2 = await scanWithAIRS(
-                                { prompt: threat.example, response: generatedText }, "response",
+                                { prompt: threat.example, response: batchGeneratedText }, "response",
                                 airsMode, airsProfile, airsApiKey, modelSelect,
                             );
                             if (s2.status === "error") {
@@ -3585,9 +3590,8 @@ Waiting for LLM...</pre>
                     }
                 }
 
-                // ── Phase 2.5: LLM Guard Output Scan ──────────────────
+                // ── LG-out: LLM-Guard OUTPUT Scan ─────────────────────
                 if (phase06Active && finalStatus !== "block" && finalStatus !== "error") {
-                    // Only run if we have a generated response from Phase 2
                     const lgOutScanners25 = [];
                     if (document.getElementById("lg-out-sensitive").checked)    lgOutScanners25.push("Sensitive");
                     if (document.getElementById("lg-out-malicious").checked)    lgOutScanners25.push("MaliciousURLs");
@@ -3595,12 +3599,52 @@ Waiting for LLM...</pre>
                     if (document.getElementById("lg-out-bias").checked)         lgOutScanners25.push("Bias");
                     if (document.getElementById("lg-out-relevance").checked)    lgOutScanners25.push("Relevance");
                     if (document.getElementById("lg-out-languagesame").checked) lgOutScanners25.push("LanguageSame");
-                    // Note: batch runner doesn't store LLM response text per-threat, so skip if no response captured
+                    if (lgOutScanners25.length) {
+                        // Generate LLM response if AIRS-Dual was off
+                        if (!batchGeneratedText) {
+                            try {
+                                const r = await fetch("http://localhost:11434/api/chat", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                        model: modelSelect,
+                                        messages: [
+                                            { role: "system", content: document.getElementById("system-prompt").value },
+                                            { role: "user", content: threat.example }
+                                        ],
+                                        stream: false,
+                                        options: { temperature: 0.1 }
+                                    }),
+                                    signal: AbortSignal.timeout(120000)
+                                });
+                                const d = await r.json();
+                                batchGeneratedText = d.message?.content || "";
+                            } catch (e) { /* skip LG-out if LLM call fails */ }
+                        }
+                        if (batchGeneratedText) {
+                            const lgOut = await runLLMGuardOutput(threat.example, batchGeneratedText, lgMode06, lgOutScanners25);
+                            if (!lgOut.error) {
+                                const hardBlock = lgMode06 === "strict" && !lgOut.valid;
+                                const softFlag  = lgOut.flagged;
+                                if (hardBlock || softFlag) {
+                                    if (firstCaught === "—") firstCaught = "🔬 LLM-Guard OUTPUT";
+                                    if (hardBlock) {
+                                        finalStatus = "block";
+                                        detectedStr = lgOut.summary ? lgOut.summary.substring(0, 80) : "—";
+                                    } else if (finalStatus === "allow") {
+                                        finalStatus = "alert";
+                                        detectedStr = lgOut.summary ? lgOut.summary.substring(0, 80) : "—";
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // ── Tally & render ─────────────────────────────────────
                 // Count which phase caught it first
                 if (firstCaught.includes("Little-Canary")) p05++;
+                else if (firstCaught.includes("LLM-Guard OUTPUT")) p25++;
                 else if (firstCaught.includes("LLM-Guard")) p06++;
                 else if (firstCaught.includes("Semantic-Guard")) p0++;
                 else if (firstCaught.includes("AIRS-Inlet")) p1++;
@@ -3673,11 +3717,12 @@ Waiting for LLM...</pre>
 
                 document.getElementById("batch-summary").innerHTML =
                     `<div class="s-row">` +
-                    `<span class="s-phase0"  title="Caught by Semantic-Guard">🧩 ${p0}</span>` +
-                    `<span class="s-phase05" title="Caught by Little-Canary">🐦 ${p05}</span>` +
-                    `<span class="s-phase06" title="Caught by LLM-Guard">🔬 LG: ${p06}</span>` +
+                    `<span class="s-phase06" title="Caught by LLM-Guard (input)">🔬 LLM-Guard: ${p06}</span>` +
+                    `<span class="s-phase0"  title="Caught by Semantic-Guard">🧩 Semantic-Guard: ${p0}</span>` +
+                    `<span class="s-phase05" title="Caught by Little-Canary">🐦 Little-Canary: ${p05}</span>` +
                     `<span class="s-phase1"  title="Caught by AIRS-Inlet">📥🛡️ AIRS-Inlet: ${p1}</span>` +
                     `<span class="s-phase2"  title="Caught by AIRS-Dual">🔀🛡️ AIRS-Dual: ${p2}</span>` +
+                    `<span class="s-phase06" title="Caught by LLM-Guard (output)">🔬 LG-out: ${p25}</span>` +
                     `</div>` +
                     `<div class="s-row">` +
                     `<span class="s-blocked">🛑 ${blocked} blocked</span>` +
@@ -3715,7 +3760,8 @@ Waiting for LLM...</pre>
             const fps     = _batchResults.filter(r => r.isFp).length;
             const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Semantic-Guard")).length;
             const p05 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Little-Canary")).length;
-            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("LLM-Guard")).length;
+            const p25 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("LLM-Guard OUTPUT")).length;
+            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("LLM-Guard") && !(r.firstCaughtBy||"").includes("OUTPUT")).length;
             const p1  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("AIRS-Inlet")).length;
             const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("AIRS-Dual")).length;
 
@@ -3752,11 +3798,12 @@ Waiting for LLM...</pre>
                 summary: {
                     total: _batchResults.length,
                     blocked, flagged, allowed, errors,
-                    phase0_catches:  p0,
-                    phase05_catches: p05,
-                    phase06_catches: p06,
-                    airs1_catches:   p1,
-                    airs2_catches:   p2,
+                    lgguard_input_catches:  p06,
+                    semantic_guard_catches: p0,
+                    little_canary_catches:  p05,
+                    airs_inlet_catches:     p1,
+                    airs_dual_catches:      p2,
+                    lgguard_output_catches: p25,
                     possible_security_gaps:   gaps,
                     possible_false_positives: fps,
                 },
@@ -3789,7 +3836,8 @@ Waiting for LLM...</pre>
             const fps     = _batchResults.filter(r => r.isFp).length;
             const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Semantic-Guard")).length;
             const p05 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Little-Canary")).length;
-            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("LLM-Guard")).length;
+            const p25 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("LLM-Guard OUTPUT")).length;
+            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("LLM-Guard") && !(r.firstCaughtBy||"").includes("OUTPUT")).length;
             const p1  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("AIRS-Inlet")).length;
             const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("AIRS-Dual")).length;
 
@@ -3829,7 +3877,7 @@ Waiting for LLM...</pre>
                 `| AIRS Profile | ${airsProfile || "—"} |`,
                 ``,
                 `## Summary`,
-                `**Phase Catches:** 🧩 Semantic-Guard: ${p0} &nbsp;|&nbsp; 🐦 Little-Canary: ${p05} &nbsp;|&nbsp; 🔬 LLM-Guard: ${p06} &nbsp;|&nbsp; 📥🛡️ AIRS-Inlet: ${p1} &nbsp;|&nbsp; 🔀🛡️ AIRS-Dual: ${p2}`,
+                `**Phase Catches:** 🔬 LLM-Guard: ${p06} &nbsp;|&nbsp; 🧩 Semantic-Guard: ${p0} &nbsp;|&nbsp; 🐦 Little-Canary: ${p05} &nbsp;|&nbsp; 📥🛡️ AIRS-Inlet: ${p1} &nbsp;|&nbsp; 🔀🛡️ AIRS-Dual: ${p2} &nbsp;|&nbsp; 🔬 LG-out: ${p25}`,
                 ``,
                 `| 🛑 Blocked | ⚠️ Flagged | ✅ Allowed | ❌ Errors | Total |`,
                 `|---|---|---|---|---|`,

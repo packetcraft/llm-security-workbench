@@ -3429,7 +3429,7 @@ Waiting for LLM...</pre>
             const total = allThreats.length;
             if (!total) { alert("No threats selected."); return; }
             let blocked = 0, flagged = 0, allowed = 0, errors = 0;
-            let p0 = 0, p05 = 0, p06 = 0, p1 = 0, p2 = 0; // phase catch counts
+            let p0 = 0, p05 = 0, p06 = 0, p1 = 0, p2 = 0, p25 = 0; // phase catch counts
             let gaps = 0, fps = 0; // security gaps and false positives
 
             batchStop = false;
@@ -3533,6 +3533,7 @@ Waiting for LLM...</pre>
                 }
 
                 // ── Phase 2: AIRS Response Scan ────────────────────────
+                let batchGeneratedText = "";
                 if (phase1Active && finalStatus !== "block" && finalStatus !== "error") {
                     document.getElementById("batch-progress-label").textContent = `${i + 1} / ${total}  —  ${threat.type} (Generating LLM Response...)`;
                     try {
@@ -3552,11 +3553,11 @@ Waiting for LLM...</pre>
                             signal: AbortSignal.timeout(120000)
                         });
                         const llmData = await llmRes.json();
-                        const generatedText = llmData.message?.content || "";
+                        batchGeneratedText = llmData.message?.content || "";
 
-                        if (generatedText) {
+                        if (batchGeneratedText) {
                             const s2 = await scanWithAIRS(
-                                { prompt: threat.example, response: generatedText }, "response",
+                                { prompt: threat.example, response: batchGeneratedText }, "response",
                                 airsMode, airsProfile, airsApiKey, modelSelect,
                             );
                             if (s2.status === "error") {
@@ -3587,7 +3588,6 @@ Waiting for LLM...</pre>
 
                 // ── Phase 2.5: LLM Guard Output Scan ──────────────────
                 if (phase06Active && finalStatus !== "block" && finalStatus !== "error") {
-                    // Only run if we have a generated response from Phase 2
                     const lgOutScanners25 = [];
                     if (document.getElementById("lg-out-sensitive").checked)    lgOutScanners25.push("Sensitive");
                     if (document.getElementById("lg-out-malicious").checked)    lgOutScanners25.push("MaliciousURLs");
@@ -3595,16 +3595,56 @@ Waiting for LLM...</pre>
                     if (document.getElementById("lg-out-bias").checked)         lgOutScanners25.push("Bias");
                     if (document.getElementById("lg-out-relevance").checked)    lgOutScanners25.push("Relevance");
                     if (document.getElementById("lg-out-languagesame").checked) lgOutScanners25.push("LanguageSame");
-                    // Note: batch runner doesn't store LLM response text per-threat, so skip if no response captured
+                    if (lgOutScanners25.length) {
+                        // Generate LLM response if Phase 2 (AIRS) was off
+                        if (!batchGeneratedText) {
+                            try {
+                                const r = await fetch("http://localhost:11434/api/chat", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                        model: modelSelect,
+                                        messages: [
+                                            { role: "system", content: document.getElementById("system-prompt").value },
+                                            { role: "user", content: threat.example }
+                                        ],
+                                        stream: false,
+                                        options: { temperature: 0.1 }
+                                    }),
+                                    signal: AbortSignal.timeout(120000)
+                                });
+                                const d = await r.json();
+                                batchGeneratedText = d.message?.content || "";
+                            } catch (e) { /* skip LG-out if LLM call fails */ }
+                        }
+                        if (batchGeneratedText) {
+                            const lgOut = await runLLMGuardOutput(threat.example, batchGeneratedText, lgMode06, lgOutScanners25);
+                            if (!lgOut.error) {
+                                const hardBlock = lgMode06 === "strict" && !lgOut.valid;
+                                const softFlag  = lgOut.flagged;
+                                if (hardBlock || softFlag) {
+                                    if (firstCaught === "—") firstCaught = "🛡️ Phase 2.5 (LLM Guard OUTPUT)";
+                                    if (hardBlock) {
+                                        finalStatus = "block";
+                                        detectedStr = lgOut.summary ? lgOut.summary.substring(0, 80) : "—";
+                                    } else if (finalStatus === "allow") {
+                                        finalStatus = "alert";
+                                        detectedStr = lgOut.summary ? lgOut.summary.substring(0, 80) : "—";
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // ── Tally & render ─────────────────────────────────────
                 // Count which phase caught it first
                 if (firstCaught.includes("0.5")) p05++;
+                else if (firstCaught.includes("Phase 2.5")) p25++;
                 else if (firstCaught.includes("0.6")) p06++;
                 else if (firstCaught.includes("Phase 0") && !firstCaught.includes("0.6")) p0++;
                 else if (firstCaught.includes("Phase 1")) p1++;
-                else if (firstCaught.includes("Phase 2")) p2++;
+                else if (firstCaught.includes("Phase 2") && !firstCaught.includes("2.5")) p2++;
 
                 let rowClass = "batch-allowed", resultLabel = "✅ Allowed";
                 if (finalStatus === "error") { errors++; rowClass = "batch-error"; resultLabel = "❌ Error"; }
@@ -3673,11 +3713,12 @@ Waiting for LLM...</pre>
 
                 document.getElementById("batch-summary").innerHTML =
                     `<div class="s-row">` +
-                    `<span class="s-phase0"  title="Caught by Phase 0 Native Guardrail">🔒 ${p0}</span>` +
-                    `<span class="s-phase05" title="Caught by Phase 0.5 Little Canary">🐦 ${p05}</span>` +
-                    `<span class="s-phase06" title="Caught by Phase 0.6 LLM Guard">🛡️ LG: ${p06}</span>` +
-                    `<span class="s-phase1"  title="Caught by Phase 1 AIRS Prompt Scan">🛡️ AIRS-1: ${p1}</span>` +
-                    `<span class="s-phase2"  title="Caught by Phase 2 AIRS Response Scan">🛡️ AIRS-2: ${p2}</span>` +
+                    `<span class="s-phase06" title="Caught by LLM Guard (input)">🛡️ LLM Guard: ${p06}</span>` +
+                    `<span class="s-phase0"  title="Caught by Native Guardrail">🔒 Guardrail: ${p0}</span>` +
+                    `<span class="s-phase05" title="Caught by Little Canary">🐦 Canary: ${p05}</span>` +
+                    `<span class="s-phase1"  title="Caught by AIRS Prompt Scan">🛡️ AIRS-1: ${p1}</span>` +
+                    `<span class="s-phase2"  title="Caught by AIRS Response Scan">🛡️ AIRS-2: ${p2}</span>` +
+                    `<span class="s-phase06" title="Caught by LLM Guard (output)">🛡️ LG-out: ${p25}</span>` +
                     `</div>` +
                     `<div class="s-row">` +
                     `<span class="s-blocked">🛑 ${blocked} blocked</span>` +
@@ -3715,9 +3756,10 @@ Waiting for LLM...</pre>
             const fps     = _batchResults.filter(r => r.isFp).length;
             const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 0") && !(r.firstCaughtBy||"").includes("0.5") && !(r.firstCaughtBy||"").includes("0.6")).length;
             const p05 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.5")).length;
-            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.6")).length;
+            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.6") && !(r.firstCaughtBy||"").includes("Phase 2.5")).length;
             const p1  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 1")).length;
-            const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2")).length;
+            const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2") && !(r.firstCaughtBy||"").includes("2.5")).length;
+            const p25 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2.5")).length;
 
             const lg06Scanners = [];
             if (document.getElementById("lg-scan-invisible").checked) lg06Scanners.push("InvisibleText");
@@ -3752,11 +3794,12 @@ Waiting for LLM...</pre>
                 summary: {
                     total: _batchResults.length,
                     blocked, flagged, allowed, errors,
-                    phase0_catches:  p0,
-                    phase05_catches: p05,
-                    phase06_catches: p06,
-                    airs1_catches:   p1,
-                    airs2_catches:   p2,
+                    llmguard_input_catches:  p06,
+                    guardrail_catches:       p0,
+                    little_canary_catches:   p05,
+                    airs1_catches:           p1,
+                    airs2_catches:           p2,
+                    llmguard_output_catches: p25,
                     possible_security_gaps:   gaps,
                     possible_false_positives: fps,
                 },
@@ -3789,9 +3832,10 @@ Waiting for LLM...</pre>
             const fps     = _batchResults.filter(r => r.isFp).length;
             const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 0") && !(r.firstCaughtBy||"").includes("0.5") && !(r.firstCaughtBy||"").includes("0.6")).length;
             const p05 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.5")).length;
-            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.6")).length;
+            const p06 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.6") && !(r.firstCaughtBy||"").includes("Phase 2.5")).length;
             const p1  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 1")).length;
-            const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2")).length;
+            const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2") && !(r.firstCaughtBy||"").includes("2.5")).length;
+            const p25 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2.5")).length;
 
             const p06Mode     = document.getElementById("llmguard-mode").value;
             const lg06Scanners = [];
@@ -3829,7 +3873,7 @@ Waiting for LLM...</pre>
                 `| AIRS Profile | ${airsProfile || "—"} |`,
                 ``,
                 `## Summary`,
-                `**Phase Catches:** 🔒 Phase 0: ${p0} &nbsp;|&nbsp; 🐦 Phase 0.5: ${p05} &nbsp;|&nbsp; 🛡️ LLM Guard: ${p06} &nbsp;|&nbsp; 🛡️ AIRS-1: ${p1} &nbsp;|&nbsp; 🛡️ AIRS-2: ${p2}`,
+                `**Phase Catches:** 🛡️ LLM Guard: ${p06} &nbsp;|&nbsp; 🔒 Guardrail: ${p0} &nbsp;|&nbsp; 🐦 Canary: ${p05} &nbsp;|&nbsp; 🛡️ AIRS-1: ${p1} &nbsp;|&nbsp; 🛡️ AIRS-2: ${p2} &nbsp;|&nbsp; 🛡️ LG-out: ${p25}`,
                 ``,
                 `| 🛑 Blocked | ⚠️ Flagged | ✅ Allowed | ❌ Errors | Total |`,
                 `|---|---|---|---|---|`,

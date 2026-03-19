@@ -19,18 +19,36 @@ app.get("/", (req, res) => {
 app.use('/test', express.static(path.join(__dirname, '..', 'test')));
 
 // 1c. Serve any dev file by prefix — e.g. GET /dev/3c serves the first
-//     file in /dev whose name starts with "3c". AIRS proxy still works.
+//     file in /dev (or dev/builds/) whose name starts with "3c".
+//     Active files (1x, 2x, 5x) live in /dev; build history (3x, 4x) in /dev/builds/.
 app.get("/dev/:prefix", (req, res) => {
-  const devDir = path.join(__dirname, "..", "dev");
-  const prefix = req.params.prefix;
-  const files = fs.readdirSync(devDir).filter(f => f.endsWith(".html"));
-  const match = files.find(f => f.startsWith(prefix));
-  if (!match) {
-    return res.status(404).send(
-      `No dev file found matching "<b>${prefix}</b>".<br>Available: ${files.map(f => `<a href="/dev/${f.split("-")[0]}">${f}</a>`).join(", ")}`
-    );
+  const devDir    = path.join(__dirname, "..", "dev");
+  const buildsDir = path.join(devDir, "builds");
+  const prefix    = req.params.prefix;
+
+  // Check dev/ first, then dev/builds/
+  const searchDirs = [
+    { dir: devDir,    label: "dev" },
+    { dir: buildsDir, label: "dev/builds" },
+  ];
+
+  for (const { dir } of searchDirs) {
+    if (!fs.existsSync(dir)) continue;
+    const files = fs.readdirSync(dir).filter(f => f.endsWith(".html"));
+    const match = files.find(f => f.startsWith(prefix));
+    if (match) return res.sendFile(path.join(dir, match));
   }
-  res.sendFile(path.join(devDir, match));
+
+  // Not found — list all available files across both dirs
+  const allFiles = searchDirs.flatMap(({ dir, label }) =>
+    fs.existsSync(dir)
+      ? fs.readdirSync(dir).filter(f => f.endsWith(".html")).map(f => ({ f, label }))
+      : []
+  );
+  res.status(404).send(
+    `No dev file found matching "<b>${prefix}</b>".<br>Available: ` +
+    allFiles.map(({ f, label }) => `<a href="/dev/${f.split("-")[0]}">${f}</a> <small>(${label})</small>`).join(", ")
+  );
 });
 
 // 2. Expose non-sensitive config to the frontend (never exposes the key itself)

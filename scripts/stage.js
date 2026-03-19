@@ -1,38 +1,49 @@
 #!/usr/bin/env node
 // stage.js — copies a /dev file to src/index.html by prefix match
-// Usage:  node scripts/stage.js 3c
-//         npm run stage 3c
-//         npm run stage:3c
+// Searches dev/ first, then dev/builds/ (3x, 4x build history).
+// Usage:  node scripts/stage.js 5b
+//         npm run stage 5b
+//         npm run stage:5b
 
 const fs   = require("fs");
 const path = require("path");
 
-const root   = path.join(__dirname, "..");
-const devDir = path.join(root, "dev");
-const dest   = path.join(root, "src", "index.html");
+const root      = path.join(__dirname, "..");
+const devDir    = path.join(root, "dev");
+const buildsDir = path.join(devDir, "builds");
+const dest      = path.join(root, "src", "index.html");
 
 const prefix = process.argv[2];
-const files  = fs.readdirSync(devDir).filter(f => f.endsWith(".html")).sort();
+
+// Collect files from dev/ and dev/builds/ with their source directory
+const entries = [
+  ...fs.readdirSync(devDir).filter(f => f.endsWith(".html")).sort().map(f => ({ f, dir: devDir, label: "dev" })),
+  ...(fs.existsSync(buildsDir)
+    ? fs.readdirSync(buildsDir).filter(f => f.endsWith(".html")).sort().map(f => ({ f, dir: buildsDir, label: "dev/builds" }))
+    : []),
+];
 
 if (!prefix) {
   console.log("Usage: npm run stage <prefix>\n");
-  console.log("Available dev files:");
-  files.forEach(f => console.log(`  ${f}`));
+  console.log("Active files (dev/):");
+  entries.filter(e => e.label === "dev").forEach(e => console.log(`  ${e.f}`));
+  console.log("\nBuild history (dev/builds/):");
+  entries.filter(e => e.label === "dev/builds").forEach(e => console.log(`  ${e.f}`));
   console.log("\nExamples:");
-  console.log("  npm run stage 3c");
-  console.log("  npm run stage:3c");
+  console.log("  npm run stage 5b");
+  console.log("  npm run stage:5b");
   process.exit(0);
 }
 
-const match = files.find(f => f.startsWith(prefix));
+const entry = entries.find(e => e.f.startsWith(prefix));
 
-if (!match) {
+if (!entry) {
   console.error(`❌  No dev file found matching "${prefix}"`);
-  console.error(`    Available: ${files.map(f => f.replace(".html", "")).join(", ")}`);
+  console.error(`    Available: ${entries.map(e => e.f.replace(".html", "")).join(", ")}`);
   process.exit(1);
 }
 
-fs.copyFileSync(path.join(devDir, match), dest);
-console.log(`✅  Staged:  dev/${match}`);
+fs.copyFileSync(path.join(entry.dir, entry.f), dest);
+console.log(`✅  Staged:  ${entry.label}/${entry.f}`);
 console.log(`         →  src/index.html`);
 console.log(`🌐  Open:   http://localhost:3080`);
