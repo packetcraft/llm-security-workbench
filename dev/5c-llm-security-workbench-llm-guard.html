@@ -1838,6 +1838,25 @@ Respond ONLY with valid JSON, no other text:
             <span id="debug-status">Ready — click to expand</span>
         </div>
         <div class="debug-content">
+            <!-- LLM-Guard INPUT -->
+            <div>
+                <span class="debug-label" style="color:var(--llmguard)">// 🔬 LLM-GUARD INPUT REQUEST</span>
+                <pre id="debug-lgInput-req" style="
+                            background: transparent;
+                            border: none;
+                            padding: 0;
+                            overflow-x: auto;
+                        ">
+Waiting...</pre>
+                <span class="debug-label" style="color:var(--llmguard)">// 🔬 LLM-GUARD INPUT VERDICT</span>
+                <pre id="debug-lgInput-res" style="
+                            background: transparent;
+                            border: none;
+                            padding: 0;
+                            overflow-x: auto;
+                        ">
+Waiting...</pre>
+            </div>
             <!-- Semantic-Guard -->
             <div>
                 <span class="debug-label" style="color:#9b59b6">// 🧩 SEMANTIC-GUARD REQUEST</span>
@@ -1933,6 +1952,25 @@ Waiting for LLM...</pre>
                             border: none;
                             padding: 0;
                             color: #ff5555;
+                            overflow-x: auto;
+                        ">
+Waiting for LLM...</pre>
+            </div>
+            <!-- LLM-Guard OUTPUT -->
+            <div>
+                <span class="debug-label" style="color:var(--llmguard)">// 🔬 LLM-GUARD OUTPUT REQUEST</span>
+                <pre id="debug-lgOutput-req" style="
+                            background: transparent;
+                            border: none;
+                            padding: 0;
+                            overflow-x: auto;
+                        ">
+Waiting for LLM...</pre>
+                <span class="debug-label" style="color:var(--llmguard)">// 🔬 LLM-GUARD OUTPUT VERDICT</span>
+                <pre id="debug-lgOutput-res" style="
+                            background: transparent;
+                            border: none;
+                            padding: 0;
                             overflow-x: auto;
                         ">
 Waiting for LLM...</pre>
@@ -2354,14 +2392,22 @@ Waiting for LLM...</pre>
         async function runLLMGuard(text, mode, scanners) {
             // mode: "strict" | "advisory" | "off"
             // Returns { error, valid, blocked, flagged, failingScanners, summary, results }
+            const payload = { text, scanners };
+            const inReqEl = document.getElementById("debug-lgInput-req");
+            const inResEl = document.getElementById("debug-lgInput-res");
+            if (inReqEl) inReqEl.innerText = JSON.stringify(payload, null, 2);
+            if (inResEl) inResEl.innerText = "Scanning...";
             try {
                 const res = await fetch("/api/llmguard-input", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ text, scanners }),
+                    body: JSON.stringify(payload),
                 });
                 const data = await res.json();
-                if (!res.ok) return { error: true, message: data.error || "LLM-Guard error" };
+                if (!res.ok) {
+                    if (inResEl) inResEl.innerText = "Error: " + (data.error || "LLM-Guard error");
+                    return { error: true, message: data.error || "LLM-Guard error" };
+                }
 
                 const failing = Object.entries(data.results || {})
                     .filter(([, r]) => r.valid === false)
@@ -2370,7 +2416,7 @@ Waiting for LLM...</pre>
                 const blocked = mode === "strict" && !data.valid;
                 const flagged = !data.valid;
 
-                return {
+                const result = {
                     error:           false,
                     valid:           data.valid,
                     blocked,
@@ -2381,7 +2427,10 @@ Waiting for LLM...</pre>
                         ? "Flagged by: " + failing.join(", ")
                         : "All scanners passed",
                 };
+                if (inResEl) inResEl.innerText = JSON.stringify({ valid: data.valid, summary: result.summary, results: data.results }, null, 2);
+                return result;
             } catch (err) {
+                if (inResEl) inResEl.innerText = "Error: " + err.message;
                 return { error: true, message: "LLM-Guard service unavailable — is llm-guard/llmguard_server.py running? " + err.message };
             }
         }
@@ -2389,14 +2438,22 @@ Waiting for LLM...</pre>
         async function runLLMGuardOutput(prompt, response, mode, scanners) {
             // mode: "strict" | "advisory" | "off"
             // Returns { error, valid, blocked, flagged, failingScanners, summary, results }
+            const payload = { prompt, response, scanners };
+            const outReqEl = document.getElementById("debug-lgOutput-req");
+            const outResEl = document.getElementById("debug-lgOutput-res");
+            if (outReqEl) outReqEl.innerText = JSON.stringify({ prompt: prompt.slice(0, 200) + (prompt.length > 200 ? "…" : ""), response: response.slice(0, 200) + (response.length > 200 ? "…" : ""), scanners }, null, 2);
+            if (outResEl) outResEl.innerText = "Scanning...";
             try {
                 const res = await fetch("/api/llmguard-output", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt, response, scanners }),
+                    body: JSON.stringify(payload),
                 });
                 const data = await res.json();
-                if (!res.ok) return { error: true, message: data.error || "LLM-Guard error" };
+                if (!res.ok) {
+                    if (outResEl) outResEl.innerText = "Error: " + (data.error || "LLM-Guard error");
+                    return { error: true, message: data.error || "LLM-Guard error" };
+                }
 
                 const failing = Object.entries(data.results || {})
                     .filter(([, r]) => r.valid === false)
@@ -2405,7 +2462,7 @@ Waiting for LLM...</pre>
                 const blocked = mode === "strict" && !data.valid;
                 const flagged = !data.valid;
 
-                return {
+                const result = {
                     error:           false,
                     valid:           data.valid,
                     blocked,
@@ -2416,7 +2473,10 @@ Waiting for LLM...</pre>
                         ? "Flagged by: " + failing.join(", ")
                         : "All scanners passed",
                 };
+                if (outResEl) outResEl.innerText = JSON.stringify({ valid: data.valid, summary: result.summary, results: data.results }, null, 2);
+                return result;
             } catch (err) {
+                if (outResEl) outResEl.innerText = "Error: " + err.message;
                 return { error: true, message: "LLM-Guard service unavailable — is llm-guard/llmguard_server.py running? " + err.message };
             }
         }
@@ -2617,16 +2677,20 @@ Waiting for LLM...</pre>
             // Reset API Inspector panels at the start of every new prompt
             {
                 const resetMap = {
-                    "debug-guard-req": "Waiting for Semantic-Guard...",
-                    "debug-guard-res": "Waiting for Semantic-Guard...",
-                    "debug-canary-req": "Waiting for Little-Canary...",
-                    "debug-canary-res": "Waiting for Little-Canary...",
-                    "debug-prompt-req": "Waiting for AIRS-Inlet...",
-                    "debug-prompt-res": "Waiting for AIRS-Inlet...",
-                    "debug-req": "Waiting for Ollama...",
-                    "debug-res": "Waiting for Ollama...",
+                    "debug-lgInput-req":  "Waiting for LLM-Guard...",
+                    "debug-lgInput-res":  "Waiting for LLM-Guard...",
+                    "debug-guard-req":    "Waiting for Semantic-Guard...",
+                    "debug-guard-res":    "Waiting for Semantic-Guard...",
+                    "debug-canary-req":   "Waiting for Little-Canary...",
+                    "debug-canary-res":   "Waiting for Little-Canary...",
+                    "debug-prompt-req":   "Waiting for AIRS-Inlet...",
+                    "debug-prompt-res":   "Waiting for AIRS-Inlet...",
+                    "debug-req":          "Waiting for Ollama...",
+                    "debug-res":          "Waiting for Ollama...",
                     "debug-response-req": "Waiting for AIRS-Dual...",
                     "debug-response-res": "Waiting for AIRS-Dual...",
+                    "debug-lgOutput-req": "Waiting for LLM...",
+                    "debug-lgOutput-res": "Waiting for LLM...",
                 };
                 Object.entries(resetMap).forEach(([id, msg]) => {
                     const el = document.getElementById(id);
@@ -2726,6 +2790,11 @@ Waiting for LLM...</pre>
                         llmguardBadge.textContent = `🔬 Safe${_lgShrt}`;
                     }
                 }
+            } else {
+                const inReqEl2 = document.getElementById("debug-lgInput-req");
+                const inResEl2 = document.getElementById("debug-lgInput-res");
+                if (inReqEl2) inReqEl2.innerText = "LLM-Guard INPUT — Disabled.";
+                if (inResEl2) inResEl2.innerText = "LLM-Guard INPUT — Disabled.";
             }
 
             // ══════════════════════════════════════════
@@ -3240,6 +3309,11 @@ Waiting for LLM...</pre>
                         document.getElementById("debug-status").innerText = "Done ✅";
                     }
                 }
+            } else {
+                const outReqEl2 = document.getElementById("debug-lgOutput-req");
+                const outResEl2 = document.getElementById("debug-lgOutput-res");
+                if (outReqEl2) outReqEl2.innerText = "LLM-Guard OUTPUT — Disabled.";
+                if (outResEl2) outResEl2.innerText = "LLM-Guard OUTPUT — Disabled.";
             }
 
             // Copy button
@@ -3267,6 +3341,10 @@ Waiting for LLM...</pre>
             chatBox.innerHTML = "";
 
             // Reset all API Inspector panels
+            document.getElementById("debug-lgInput-req").innerText =
+                "Waiting for LLM-Guard...";
+            document.getElementById("debug-lgInput-res").innerText =
+                "Waiting for LLM-Guard...";
             document.getElementById("debug-guard-req").innerText =
                 "Waiting for Semantic-Guard...";
             document.getElementById("debug-guard-res").innerText =
@@ -3283,6 +3361,10 @@ Waiting for LLM...</pre>
                 "Waiting for AIRS-Dual...";
             document.getElementById("debug-response-res").innerText =
                 "Waiting for AIRS-Dual...";
+            document.getElementById("debug-lgOutput-req").innerText =
+                "Waiting for LLM...";
+            document.getElementById("debug-lgOutput-res").innerText =
+                "Waiting for LLM...";
             document.getElementById("debug-status").innerText = "Idle";
 
             // Visual confirmation in chat
