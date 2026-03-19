@@ -56,14 +56,20 @@ pip install garak
 ### Step 2 — Run a scan against a local Ollama model
 
 ```bash
-# Single probe category
-python -m garak --model_type ollama --model_name "goekdenizguelmez/JOSIEFIED-Qwen3:4b" --probes promptinject
+# Single probe category (v0.13.1+ syntax)
+python -m garak --target ollama:goekdenizguelmez/JOSIEFIED-Qwen3:4b --probes promptinject
 
 # Multiple categories
-python -m garak --model_type ollama --model_name "mistral" --probes promptinject,dan,toxicity
+python -m garak --target ollama:mistral --probes promptinject,dan,toxicity
 
 # Full sweep (all probes)
-python -m garak --model_type ollama --model_name "mistral" --probes all
+python -m garak --target ollama:mistral --probes all
+
+# list different available garak probes
+python -m garak --list_probes
+
+# List available generator targets
+python -m garak --list_generators
 ```
 
 > Common `--probes` values: `promptinject`, `dan`, `toxicity`, `jailbreak.Rime`, `knowledgegrounding`, `packagehallucination`
