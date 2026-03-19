@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""
+LLM Guard sidecar — Phase 0.6 (input) & Phase 2.5 (output)
+Runs on port 5002. Called by Node.js proxy via /api/llmguard-input and /api/llmguard-output.
+
+Tier 1 Input Scanners:  InvisibleText, Secrets, PromptInjection, Toxicity
+Tier 2 Output Scanners: Sensitive, MaliciousURLs, NoRefusal
+
+Install:  pip install -r llm-guard/requirements.txt
+Run:      python llm-guard/llmguard_server.py
+"""
+
+from flask import Flask, request, jsonify
+import time
+
+app = Flask(__name__)
+
+# ── Lazy-loaded scanner cache ─────────────────────────────────────────────────
+# Models are downloaded from HuggingFace on first use (~2–3 GB total).
+# After first load, they stay warm in memory for the lifetime of the process.
+_input_cache: dict = {}
+_output_cache: dict = {}
+
+INPUT_SCANNER_MAP = {
+    "InvisibleText":   lambda: _import("llm_guard.input_scanners", "InvisibleText")(),
+    "Secrets":         lambda: _import("llm_guard.input_scanners", "Secrets")(),
+    "PromptInjection": lambda: _import("llm_guard.input_scanners", "PromptInjection")(),
+    "Toxicity":        lambda: _import("llm_guard.input_scanners", "Toxicity")(),
+}
+
+OUTPUT_SCANNER_MAP = {
+    "Sensitive":     lambda: _import("llm_guard.output_scanners", "Sensitive")(),
+    "MaliciousURLs": lambda: _import("llm_guard.output_scanners", "MaliciousURLs")(),
+    "NoRefusal":     lambda: _import("llm_guard.output_scanners", "NoRefusal")(),
+}
+
+def _import(module: str, cls: str):
+    import importlib
+    return getattr(importlib.import_module(module), cls)
+
+def _get_input_scanner(name: str):
+    if name not in _input_cache:
+        factory = INPUT_SCANNER_MAP.get(name)
+        if factory is None:
+            return None
+        _input_cache[name] = factory()
+    return _input_cache[name]
+
+def _get_output_scanner(name: str):
+    if name not in _output_cache:
+        factory = OUTPUT_SCANNER_MAP.get(name)
+        if factory is None:
+            return None
+        _output_cache[name] = factory()
+    return _output_cache[name]
+
+
+# ── Health ────────────────────────────────────────────────────────────────────
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({
+        "status":  "ok",
+        "service": "llm-guard",
+        "loaded_input_scanners":  list(_input_cache.keys()),
+        "loaded_output_scanners": list(_output_cache.keys()),
+    })
+
+
+# ── Input scan (Phase 0.6) ────────────────────────────────────────────────────
+@app.route("/scan/input", methods=["POST"])
+def scan_input():
+    body     = request.json or {}
+    text     = body.get("text", "")
+    scanners = body.get("scanners", list(INPUT_SCANNER_MAP.keys()))
+
+    results:   dict = {}
+    is_valid:  bool = True
+
+    for name in scanners:
+        scanner = _get_input_scanner(name)
+        if scanner is None:
+            results[name] = {"error": f"Unknown or unsupported scanner: {name}"}
+            continue
+        try:
+            t0 = time.time()
+            sanitized, valid, risk_score = scanner.scan(text)
+            latency_ms = round((time.time() - t0) * 1000)
+            results[name] = {
+                "valid":      bool(valid),
+                "risk_score": float(risk_score) if risk_score is not None else None,
+                "sanitized":  sanitized if sanitized != text else None,
+                "latency_ms": latency_ms,
+            }
+            if not valid:
+                is_valid = False
+        except Exception as exc:
+            results[name] = {"error": str(exc)}
+
+    return jsonify({"valid": is_valid, "results": results})
+
+
+# ── Output scan (Phase 2.5) ───────────────────────────────────────────────────
+@app.route("/scan/output", methods=["POST"])
+def scan_output():
+    body     = request.json or {}
+    prompt   = body.get("prompt", "")
+    response = body.get("response", "")
+    scanners = body.get("scanners", list(OUTPUT_SCANNER_MAP.keys()))
+
+    results:   dict = {}
+    is_valid:  bool = True
+
+    for name in scanners:
+        scanner = _get_output_scanner(name)
+        if scanner is None:
+            results[name] = {"error": f"Unknown or unsupported scanner: {name}"}
+            continue
+        try:
+            t0 = time.time()
+            sanitized, valid, risk_score = scanner.scan(prompt, response)
+            latency_ms = round((time.time() - t0) * 1000)
+            results[name] = {
+                "valid":      bool(valid),
+                "risk_score": float(risk_score) if risk_score is not None else None,
+                "sanitized":  sanitized if sanitized != response else None,
+                "latency_ms": latency_ms,
+            }
+            if not valid:
+                is_valid = False
+        except Exception as exc:
+            results[name] = {"error": str(exc)}
+
+    return jsonify({"valid": is_valid, "results": results})
+
+
+# ── Entry point ───────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    print("🛡️  LLM Guard sidecar starting on http://localhost:5002")
+    print("    Input  scanners available:", list(INPUT_SCANNER_MAP.keys()))
+    print("    Output scanners available:", list(OUTPUT_SCANNER_MAP.keys()))
+    print("    Models download from HuggingFace on first use.")
+    app.run(host="127.0.0.1", port=5002, debug=False)

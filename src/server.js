@@ -57,7 +57,40 @@ app.post("/api/canary", async (req, res) => {
   }
 });
 
-// 4. The CORS-Bypassing Proxy for Prisma AIRS
+// 4. LLM Guard proxy — forwards to the local Python sidecar on :5002
+//    /api/llmguard-input  → POST http://localhost:5002/scan/input
+//    /api/llmguard-output → POST http://localhost:5002/scan/output
+app.post("/api/llmguard-input", async (req, res) => {
+  try {
+    const response = await fetch("http://localhost:5002/scan/input", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+    });
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json(data);
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: "LLM Guard service unavailable — is llm-guard/llmguard_server.py running? " + err.message });
+  }
+});
+
+app.post("/api/llmguard-output", async (req, res) => {
+  try {
+    const response = await fetch("http://localhost:5002/scan/output", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+    });
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json(data);
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: "LLM Guard service unavailable — is llm-guard/llmguard_server.py running? " + err.message });
+  }
+});
+
+// 5. The CORS-Bypassing Proxy for Prisma AIRS
 app.post("/api/prisma", async (req, res) => {
   const prismaEndpoint =
     "https://service.api.aisecurity.paloaltonetworks.com/v1/scan/sync/request";

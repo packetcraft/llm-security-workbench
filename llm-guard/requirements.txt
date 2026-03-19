@@ -1,0 +1,11 @@
+# LLM Guard sidecar — Phase 0.6 (input) & Phase 2.5 (output)
+# Python 3.10–3.12 required
+#
+# Install:  pip install -r llm-guard/requirements.txt
+# Optional: pip install llm-guard[onnxruntime]  (30–50% faster inference on CPU)
+#
+# NOTE: First run downloads ~2–3 GB of HuggingFace models.
+# Models are cached at ~/.cache/huggingface/ after first download.
+
+flask>=3.0.0
+llm-guard>=0.3.14

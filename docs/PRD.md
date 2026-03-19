@@ -501,6 +501,47 @@ llm-security-workbench/
 
 ## 7. Future Roadmap
 
+### 🛡️ LLM Guard Integration (Phase 0.6 & Phase 2.5) — `dev/5a`
+
+**Goal:** Add a local transformer-based scanner layer (ProtectAI LLM Guard, MIT licence) between Little Canary and Prisma AIRS, operating entirely on-device without any cloud calls.
+
+**Architecture:**
+- Python Flask sidecar on `:5002` (`llm-guard/llmguard_server.py`)
+- Node.js proxy routes: `POST /api/llmguard-input` → `:5002/scan/input`, `POST /api/llmguard-output` → `:5002/scan/output`
+- Models downloaded from HuggingFace on first use (~2–3 GB), cached at `~/.cache/huggingface/`
+
+**Scanner selection (do NOT install all 38):**
+
+| Tier | Phase | Scanner | Purpose |
+| :--- | :--- | :--- | :--- |
+| Tier 1 | Input (0.6) | `InvisibleText` | Detect zero-width / homoglyph injection characters |
+| Tier 1 | Input (0.6) | `Secrets` | Block accidental API key / credential leaks in prompts |
+| Tier 1 | Input (0.6) | `PromptInjection` | ML classifier for direct + indirect prompt injection |
+| Tier 1 | Input (0.6) | `Toxicity` | Hate speech, harassment, self-harm detection |
+| Tier 2 | Output (2.5) | `Sensitive` | PII / sensitive data detection in LLM responses |
+| Tier 2 | Output (2.5) | `MaliciousURLs` | Detect harmful URLs in LLM-generated content |
+| Tier 2 | Output (2.5) | `NoRefusal` | Detect when the LLM failed to refuse a harmful request |
+
+**Install:**
+```bash
+pip install -r llm-guard/requirements.txt
+# Optional (30–50% faster CPU inference):
+pip install llm-guard[onnxruntime]
+```
+
+**Run:**
+```bash
+npm run llmguard    # starts llm-guard/llmguard_server.py on :5002
+```
+
+**Pipeline position:** Phase 0 → Phase 0.5 (Canary) → **Phase 0.6 (LLM Guard input)** → Phase 1 (AIRS prompt) → LLM → Phase 2 (AIRS response) → **Phase 2.5 (LLM Guard output)**
+
+**Modes per phase:** Off / Advisory (flag + continue) / Strict (block on fail)
+
+**Status:** ✅ Implemented in `dev/5a-llm-security-workbench-llm-guard.html`
+
+---
+
 ### Previously identified
 
 * **Guardrail fine-tuning helper:** A sidebar tool that runs a batch of sample threats against the current judge model + system prompt and reports pass/fail rates to help calibrate the threshold.

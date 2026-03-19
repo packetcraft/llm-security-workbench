@@ -12,7 +12,11 @@
     "stage:3a": "node scripts/stage.js 3a",
     "stage:3b": "node scripts/stage.js 3b",
     "stage:3c": "node scripts/stage.js 3c",
-    "canary": "python python/canary_server.py"
+    "stage:4a": "node scripts/stage.js 4a",
+    "stage:4c": "node scripts/stage.js 4c",
+    "stage:5a": "node scripts/stage.js 5a",
+    "canary": "python python/canary_server.py",
+    "llmguard": "python llm-guard/llmguard_server.py"
   },
   "keywords": [],
   "author": "",
