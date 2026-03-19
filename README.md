@@ -429,7 +429,11 @@ If you are using `dev/3c`, start the Flask microservice in a separate terminal:
 ```bash
 npm run canary
 # → 🐦 Little Canary service starting on http://localhost:5001
+
+# or try running it namually
+python3 python/canary_server.py
 ```
+
 
 ---
 
