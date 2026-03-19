@@ -481,6 +481,7 @@ npm run stage           # prints all available files
 |   | `3c-llm-security-workbench-little-canary.html` | *Five-gate workbench — introduces Phase 0.5 Little Canary* | ✓ | *All of 3b + Phase 0.5 structural + behavioural probe, advisory prefix, 5-column API inspector, latency badges, organised header* |
 |   | `4a-llm-security-workbench-batch-runner.html` | *First iteration of the Batch Threat Runner* | ✓ | *All of 3c + Batch runner modal to iterate 19 threats automatically* |
 | ⭐ | **`4b-llm-security-workbench-advanced-batch.html`** | **Full advanced workbench** — resilient with background execution | ✓ | All of 4a + Background decoupled batch processing, persistent states (results not lost on close), granular Phase Catch reporting (MD export), strict AbortController timeouts, model defaults for `shieldgemma:2b` |
+| 🆕 | **`4c-llm-security-workbench-threat-import.html`** | **Threat Import workbench** — garak + JailbreakBench integration | ✓ | All of 4b + Upload garak `.report.jsonl` probe files directly into the Batch Runner, fetch live JailbreakBench attack artifacts from GitHub, CLI utility `scripts/garak_to_threats.py` for offline conversion |
 
 ### Recommended learning path
 
