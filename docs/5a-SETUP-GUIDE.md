@@ -13,13 +13,13 @@ The workbench runs every prompt and response through a layered pipeline of local
 User Prompt
     │
     ▼
+🛡️ Phase 0.6 — LLM Guard Input      (local Flask, transformer scanners)
+    │
+    ▼
 🔒 Phase 0   — Native Guardrail     (local Ollama LLM-as-judge)
     │
     ▼
 🐦 Phase 0.5 — Little Canary        (local Flask, regex + LLM probe)
-    │
-    ▼
-🛡️ Phase 0.6 — LLM Guard Input      (local Flask, transformer scanners)
     │
     ▼
 🛡️ Phase 1   — AIRS Prompt Scan     (cloud, Prisma AIRS)
@@ -277,9 +277,9 @@ After the first prompt, `loaded_input_scanners` and `loaded_output_scanners` sho
 
 | Phase | Name | Port | Mode options | Catches |
 |:---|:---|:---|:---|:---|
+| 0.6 | LLM Guard Input | :5002 | Off / Advisory / Strict | Invisible text, secrets, injection, toxicity, banned topics, gibberish, non-English |
 | 0 | Native Guardrail | Ollama :11434 | Off / Audit / Strict | Jailbreaks, injection, unsafe intent |
 | 0.5 | Little Canary | :5001 | Off / Advisory / Full | Prompt injection, structural anomalies |
-| 0.6 | LLM Guard Input | :5002 | Off / Advisory / Strict | Invisible text, secrets, injection, toxicity, banned topics, gibberish, non-English |
 | 1 | AIRS Prompt Scan | Cloud | Off / Audit / Strict | Threat categories per AIRS profile |
 | 2 | AIRS Response Scan | Cloud | Off / Audit / Strict | DLP, malicious content, policy violations |
 | 2.5 | LLM Guard Output | :5002 | Off / Advisory / Strict | PII, malicious URLs, refusal evasion, bias, relevance, language mismatch |
