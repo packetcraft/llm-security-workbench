@@ -31,17 +31,22 @@ INPUT_SCANNER_MAP = {
                                    "terrorism", "child exploitation"],
                            threshold=0.5),
     "Gibberish":       lambda: _import("llm_guard.input_scanners", "Gibberish")(threshold=0.8),
+    # Language: raised to 0.85 — short inputs (< ~10 chars) score low confidence
+    # causing false positives on greetings like "hi", "hello", "ok"
     "Language":        lambda: _import("llm_guard.input_scanners", "Language")(
-                           valid_languages=["en"], threshold=0.6),
+                           valid_languages=["en"], threshold=0.85),
 }
 
 OUTPUT_SCANNER_MAP = {
     "Sensitive":     lambda: _import("llm_guard.output_scanners", "Sensitive")(),
     "MaliciousURLs": lambda: _import("llm_guard.output_scanners", "MaliciousURLs")(),
     "NoRefusal":     lambda: _import("llm_guard.output_scanners", "NoRefusal")(),
-    "Bias":          lambda: _import("llm_guard.output_scanners", "Bias")(threshold=0.5),
+    # Bias: raised to 0.70 — 0.5 flagged benign assistant responses as biased
+    "Bias":          lambda: _import("llm_guard.output_scanners", "Bias")(threshold=0.70),
     "Relevance":     lambda: _import("llm_guard.output_scanners", "Relevance")(threshold=0.5),
-    "LanguageSame":  lambda: _import("llm_guard.output_scanners", "LanguageSame")(threshold=0.1),
+    # LanguageSame: raised to 0.40 — 0.1 was too aggressive on short inputs
+    # vs longer responses (different token-length distributions trigger it)
+    "LanguageSame":  lambda: _import("llm_guard.output_scanners", "LanguageSame")(threshold=0.40),
 }
 
 def _import(module: str, cls: str):
