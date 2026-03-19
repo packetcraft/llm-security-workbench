@@ -43,6 +43,10 @@ Libraries for modular security pipelines:
    - **Description:** A CLI tool for automated output evaluation and red-teaming.
    - **CI/CD:** Use promptfoo test cases to run security validations in a production pipeline.
 
+9. **[WhyLabs LangKit](https://github.com/whylabs/langkit)**
+   - **Description:** An open-source toolkit for monitoring LLM security and performance (jailbreaks, injection, PII, toxicity).
+   - **Observability:** Built on `whylogs`, it provides telemetry icons and security metrics for LLM applications.
+
 ---
 
 ## 🧪 Garak — How to Generate a JSONL Report
