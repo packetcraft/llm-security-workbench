@@ -255,11 +255,17 @@ Browser → /api/canary (Node proxy) → localhost:5001/check (Flask) → Securi
 ```bash
 # In a separate terminal:
 pip install flask little-canary
+
+python3 -m venv venv
+source venv/bin/activate
+# Now 'python' will point to the venv version
 npm run canary        # starts python/canary_server.py on port 5001
 ```
 
 Or directly:
 ```bash
+python3 -m venv venv
+source venv/bin/activate
 python python/canary_server.py
 ```
 
