@@ -1049,21 +1049,21 @@
             white-space: nowrap;
         }
 
-        .batch-results-table tr.batch-blocked td:nth-child(3) {
+        .batch-results-table tr.batch-blocked td:nth-child(4) {
             color: var(--danger);
             font-weight: 700;
         }
 
-        .batch-results-table tr.batch-flagged td:nth-child(3) {
+        .batch-results-table tr.batch-flagged td:nth-child(4) {
             color: var(--warning);
             font-weight: 700;
         }
 
-        .batch-results-table tr.batch-allowed td:nth-child(3) {
+        .batch-results-table tr.batch-allowed td:nth-child(4) {
             color: var(--green);
         }
 
-        .batch-results-table tr.batch-error td:nth-child(3) {
+        .batch-results-table tr.batch-error td:nth-child(4) {
             color: var(--muted);
         }
 
@@ -1071,12 +1071,54 @@
             background: rgba(255, 255, 255, 0.03);
         }
 
+        /* Security gap (threat slipped through) — red left border */
+        .batch-results-table tr.batch-gap td:first-child {
+            border-left: 3px solid var(--danger);
+        }
+
+        /* False positive (benign blocked) — orange left border */
+        .batch-results-table tr.batch-fp td:first-child {
+            border-left: 3px solid var(--warning);
+        }
+
+        /* Severity badges */
+        .sev-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.3px; }
+        .sev-badge.sev-critical { color: var(--danger); }
+        .sev-badge.sev-high     { color: var(--warning); }
+        .sev-badge.sev-medium   { color: var(--primary); }
+        .sev-badge.sev-low      { color: var(--muted); }
+
+        /* Expected verdict cells */
+        .ev-block { color: var(--danger); }
+        .ev-flag  { color: var(--warning); }
+        .ev-allow { color: var(--green); }
+
+        /* Outcome cells */
+        .outcome-ok  { color: var(--green); }
+        .outcome-gap { color: var(--danger);  font-weight: 700; }
+        .outcome-fp  { color: var(--warning); font-weight: 700; }
+
         #batch-results-wrap {
             max-height: 360px;
             overflow-y: auto;
             border: 1px solid var(--border);
             border-radius: 6px;
         }
+
+        /* Severity filter row */
+        .batch-sev-filter { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .batch-sev-filter label { font-size: 12px; color: var(--text-muted); margin-right: 2px; }
+        .batch-sev-btn {
+            font-size: 10px; padding: 2px 9px;
+            border: 1px solid var(--border); border-radius: 10px;
+            background: none; color: var(--muted); cursor: pointer;
+            transition: all 0.15s;
+        }
+        .batch-sev-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .batch-sev-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .batch-sev-btn.sev-crit.active { background: var(--danger);  border-color: var(--danger); }
+        .batch-sev-btn.sev-high.active { background: var(--warning); border-color: var(--warning); color: #1a1b26; }
+        .batch-sev-btn.sev-med.active  { background: var(--primary); border-color: var(--primary); }
 
         /* Batch scope — category checkboxes */
         .batch-cat-header {
@@ -1176,6 +1218,8 @@
             color: var(--primary);
         }
 
+        .batch-summary-bar .s-gap { color: var(--danger);  font-weight: 700; }
+        .batch-summary-bar .s-fp  { color: var(--warning); font-weight: 700; }
         .batch-summary-bar .s-phase2 {
             color: var(--primary);
             opacity: 0.6;
@@ -2964,6 +3008,14 @@ Waiting for LLM...</pre>
         let batchStop = false;
         let isBatchRunning = false;
         let _batchResults = [];
+        let _severityFilter = "all";
+
+        function setSevFilter(sev, el) {
+            _severityFilter = sev;
+            document.querySelectorAll(".batch-sev-btn").forEach(b => b.classList.remove("active"));
+            el.classList.add("active");
+            _updateRunBtn();
+        }
 
         function openBatchRunner() {
             // Populate category checkboxes if they haven't been built yet
@@ -3000,7 +3052,9 @@ Waiting for LLM...</pre>
             const checks = document.querySelectorAll("#batch-cat-list input[type=checkbox]:checked");
             if (!checks.length) return [];
             const selectedIds = new Set([...checks].map(cb => cb.dataset.cat));
-            return SAMPLE_THREATS.filter(g => selectedIds.has(g.categoryId)).flatMap(g => g.threats);
+            let threats = SAMPLE_THREATS.filter(g => selectedIds.has(g.categoryId)).flatMap(g => g.threats);
+            if (_severityFilter !== "all") threats = threats.filter(t => t.severity === _severityFilter);
+            return threats;
         }
 
         function closeBatchModal() {
@@ -3047,6 +3101,7 @@ Waiting for LLM...</pre>
             if (!total) { alert("No threats selected."); return; }
             let blocked = 0, flagged = 0, allowed = 0, errors = 0;
             let p0 = 0, p05 = 0, p1 = 0, p2 = 0; // phase catch counts
+            let gaps = 0, fps = 0; // security gaps and false positives
 
             batchStop = false;
             isBatchRunning = true;
@@ -3195,6 +3250,26 @@ Waiting for LLM...</pre>
                 else if (finalStatus === "alert") { flagged++; rowClass = "batch-flagged"; resultLabel = "⚠️ Flagged"; }
                 else { allowed++; }
 
+                // ── Expected vs Actual (gap / FP detection) ────────────
+                const ev = threat.expectedVerdict || "block"; // default: threat should be caught
+                const wasCaught = (finalStatus === "block" || finalStatus === "alert");
+                const isGap = (ev !== "allow") && !wasCaught && finalStatus !== "error";
+                const isFp  = (ev === "allow") && wasCaught;
+                if (isGap) { gaps++; rowClass += " batch-gap"; }
+                if (isFp)  { fps++;  rowClass += " batch-fp";  }
+
+                const evLabel  = ev === "allow" ? `<span class="ev-allow">✅ Allow</span>`
+                               : ev === "flag"  ? `<span class="ev-flag">⚠️ Flag</span>`
+                               :                  `<span class="ev-block">🛑 Block</span>`;
+                const outLabel = isGap ? `<span class="outcome-gap">🚨 Gap</span>`
+                               : isFp  ? `<span class="outcome-fp">⚠️ FP</span>`
+                               : finalStatus === "error" ? `<span style="color:var(--muted)">—</span>`
+                               :                          `<span class="outcome-ok">✓</span>`;
+
+                const sevLabel = threat.severity
+                    ? `<span class="sev-badge sev-${threat.severity}">${threat.severity.slice(0,4).toUpperCase()}</span>`
+                    : `<span style="color:var(--muted)">—</span>`;
+
                 const phaseStyle = firstCaught.startsWith("🔒") ? "color:var(--purple)" :
                     firstCaught.startsWith("🐦") ? "color:var(--canary-adv)" :
                         firstCaught.startsWith("🛡️") ? "color:var(--primary)" :
@@ -3207,9 +3282,11 @@ Waiting for LLM...</pre>
                 tr.className = rowClass;
                 tr.innerHTML = `<td>${i + 1}</td>
                     <td title="${threat.type}">${threat.type}</td>
+                    <td>${sevLabel}</td>
                     <td>${resultLabel}</td>
                     <td style="${phaseStyle}">${firstCaught}</td>
-                    <td>${category}</td>
+                    <td>${evLabel}</td>
+                    <td>${outLabel}</td>
                     <td title="${detectedStr}">${detectedStr}</td>
                     <td>${latStr}</td>`;
                 document.getElementById("batch-results-body").appendChild(tr);
@@ -3217,8 +3294,11 @@ Waiting for LLM...</pre>
 
                 _batchResults.push({
                     n: i + 1, threat: threat.type,
+                    severity: threat.severity || null,
+                    expectedVerdict: ev,
                     status: finalStatus, firstCaughtBy: firstCaught,
-                    category, detected: detectedStr === "—" ? [] : detectedStr.split(", "),
+                    isGap, isFp,
+                    detected: detectedStr === "—" ? [] : detectedStr.split(", "),
                     latencyMs: latMs, scanId,
                 });
 
@@ -3234,6 +3314,11 @@ Waiting for LLM...</pre>
                     `<span class="s-flagged">⚠️ ${flagged} flagged</span>` +
                     `<span class="s-allowed">✅ ${allowed} allowed</span>` +
                     (errors ? `<span class="s-error">❌ ${errors} err</span>` : "") +
+                    `</div>` +
+                    `<div class="s-row">` +
+                    (gaps ? `<span class="s-gap" title="Threats expected to be caught but were allowed through">🚨 ${gaps} security gap${gaps !== 1 ? "s" : ""}</span>` : "") +
+                    (fps  ? `<span class="s-fp"  title="Benign prompts that were incorrectly blocked or flagged">⚠️ ${fps} false positive${fps !== 1 ? "s" : ""}</span>`  : "") +
+                    (!gaps && !fps ? `<span style="color:var(--green);font-size:11px">✓ No gaps or false positives detected</span>` : "") +
                     `</div>`;
 
                 if (i < total - 1 && !batchStop) await new Promise(r => setTimeout(r, delayMs));
@@ -3562,6 +3647,15 @@ Waiting for LLM...</pre>
                     </div>
                 </div>
             </details>
+            <!-- Severity filter -->
+            <div class="batch-sev-filter">
+                <label>Severity:</label>
+                <button class="batch-sev-btn active"     onclick="setSevFilter('all',this)">All</button>
+                <button class="batch-sev-btn sev-crit"   onclick="setSevFilter('critical',this)">🔴 Critical</button>
+                <button class="batch-sev-btn sev-high"   onclick="setSevFilter('high',this)">🟠 High</button>
+                <button class="batch-sev-btn sev-med"    onclick="setSevFilter('medium',this)">🟡 Medium</button>
+                <button class="batch-sev-btn"            onclick="setSevFilter('low',this)">⚪ Low</button>
+            </div>
             <!-- Category scope selector -->
             <div class="batch-cat-header">
                 <span>Categories to include:</span>
@@ -3594,9 +3688,11 @@ Waiting for LLM...</pre>
                         <tr>
                             <th>#</th>
                             <th>Threat Type</th>
+                            <th>Sev</th>
                             <th>Result</th>
                             <th>Caught By</th>
-                            <th>Category</th>
+                            <th>Expected</th>
+                            <th>Outcome</th>
                             <th>Detected</th>
                             <th>Latency</th>
                         </tr>
