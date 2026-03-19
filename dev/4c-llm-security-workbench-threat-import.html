@@ -2855,12 +2855,11 @@ Waiting for LLM...</pre>
             const catList = document.getElementById("batch-cat-list");
             catList.innerHTML = SAMPLE_THREATS.map(g =>
                 `<label class="batch-cat-cb">
-                    <input type="checkbox" data-cat="${g.categoryId}" ${
-                        _importedGroups.some(ig => ig.categoryId === g.categoryId) ? "checked" : "checked"
-                    } onchange="_updateRunBtn()">
+                    <input type="checkbox" data-cat="${g.categoryId}" checked onchange="_updateRunBtn()">
                     ${g.category} <span class="cat-count">(${g.threats.length})</span>
                 </label>`
             ).join("");
+            _updateSevCounts();
             _updateRunBtn();
         }
 
@@ -3017,6 +3016,24 @@ Waiting for LLM...</pre>
             _updateRunBtn();
         }
 
+        // Populate severity button labels with counts from current SAMPLE_THREATS
+        function _updateSevCounts() {
+            const all = SAMPLE_THREATS.flatMap(g => g.threats);
+            const sevMap = { all: all.length, critical: 0, high: 0, medium: 0, low: 0 };
+            all.forEach(t => { if (t.severity in sevMap) sevMap[t.severity]++; });
+            const labels = {
+                all:      `All (${sevMap.all})`,
+                critical: `🔴 Critical (${sevMap.critical})`,
+                high:     `🟠 High (${sevMap.high})`,
+                medium:   `🟡 Medium (${sevMap.medium})`,
+                low:      `⚪ Low (${sevMap.low})`,
+            };
+            document.querySelectorAll(".batch-sev-btn[data-sev]").forEach(btn => {
+                const lbl = labels[btn.dataset.sev];
+                if (lbl) btn.textContent = lbl;
+            });
+        }
+
         function openBatchRunner() {
             // Populate category checkboxes if they haven't been built yet
             const catList = document.getElementById("batch-cat-list");
@@ -3030,9 +3047,10 @@ Waiting for LLM...</pre>
                             ${g.category} <span class="cat-count">(${g.threats.length})</span>
                         </label>`
                     ).join("");
-                    _updateRunBtn();
                 }
             }
+            _updateSevCounts();
+            _updateRunBtn();
 
             document.getElementById("batch-modal-backdrop").classList.add("open");
         }
@@ -3044,15 +3062,30 @@ Waiting for LLM...</pre>
         }
 
         function _updateRunBtn() {
-            const n = getSelectedThreats().length;
-            document.getElementById("batch-start-btn").textContent = `▶ Run (${n})`;
+            const threats = getSelectedThreats();
+            document.getElementById("batch-start-btn").textContent = `▶ Run (${threats.length})`;
+            // Update per-category counts to reflect active severity filter
+            document.querySelectorAll("#batch-cat-list input[type=checkbox]").forEach(cb => {
+                const g = SAMPLE_THREATS.find(g => g.categoryId === cb.dataset.cat);
+                if (!g) return;
+                const filteredN = _severityFilter === "all"
+                    ? g.threats.length
+                    : g.threats.filter(t => t.severity === _severityFilter).length;
+                const countSpan = cb.parentElement.querySelector(".cat-count");
+                if (countSpan) countSpan.textContent = _severityFilter === "all"
+                    ? `(${g.threats.length})`
+                    : `(${filteredN} / ${g.threats.length})`;
+            });
         }
 
         function getSelectedThreats() {
             const checks = document.querySelectorAll("#batch-cat-list input[type=checkbox]:checked");
             if (!checks.length) return [];
             const selectedIds = new Set([...checks].map(cb => cb.dataset.cat));
-            let threats = SAMPLE_THREATS.filter(g => selectedIds.has(g.categoryId)).flatMap(g => g.threats);
+            // Enrich each threat with its parent category name for display
+            let threats = SAMPLE_THREATS
+                .filter(g => selectedIds.has(g.categoryId))
+                .flatMap(g => g.threats.map(t => ({ ...t, _category: g.category, _categoryId: g.categoryId })));
             if (_severityFilter !== "all") threats = threats.filter(t => t.severity === _severityFilter);
             return threats;
         }
@@ -3278,10 +3311,14 @@ Waiting for LLM...</pre>
                 const latMs = Date.now() - t0;
                 const latStr = latMs < 1000 ? latMs + "ms" : (latMs / 1000).toFixed(1) + "s";
 
+                const catDisplay = threat._category
+                    ? `<div style="font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${threat._category}</div>`
+                    : "";
+
                 const tr = document.createElement("tr");
                 tr.className = rowClass;
                 tr.innerHTML = `<td>${i + 1}</td>
-                    <td title="${threat.type}">${threat.type}</td>
+                    <td title="${(threat._category ? threat._category + ' › ' : '') + threat.type}">${catDisplay}${threat.type}</td>
                     <td>${sevLabel}</td>
                     <td>${resultLabel}</td>
                     <td style="${phaseStyle}">${firstCaught}</td>
@@ -3293,7 +3330,10 @@ Waiting for LLM...</pre>
                 document.getElementById("batch-results-wrap").scrollTop = 9999;
 
                 _batchResults.push({
-                    n: i + 1, threat: threat.type,
+                    n: i + 1,
+                    threatCategory: threat._category || null,
+                    threat: threat.type,
+                    id: threat.id || null,
                     severity: threat.severity || null,
                     expectedVerdict: ev,
                     status: finalStatus, firstCaughtBy: firstCaught,
@@ -3316,8 +3356,8 @@ Waiting for LLM...</pre>
                     (errors ? `<span class="s-error">❌ ${errors} err</span>` : "") +
                     `</div>` +
                     `<div class="s-row">` +
-                    (gaps ? `<span class="s-gap" title="Threats expected to be caught but were allowed through">🚨 ${gaps} security gap${gaps !== 1 ? "s" : ""}</span>` : "") +
-                    (fps  ? `<span class="s-fp"  title="Benign prompts that were incorrectly blocked or flagged">⚠️ ${fps} false positive${fps !== 1 ? "s" : ""}</span>`  : "") +
+                    (gaps ? `<span class="s-gap" title="Threats expected to be caught but were allowed through">🚨 ${gaps} possible security gap${gaps !== 1 ? "s" : ""}</span>` : "") +
+                    (fps  ? `<span class="s-fp"  title="Benign prompts that were incorrectly blocked or flagged">⚠️ ${fps} possible false positive${fps !== 1 ? "s" : ""}</span>`  : "") +
                     (!gaps && !fps ? `<span style="color:var(--green);font-size:11px">✓ No gaps or false positives detected</span>` : "") +
                     `</div>`;
 
@@ -3335,13 +3375,35 @@ Waiting for LLM...</pre>
 
         function exportBatchResults() {
             if (!_batchResults.length) { alert("Run the batch first."); return; }
+
+            // Recompute summary totals from results
+            const blocked = _batchResults.filter(r => r.status === "block").length;
+            const flagged = _batchResults.filter(r => r.status === "alert").length;
+            const allowed = _batchResults.filter(r => r.status === "allow").length;
+            const errors  = _batchResults.filter(r => r.status === "error").length;
+            const gaps    = _batchResults.filter(r => r.isGap).length;
+            const fps     = _batchResults.filter(r => r.isFp).length;
+            const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 0") && !(r.firstCaughtBy||"").includes("0.5")).length;
+            const p05 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.5")).length;
+            const p1  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 1")).length;
+            const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2")).length;
+
             const payload = {
-                exported_at: new Date().toISOString(),
-                model: document.getElementById("model-select").value,
-                phase0_mode: document.getElementById("guardrail-mode").value,
-                phase05_mode: document.getElementById("canary-mode").value,
-                phase1_mode: document.getElementById("airs-mode").value,
-                airs_profile: document.getElementById("airs-profile").value,
+                exported_at:      new Date().toISOString(),
+                model:            document.getElementById("model-select").value,
+                severity_filter:  _severityFilter,
+                phase0_mode:      document.getElementById("guardrail-mode").value,
+                phase05_mode:     document.getElementById("canary-mode").value,
+                phase1_mode:      document.getElementById("airs-mode").value,
+                airs_profile:     document.getElementById("airs-profile").value,
+                summary: {
+                    total: _batchResults.length,
+                    blocked, flagged, allowed, errors,
+                    phase0_catches: p0, phase05_catches: p05,
+                    airs1_catches: p1, airs2_catches: p2,
+                    possible_security_gaps: gaps,
+                    possible_false_positives: fps,
+                },
                 results: _batchResults,
             };
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -3355,24 +3417,24 @@ Waiting for LLM...</pre>
         function exportBatchResultsMD() {
             if (!_batchResults.length) { alert("Run the batch first."); return; }
 
-            const model = document.getElementById("model-select").value;
-            const phase0Mode = document.getElementById("guardrail-mode").value;
-            const phase05Mode = document.getElementById("canary-mode").value;
-            const phase1Mode = document.getElementById("airs-mode").value;
+            const model      = document.getElementById("model-select").value;
+            const p0Mode     = document.getElementById("guardrail-mode").value;
+            const p05Mode    = document.getElementById("canary-mode").value;
+            const p1Mode     = document.getElementById("airs-mode").value;
             const airsProfile = document.getElementById("airs-profile").value;
             const ts = new Date().toISOString();
 
-            // Tally
+            // Tally from results
             const blocked = _batchResults.filter(r => r.status === "block").length;
             const flagged = _batchResults.filter(r => r.status === "alert").length;
             const allowed = _batchResults.filter(r => r.status === "allow").length;
-            const errors = _batchResults.filter(r => r.status === "error").length;
-
-            // Phase catches
-            const p0 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("Phase 0") && !r.firstCaughtBy.includes("0.5")).length;
-            const p05 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("0.5")).length;
-            const p1 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("Phase 1")).length;
-            const p2 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("Phase 2")).length;
+            const errors  = _batchResults.filter(r => r.status === "error").length;
+            const gaps    = _batchResults.filter(r => r.isGap).length;
+            const fps     = _batchResults.filter(r => r.isFp).length;
+            const p0  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 0") && !(r.firstCaughtBy||"").includes("0.5")).length;
+            const p05 = _batchResults.filter(r => (r.firstCaughtBy||"").includes("0.5")).length;
+            const p1  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 1")).length;
+            const p2  = _batchResults.filter(r => (r.firstCaughtBy||"").includes("Phase 2")).length;
 
             const lines = [
                 `# Batch Threat Runner — Results`,
@@ -3382,29 +3444,45 @@ Waiting for LLM...</pre>
                 `| Setting | Value |`,
                 `|---|---|`,
                 `| Model | \`${model}\` |`,
-                `| Phase 0 — Native Guardrail | ${phase0Mode} |`,
-                `| Phase 0.5 — Little Canary | ${phase05Mode} |`,
-                `| Phase 1 — AIRS | ${phase1Mode} |`,
+                `| Severity Filter | ${_severityFilter === "all" ? "All" : _severityFilter} |`,
+                `| Phase 0 — Native Guardrail | ${p0Mode} |`,
+                `| Phase 0.5 — Little Canary | ${p05Mode} |`,
+                `| Phase 1 — AIRS Prompt Scan | ${p1Mode} |`,
+                `| Phase 2 — AIRS Response Scan | ${p1Mode !== "off" ? "active (runs after LLM)" : "off"} |`,
                 `| AIRS Profile | ${airsProfile || "—"} |`,
                 ``,
                 `## Summary`,
-                `**Phase Catches:** 🔒 Phase 0: ${p0} &emsp;|&emsp; 🐦 Phase 0.5: ${p05} &emsp;|&emsp; 🛡️ AIRS-1: ${p1} &emsp;|&emsp; 🛡️ AIRS-2: ${p2}`,
+                `**Phase Catches:** 🔒 Phase 0: ${p0} &nbsp;|&nbsp; 🐦 Phase 0.5: ${p05} &nbsp;|&nbsp; 🛡️ AIRS-1: ${p1} &nbsp;|&nbsp; 🛡️ AIRS-2: ${p2}`,
                 ``,
                 `| 🛑 Blocked | ⚠️ Flagged | ✅ Allowed | ❌ Errors | Total |`,
                 `|---|---|---|---|---|`,
                 `| ${blocked} | ${flagged} | ${allowed} | ${errors} | ${_batchResults.length} |`,
                 ``,
+                gaps || fps
+                    ? `> 🚨 **${gaps} possible security gap${gaps !== 1 ? "s"  : ""}** — threats expected to be caught but were allowed through`
+                    : ``,
+                fps
+                    ? `> ⚠️ **${fps} possible false positive${fps !== 1 ? "s"  : ""}** — benign prompts that were blocked or flagged`
+                    : (!gaps ? `> ✓ No gaps or false positives detected` : ``),
+                ``,
                 `## Results`,
-                `| # | Threat Type | Result | Caught By | Category | Detected | Latency |`,
-                `|---|---|---|---|---|---|---|`,
+                `| # | Category | Threat | ID | Sev | Result | Caught By | Expected | Outcome | Detected | Latency |`,
+                `|---|---|---|---|---|---|---|---|---|---|---|`,
                 ..._batchResults.map(r => {
                     const result = r.status === "block" ? "🛑 Blocked"
                         : r.status === "alert" ? "⚠️ Flagged"
-                            : r.status === "error" ? "❌ Error"
-                                : "✅ Allowed";
+                        : r.status === "error" ? "❌ Error"
+                        : "✅ Allowed";
+                    const ev  = r.expectedVerdict === "allow" ? "✅ Allow"
+                              : r.expectedVerdict === "flag"  ? "⚠️ Flag"
+                              : "🛑 Block";
+                    const out = r.isGap ? "🚨 Possible Gap"
+                              : r.isFp  ? "⚠️ Possible FP"
+                              : r.status === "error" ? "—"
+                              : "✓";
                     const det = r.detected?.length ? r.detected.join(", ") : "—";
-                    const lat = r.latencyMs < 1000 ? `${r.latencyMs}ms` : `${(r.latencyMs / 1000).toFixed(1)}s`;
-                    return `| ${r.n} | ${r.threat} | ${result} | ${r.firstCaughtBy || "—"} | ${r.category} | ${det} | ${lat} |`;
+                    const lat = r.latencyMs < 1000 ? `${r.latencyMs}ms` : `${(r.latencyMs/1000).toFixed(1)}s`;
+                    return `| ${r.n} | ${r.threatCategory || "—"} | ${r.threat} | ${r.id || "—"} | ${r.severity || "—"} | ${result} | ${r.firstCaughtBy || "—"} | ${ev} | ${out} | ${det} | ${lat} |`;
                 }),
             ];
 
@@ -3650,11 +3728,11 @@ Waiting for LLM...</pre>
             <!-- Severity filter -->
             <div class="batch-sev-filter">
                 <label>Severity:</label>
-                <button class="batch-sev-btn active"     onclick="setSevFilter('all',this)">All</button>
-                <button class="batch-sev-btn sev-crit"   onclick="setSevFilter('critical',this)">🔴 Critical</button>
-                <button class="batch-sev-btn sev-high"   onclick="setSevFilter('high',this)">🟠 High</button>
-                <button class="batch-sev-btn sev-med"    onclick="setSevFilter('medium',this)">🟡 Medium</button>
-                <button class="batch-sev-btn"            onclick="setSevFilter('low',this)">⚪ Low</button>
+                <button class="batch-sev-btn active"   data-sev="all"      onclick="setSevFilter('all',this)">All</button>
+                <button class="batch-sev-btn sev-crit" data-sev="critical" onclick="setSevFilter('critical',this)">🔴 Critical</button>
+                <button class="batch-sev-btn sev-high" data-sev="high"     onclick="setSevFilter('high',this)">🟠 High</button>
+                <button class="batch-sev-btn sev-med"  data-sev="medium"   onclick="setSevFilter('medium',this)">🟡 Medium</button>
+                <button class="batch-sev-btn"          data-sev="low"      onclick="setSevFilter('low',this)">⚪ Low</button>
             </div>
             <!-- Category scope selector -->
             <div class="batch-cat-header">
@@ -3687,7 +3765,7 @@ Waiting for LLM...</pre>
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Threat Type</th>
+                            <th>Category / Threat Type</th>
                             <th>Sev</th>
                             <th>Result</th>
                             <th>Caught By</th>
