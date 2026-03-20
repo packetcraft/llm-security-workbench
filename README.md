@@ -89,6 +89,56 @@ The key stays server-side and never reaches the browser. See `docs/5-SETUP-GUIDE
 
 ### 4 — Run
 
+### **Environment Setup (Required)**
+
+Before running the security guards, you must initialize the Python virtual environment for the `llm-guard` module. This installs the necessary security libraries.
+
+**On macOS / Linux:**
+
+Bash
+
+```
+cd llm-guard
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cd ..
+```
+
+**On Windows:**
+
+Bash
+
+```
+cd llm-guard
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+cd ..
+```
+
+### **Available Commands**
+
+|**Command**|**Description**|
+|---|---|
+|`npm run canary`|Starts the Canary token monitoring server to detect prompt injections.|
+|`npm run llmguard`|Launches the LLM-Guard server to sanitize inputs and outputs.|
+|`npm test`|Runs the security test suite against the configured model.|
+
+**To start the guard server:**
+
+Bash
+
+```
+npm run llmguard
+```
+
+
+
+
+
+
+
 ```bash
 npm start                 # Node proxy on :3080 (required)
 npm run canary            # Little-Canary sidecar on :5001 (optional)
