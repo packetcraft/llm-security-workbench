@@ -1,6 +1,11 @@
 # 🛡️ LLM Security Workbench
 
-A local-first AI security testing workbench built on **Ollama** and **Prisma AIRS**. Every prompt and response passes through a configurable six-gate pipeline of local and cloud security scanners.
+This LLM Security Workbench by Packetcraft is a **local-first**, open-source tool designed for security testing and monitoring of Large Language Models (LLMs). 
+
+Every prompt and response passes through a configurable six-gate pipeline of local and cloud security scanners.
+
+​It acts as a middleman between a user and an LLM (**typically running locally via Ollama**) to ensure that prompts and responses are safe, secure, and compliant with specific policies.
+
 
 ```
 🔬 LLM-Guard (input)  →  🧩 Semantic-Guard  →  🐦 Little-Canary
@@ -8,11 +13,6 @@ A local-first AI security testing workbench built on **Ollama** and **Prisma AIR
 ```
 
 Each gate runs independently in **Off / Advisory / Strict** mode. Local gates (LLM-Guard, Semantic-Guard, Little-Canary) work without any API key.
-
----
-This LLM Security Workbench by Packetcraft is a local-first, open-source tool designed for security testing and monitoring of Large Language Models (LLMs).
-
-​It acts as a middleman between a user and an LLM (typically running locally via Ollama) to ensure that prompts and responses are safe, secure, and compliant with specific policies.
 
 ### ​Key Features and Architecture
 ​The core of the workbench is a six-gate security pipeline that scans data as it moves from the user to the model and back:
