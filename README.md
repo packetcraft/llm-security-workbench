@@ -10,6 +10,34 @@ A local-first AI security testing workbench built on **Ollama** and **Prisma AIR
 Each gate runs independently in **Off / Advisory / Strict** mode. Local gates (LLM-Guard, Semantic-Guard, Little-Canary) work without any API key.
 
 ---
+This LLM Security Workbench by Packetcraft is a local-first, open-source tool designed for security testing and monitoring of Large Language Models (LLMs).
+
+​It acts as a middleman between a user and an LLM (typically running locally via Ollama) to ensure that prompts and responses are safe, secure, and compliant with specific policies.
+
+### ​Key Features and Architecture
+​The core of the workbench is a six-gate security pipeline that scans data as it moves from the user to the model and back:
+
+- ​LLM-Guard (Input): Uses the llm-guard library to scan for things like PII (Personally Identifiable Information) or toxic language in the prompt.
+- ​Semantic-Guard: A local gate that likely evaluates the intent or meaning of the prompt.
+- ​Little-Canary: A specialized filter for catching prompt injection attempts.
+- ​AIRS-Inlet: A cloud-based gate using Prisma AIRS (AI Risk Subsystem) for advanced prompt scanning (requires an API key).
+- ​LLM Execution: The actual model (e.g., Llama 3, Mistral) processing the request.
+- ​AIRS-Dual & LLM-Guard (Output): Final scans of the model's response to ensure it doesn't leak secrets or generate harmful content.
+
+### ​Technical Stack
+- ​Runtime: Node.js (Proxy server) and Python 3.12 (for security sidecars).
+- ​LLM Backend: Specifically optimized for Ollama (running locally).
+- ​Interface: A web-based workbench (HTML/JS) that provides a "Tokyo Night" themed UI with real-time feedback on which security gates passed or failed.
+- ​Modes: Each gate can be set to Off, Advisory (warns but allows), or Strict (blocks the request).
+
+### ​Use Cases
+- ​Red Teaming: Testing how different LLMs react to jailbreaks or malicious prompts.
+- ​Enterprise Evaluation: Assessing which security guardrails are necessary before deploying an LLM-based app.
+- ​Privacy Filtering: Ensuring that sensitive data (like API keys or social security numbers) is stripped before being sent to an AI model.
+
+​The repository includes a variety of "dev files" (ranging from 1a to 5c) that allow users to start with a basic chat and progressively add more complex security layers.
+
+---
 
 ## Prerequisites
 
