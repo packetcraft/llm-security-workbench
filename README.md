@@ -117,32 +117,13 @@ pip install -r requirements.txt
 cd ..
 ```
 
-### **Available Commands**
-
-|**Command**|**Description**|
-|---|---|
-|`npm run canary`|Starts the Canary token monitoring server to detect prompt injections.|
-|`npm run llmguard`|Launches the LLM-Guard server to sanitize inputs and outputs.|
-|`npm test`|Runs the security test suite against the configured model.|
-
 **To start the guard server:**
-
-Bash
-
-```
-npm run llmguard
-```
-
-
-
-
-
-
 
 ```bash
 npm start                 # Node proxy on :3080 (required)
 npm run canary            # Little-Canary sidecar on :5001 (optional)
 npm run llmguard          # LLM Guard sidecar on :5002 (optional, 5b/5c only)
+# To see a list of scripts, npm run 
 ```
 
 Open **`http://localhost:3080/dev/5c`** — or see the dev file table below.
