@@ -6319,17 +6319,28 @@ Respond ONLY with valid JSON, no other text:
                 } else {
                     const t0 = Date.now();
                     try {
+                        // Build the same payload structure as scanWithAIRS({ prompt }, "prompt", ...)
+                        const airsProfile = els.airsProfile ? els.airsProfile.value : '';
+                        const airsApiKey  = els.airsApiKey  ? els.airsApiKey.value  : '';
+                        const modelName   = els.modelSelect ? els.modelSelect.value : '';
+                        const airsPayload = {
+                            tr_id: 'probe-' + Date.now(),
+                            ai_profile: { profile_name: airsProfile },
+                            metadata: { ai_model: modelName, app_name: 'LLM Security Workbench' },
+                            contents: [{ prompt }]
+                        };
                         const r = await fetch('/api/prisma', {
                             method: 'POST',
-                            headers: {'Content-Type':'application/json'},
-                            body: JSON.stringify({ prompt, response: '', mode: 'prompt' })
+                            headers: { 'Content-Type': 'application/json', 'x-pan-token': airsApiKey },
+                            body: JSON.stringify(airsPayload)
                         });
                         const d = await r.json();
                         const ms = Date.now() - t0;
                         const action = d.action || 'allow';
                         const isBlocked = airsModeVal === 'strict' && action === 'block';
                         const isFlagged = airsModeVal !== 'strict' && action === 'block';
-                        const detail = `action: ${action} · category: ${d.category || 'benign'}`;
+                        const threats = (d.detected || []).join(', ') || d.category || 'benign';
+                        const detail = `action: ${action} · ${threats}`;
                         gateTrace.push({ name: 'AIRS-Inlet', emoji: '📥🛡️', mode: airsModeVal, status: isBlocked ? 'block' : isFlagged ? 'flag' : 'pass', detail, ms });
                         if (isBlocked) { blocked = true; blockedBy = 'AIRS-Inlet'; }
                     } catch(e) {
