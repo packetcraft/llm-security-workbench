@@ -65,9 +65,9 @@
             --nav-panel-width: 272px;
             --debug-drawer-max-height: 360px;
             /* Shadows */
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-            --shadow-md: 0 2px 10px rgba(0,0,0,0.5);
-            --shadow-lg: 0 4px 16px rgba(0,0,0,0.4);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
         }
 
         /* ── Tokyo Night ── */
@@ -2113,10 +2113,12 @@
             transition: width 0.22s ease, min-width 0.22s ease;
             flex-shrink: 0;
         }
+
         #right-panel.collapsed {
             width: 0;
             min-width: 0;
         }
+
         .rp-header {
             display: flex;
             align-items: center;
@@ -2125,6 +2127,7 @@
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
         }
+
         .rp-title {
             font-size: 11px;
             font-weight: 700;
@@ -2133,6 +2136,7 @@
             color: var(--text-muted);
             white-space: nowrap;
         }
+
         .rp-collapse-btn {
             background: none;
             border: none;
@@ -2143,7 +2147,10 @@
             border-radius: 4px;
             line-height: 1;
         }
-        .rp-collapse-btn:hover { background: var(--rail-icon-hover); }
+
+        .rp-collapse-btn:hover {
+            background: var(--rail-icon-hover);
+        }
 
         .rp-body {
             flex: 1;
@@ -2153,6 +2160,7 @@
             flex-direction: column;
             gap: 16px;
         }
+
         .rp-section-title {
             font-size: 10px;
             font-weight: 700;
@@ -2172,6 +2180,7 @@
             gap: 3px;
             margin-bottom: 6px;
         }
+
         .wf-gate-label {
             display: flex;
             justify-content: space-between;
@@ -2180,31 +2189,70 @@
             color: var(--text-muted);
             white-space: nowrap;
         }
-        .wf-gate-name { opacity: 0.85; }
+
+        .wf-gate-name {
+            opacity: 0.85;
+        }
+
         .wf-gate-ms {
             font-variant-numeric: tabular-nums;
             font-size: 10px;
             opacity: 0.6;
         }
+
         .wf-bar-track {
             height: 5px;
             background: var(--border);
             border-radius: 3px;
             overflow: hidden;
         }
+
         .wf-bar-fill {
             height: 100%;
             width: 0%;
             border-radius: 3px;
             transition: width 0.35s ease;
         }
-        .wf-bar-fill.status-safe    { background: var(--safe, #9ece6a); }
-        .wf-bar-fill.status-block   { background: var(--danger, #f7768e); }
-        .wf-bar-fill.status-alert   { background: var(--warn, #e0af68); }
-        .wf-bar-fill.status-off     { background: var(--border); opacity: 0.4; }
-        .wf-bar-fill.status-error   { background: var(--danger, #f7768e); opacity: 0.5; }
-        .wf-bar-fill.status-pending { background: var(--text-muted); opacity: 0.3; animation: wf-pulse 1s ease-in-out infinite; }
-        @keyframes wf-pulse { 0%,100% { opacity:0.2; } 50% { opacity:0.5; } }
+
+        .wf-bar-fill.status-safe {
+            background: var(--safe, #9ece6a);
+        }
+
+        .wf-bar-fill.status-block {
+            background: var(--danger, #f7768e);
+        }
+
+        .wf-bar-fill.status-alert {
+            background: var(--warn, #e0af68);
+        }
+
+        .wf-bar-fill.status-off {
+            background: var(--border);
+            opacity: 0.4;
+        }
+
+        .wf-bar-fill.status-error {
+            background: var(--danger, #f7768e);
+            opacity: 0.5;
+        }
+
+        .wf-bar-fill.status-pending {
+            background: var(--text-muted);
+            opacity: 0.3;
+            animation: wf-pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes wf-pulse {
+
+            0%,
+            100% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
 
         /* Token + pipeline stats */
         .rp-stat-row {
@@ -2215,13 +2263,19 @@
             color: var(--text-muted);
             padding: 2px 0;
         }
-        .rp-stat-label { opacity: 0.7; font-size: 10px; }
+
+        .rp-stat-label {
+            opacity: 0.7;
+            font-size: 10px;
+        }
+
         .rp-stat-value {
             font-variant-numeric: tabular-nums;
             font-weight: 600;
             color: var(--text);
             font-size: 11px;
         }
+
         .rp-divider {
             height: 1px;
             background: var(--border);
@@ -2237,20 +2291,34 @@
             display: flex;
             background: var(--border);
         }
+
         .rp-split-seg {
             height: 100%;
             transition: width 0.4s ease;
         }
-        .seg-prompt      { background: var(--primary, #7aa2f7); }
-        .seg-completion  { background: var(--safe, #9ece6a); }
+
+        .seg-prompt {
+            background: var(--primary, #7aa2f7);
+        }
+
+        .seg-completion {
+            background: var(--safe, #9ece6a);
+        }
+
         .rp-split-legend {
             font-size: 9px;
             color: var(--text-muted);
             margin-top: 4px;
             opacity: 0.7;
         }
-        .seg-prompt-dot      { color: var(--primary, #7aa2f7); }
-        .seg-completion-dot  { color: var(--safe, #9ece6a); }
+
+        .seg-prompt-dot {
+            color: var(--primary, #7aa2f7);
+        }
+
+        .seg-completion-dot {
+            color: var(--safe, #9ece6a);
+        }
 
         /* Model info badge pills */
         .rp-badge-pill {
@@ -2271,26 +2339,28 @@
 
         <!-- Icon Rail -->
         <div id="icon-rail">
-            <div class="rail-brand" title="Toggle sidebar" aria-label="Toggle sidebar" onclick="toggleNavPanel()">🛡️</div>
+            <div class="rail-brand" title="Toggle sidebar" aria-label="Toggle sidebar" onclick="toggleNavPanel()">🛡️
+            </div>
 
             <nav class="rail-nav">
                 <button class="rail-icon active" id="rail-security" title="Security Pipeline"
-                    aria-label="Security Pipeline"
-                    onclick="selectPane('security', 'Security Pipeline', this)">
+                    aria-label="Security Pipeline" onclick="selectPane('security', 'Security Pipeline', this)">
                     🔬
                 </button>
-                <button class="rail-icon" id="rail-workspace" title="Workspace"
-                    aria-label="Workspace"
+                <button class="rail-icon" id="rail-workspace" title="Workspace" aria-label="Workspace"
                     onclick="selectPane('workspace', 'Workspace', this)">
                     ⬡
                 </button>
-                <button class="rail-icon" title="Batch Threat Runner" aria-label="Batch Threat Runner" onclick="openBatchRunner()">
+                <button class="rail-icon" title="Batch Threat Runner" aria-label="Batch Threat Runner"
+                    onclick="openBatchRunner()">
                     ⚡
                 </button>
-                <button class="rail-icon" id="rail-inspector" title="API Inspector" aria-label="API Inspector" onclick="toggleDebugDrawer(this)">
+                <button class="rail-icon" id="rail-inspector" title="API Inspector" aria-label="API Inspector"
+                    onclick="toggleDebugDrawer(this)">
                     🛠️
                 </button>
-                <button class="rail-icon active" id="rail-telemetry" title="Live Telemetry" aria-label="Live Telemetry" onclick="toggleRightPanel()">
+                <button class="rail-icon active" id="rail-telemetry" title="Live Telemetry" aria-label="Live Telemetry"
+                    onclick="toggleRightPanel()">
                     📊
                 </button>
             </nav>
@@ -2307,10 +2377,12 @@
                 <div class="rail-divider"></div>
 
                 <!-- [3] Export session -->
-                <button class="rail-icon" title="Export session" aria-label="Export session" onclick="exportSession()">📥</button>
+                <button class="rail-icon" title="Export session" aria-label="Export session"
+                    onclick="exportSession()">📥</button>
 
                 <!-- [2] New session -->
-                <button class="rail-icon" title="New session" aria-label="New session" onclick="startNewSession()">🔄</button>
+                <button class="rail-icon" title="New session" aria-label="New session"
+                    onclick="startNewSession()">🔄</button>
 
                 <!-- [1] Theme toggle — bottom most -->
                 <button class="rail-icon" title="Toggle light/dark theme" aria-label="Toggle light/dark theme"
@@ -2463,8 +2535,7 @@ Respond ONLY with valid JSON, no other text:
                         <!-- AIRS -->
                         <div class="gate-row" id="gate-airs">
                             <div class="gate-row-header" onclick="toggleGate('gate-airs')">
-                                <span class="gate-name" style="color:var(--danger)">📥🛡️ AIRS-Inlet &amp; 🔀🛡️
-                                    Dual</span>
+                                <span class="gate-name">🔀 AIRS (In/Out)</span>
                                 <span class="gate-mode-badge mode-off" id="dot-airs">Off</span>
                                 <span class="gate-chevron">›</span>
                             </div>
@@ -2866,7 +2937,8 @@ Respond ONLY with valid JSON, no other text:
 
             <div class="rp-header">
                 <span class="rp-title">🎛️ Live Telemetry</span>
-                <button class="rp-collapse-btn" id="rp-collapse-btn" onclick="toggleRightPanel()" title="Collapse telemetry panel">›</button>
+                <button class="rp-collapse-btn" id="rp-collapse-btn" onclick="toggleRightPanel()"
+                    title="Collapse telemetry panel">›</button>
             </div>
 
             <div class="rp-body">
@@ -2919,7 +2991,7 @@ Respond ONLY with valid JSON, no other text:
                     </div>
                     <div class="rp-split-bar-wrap" style="margin-top:6px;">
                         <div class="rp-split-bar-track">
-                            <div class="rp-split-seg seg-prompt"  id="rp-tok-bar-prompt"  style="width:50%"></div>
+                            <div class="rp-split-seg seg-prompt" id="rp-tok-bar-prompt" style="width:50%"></div>
                             <div class="rp-split-seg seg-completion" id="rp-tok-bar-completion" style="width:50%"></div>
                         </div>
                         <div class="rp-split-legend">
@@ -2956,9 +3028,12 @@ Respond ONLY with valid JSON, no other text:
                     </div>
                     <div style="margin-top:8px;">
                         <div class="rp-split-bar-track" style="height:8px;">
-                            <div class="rp-split-seg" id="rp-ol-bar-load"   style="width:0%; background:var(--warn,#e0af68);"></div>
-                            <div class="rp-split-seg" id="rp-ol-bar-prompt" style="width:0%; background:var(--primary,#7aa2f7);"></div>
-                            <div class="rp-split-seg" id="rp-ol-bar-gen"    style="width:0%; background:var(--safe,#9ece6a);"></div>
+                            <div class="rp-split-seg" id="rp-ol-bar-load"
+                                style="width:0%; background:var(--warn,#e0af68);"></div>
+                            <div class="rp-split-seg" id="rp-ol-bar-prompt"
+                                style="width:0%; background:var(--primary,#7aa2f7);"></div>
+                            <div class="rp-split-seg" id="rp-ol-bar-gen"
+                                style="width:0%; background:var(--safe,#9ece6a);"></div>
                         </div>
                         <div class="rp-split-legend" style="margin-top:4px;">
                             <span style="color:var(--warn,#e0af68)">■</span> Load &nbsp;
@@ -2976,13 +3051,16 @@ Respond ONLY with valid JSON, no other text:
                     <div id="rp-m-badges" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;"></div>
                     <div style="margin-bottom:6px;">
                         <div class="wf-gate-label" style="margin-bottom:3px;">
-                            <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">Context window</span>
+                            <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">Context
+                                window</span>
                             <span class="wf-gate-ms" id="rp-m-ctx">—</span>
                         </div>
                         <div class="wf-bar-track">
-                            <div class="wf-bar-fill" id="rp-ctx-bar" style="background:var(--purple,#9d7cd8);width:0%;transition:width 0.4s ease;"></div>
+                            <div class="wf-bar-fill" id="rp-ctx-bar"
+                                style="background:var(--purple,#9d7cd8);width:0%;transition:width 0.4s ease;"></div>
                         </div>
-                        <div style="font-size:9px;color:var(--text-muted);margin-top:2px;opacity:0.6;" id="rp-ctx-used-label"></div>
+                        <div style="font-size:9px;color:var(--text-muted);margin-top:2px;opacity:0.6;"
+                            id="rp-ctx-used-label"></div>
                     </div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">File size</span>
@@ -3002,19 +3080,21 @@ Respond ONLY with valid JSON, no other text:
                     <div style="margin-bottom:6px;">
                         <div class="wf-gate-label" style="margin-bottom:3px;">
                             <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">VRAM</span>
-                            <span class="wf-gate-ms"   id="rp-mem-vram">—</span>
+                            <span class="wf-gate-ms" id="rp-mem-vram">—</span>
                         </div>
                         <div class="wf-bar-track">
-                            <div class="wf-bar-fill" id="rp-mem-vram-bar" style="background:var(--canary,#ff9e64);width:0%;transition:width 0.4s ease;"></div>
+                            <div class="wf-bar-fill" id="rp-mem-vram-bar"
+                                style="background:var(--canary,#ff9e64);width:0%;transition:width 0.4s ease;"></div>
                         </div>
                     </div>
                     <div style="margin-bottom:6px;">
                         <div class="wf-gate-label" style="margin-bottom:3px;">
                             <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">RAM</span>
-                            <span class="wf-gate-ms"   id="rp-mem-ram">—</span>
+                            <span class="wf-gate-ms" id="rp-mem-ram">—</span>
                         </div>
                         <div class="wf-bar-track">
-                            <div class="wf-bar-fill" id="rp-mem-ram-bar" style="background:var(--purple,#9d7cd8);width:0%;transition:width 0.4s ease;"></div>
+                            <div class="wf-bar-fill" id="rp-mem-ram-bar"
+                                style="background:var(--purple,#9d7cd8);width:0%;transition:width 0.4s ease;"></div>
                         </div>
                     </div>
                     <div class="rp-stat-row">
@@ -3122,11 +3202,11 @@ Respond ONLY with valid JSON, no other text:
 
         // ── Right panel (telemetry) ──────────────────────────────────────
         const WF_GATES = [
-            { id: 'lg-input',  label: '🔬 LG Input'  },
-            { id: 'semantic',  label: '🧩 Semantic'  },
-            { id: 'canary',    label: '🐦 Canary'    },
-            { id: 'airs-in',   label: '📥 AIRS In'   },
-            { id: 'ollama',    label: '🤖 LLM'       },
+            { id: 'lg-input', label: '🔬 LG Input' },
+            { id: 'semantic', label: '🧩 Semantic' },
+            { id: 'canary', label: '🐦 Canary' },
+            { id: 'airs-in', label: '📥 AIRS In' },
+            { id: 'ollama', label: '🤖 LLM' },
             { id: 'airs-dual', label: '🔀 AIRS Dual' },
             { id: 'lg-output', label: '🔬 LG Output' },
         ];
@@ -3141,15 +3221,15 @@ Respond ONLY with valid JSON, no other text:
 
         function toggleRightPanel() {
             const panel = document.getElementById('right-panel');
-            const btn   = document.getElementById('rp-collapse-btn');
-            const rail  = document.getElementById('rail-telemetry');
+            const btn = document.getElementById('rp-collapse-btn');
+            const rail = document.getElementById('rail-telemetry');
             const collapsed = panel.classList.toggle('collapsed');
-            if (btn)  btn.textContent  = collapsed ? '›' : '‹';
+            if (btn) btn.textContent = collapsed ? '›' : '‹';
             if (rail) rail.classList.toggle('active', !collapsed);
         }
 
         function rpResetTelemetry() {
-            _wfMax  = 1000;
+            _wfMax = 1000;
             _wfData = {};
             _rpPipelineStart = performance.now();
 
@@ -3170,13 +3250,13 @@ Respond ONLY with valid JSON, no other text:
 
             // Reset summary stats
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-            set('rp-total-ms',    '—');
-            set('rp-gates-run',   '—');
-            set('rp-blocked-by',  '—');
-            set('rp-tok-prompt',  '—');
+            set('rp-total-ms', '—');
+            set('rp-gates-run', '—');
+            set('rp-blocked-by', '—');
+            set('rp-tok-prompt', '—');
             set('rp-tok-completion', '—');
-            set('rp-tok-total',   '—');
-            set('rp-tok-speed',   '—');
+            set('rp-tok-total', '—');
+            set('rp-tok-speed', '—');
         }
 
         function rpUpdateGate(gateId, status, latencyMs) {
@@ -3189,20 +3269,20 @@ Respond ONLY with valid JSON, no other text:
             if (completedMs.length) _wfMax = Math.max(_wfMax, ...completedMs);
 
             // Update this gate's bar
-            const bar   = document.getElementById('wf-bar-' + gateId);
+            const bar = document.getElementById('wf-bar-' + gateId);
             const label = document.getElementById('wf-ms-' + gateId);
             if (!bar || !label) return;
 
             const pct = latencyMs > 0 ? Math.min(100, (latencyMs / _wfMax) * 100) : 0;
             bar.style.width = pct + '%';
-            bar.className   = 'wf-bar-fill status-' + (status || 'safe');
+            bar.className = 'wf-bar-fill status-' + (status || 'safe');
             label.textContent = latencyMs > 0 ? latencyMs + 'ms' : (status === 'off' ? 'off' : '—');
 
             const msEl = document.getElementById('wf-ms-' + gateId);
             if (msEl && latencyMs > 0) {
                 msEl.style.color = latencyMs > 3000 ? 'var(--danger,#f7768e)'
-                                 : latencyMs > 1000 ? 'var(--warn,#e0af68)'
-                                 : 'var(--safe,#9ece6a)';
+                    : latencyMs > 1000 ? 'var(--warn,#e0af68)'
+                        : 'var(--safe,#9ece6a)';
             }
 
             // Re-normalise all existing bars relative to new max
@@ -3214,18 +3294,18 @@ Respond ONLY with valid JSON, no other text:
             // Update pipeline summary
             const totalMs = Math.round(performance.now() - _rpPipelineStart);
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-            set('rp-total-ms',  totalMs + 'ms');
+            set('rp-total-ms', totalMs + 'ms');
             set('rp-gates-run', Object.keys(_wfData).length + ' / ' + WF_GATES.length);
             if (status === 'block') set('rp-blocked-by', gateId);
         }
 
         function rpUpdateTokens(promptTokens, completionTokens, tokensPerSec) {
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-            set('rp-tok-prompt',     promptTokens     ?? '—');
+            set('rp-tok-prompt', promptTokens ?? '—');
             set('rp-tok-completion', completionTokens ?? '—');
-            set('rp-tok-total',      (promptTokens != null && completionTokens != null)
-                                        ? (promptTokens + completionTokens) : '—');
-            set('rp-tok-speed',      tokensPerSec != null ? tokensPerSec.toFixed(1) + ' t/s' : '—');
+            set('rp-tok-total', (promptTokens != null && completionTokens != null)
+                ? (promptTokens + completionTokens) : '—');
+            set('rp-tok-speed', tokensPerSec != null ? tokensPerSec.toFixed(1) + ' t/s' : '—');
             const total = (promptTokens || 0) + (completionTokens || 0);
             if (total > 0) {
                 const pp = document.getElementById('rp-tok-bar-prompt');
@@ -3234,10 +3314,10 @@ Respond ONLY with valid JSON, no other text:
                 if (cp) cp.style.width = ((completionTokens / total) * 100).toFixed(1) + '%';
             }
             if (_rpCtxWindow > 0 && promptTokens != null) {
-                const ctxBar   = document.getElementById('rp-ctx-bar');
+                const ctxBar = document.getElementById('rp-ctx-bar');
                 const ctxLabel = document.getElementById('rp-ctx-used-label');
                 const pct = Math.min(100, (promptTokens / _rpCtxWindow) * 100);
-                if (ctxBar)   ctxBar.style.width = pct.toFixed(1) + '%';
+                if (ctxBar) ctxBar.style.width = pct.toFixed(1) + '%';
                 if (ctxLabel) ctxLabel.textContent = `${promptTokens.toLocaleString()} / ${_rpCtxWindow.toLocaleString()} used`;
                 if (ctxBar) ctxBar.style.background = pct > 80 ? 'var(--danger,#f7768e)' : pct > 60 ? 'var(--warn,#e0af68)' : 'var(--purple,#9d7cd8)';
             }
@@ -3257,25 +3337,25 @@ Respond ONLY with valid JSON, no other text:
                 }
             }
             set('rp-ol-prompt-eval', ms(promptEvalNs));
-            set('rp-ol-gen',         ms(evalNs));
-            set('rp-ol-total',       ms(totalNs));
-            set('rp-ol-stop',        doneReason || '—');
-            const loadMs   = loadNs   ? Math.round(loadNs / 1e6)   : 0;
+            set('rp-ol-gen', ms(evalNs));
+            set('rp-ol-total', ms(totalNs));
+            set('rp-ol-stop', doneReason || '—');
+            const loadMs = loadNs ? Math.round(loadNs / 1e6) : 0;
             const promptMs = promptEvalNs ? Math.round(promptEvalNs / 1e6) : 0;
-            const genMs    = evalNs   ? Math.round(evalNs / 1e6)   : 0;
+            const genMs = evalNs ? Math.round(evalNs / 1e6) : 0;
             const barTotal = loadMs + promptMs + genMs;
             if (barTotal > 0) {
                 const setW = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = pct.toFixed(1) + '%'; };
-                setW('rp-ol-bar-load',   (loadMs   / barTotal) * 100);
+                setW('rp-ol-bar-load', (loadMs / barTotal) * 100);
                 setW('rp-ol-bar-prompt', (promptMs / barTotal) * 100);
-                setW('rp-ol-bar-gen',    (genMs    / barTotal) * 100);
+                setW('rp-ol-bar-gen', (genMs / barTotal) * 100);
             }
         }
 
         async function rpFetchModelInfo(modelName) {
             if (!modelName) return;
             try {
-                const res  = await fetch('http://localhost:11434/api/show', {
+                const res = await fetch('http://localhost:11434/api/show', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: modelName })
@@ -3283,19 +3363,19 @@ Respond ONLY with valid JSON, no other text:
                 if (!res.ok) return;
                 const data = await res.json();
 
-                const details  = data.details  || {};
-                const info     = data.model_info || {};
+                const details = data.details || {};
+                const info = data.model_info || {};
                 const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '—'; };
 
                 const badgesEl = document.getElementById('rp-m-badges');
                 if (badgesEl) {
-                    const arch  = details.family || '';
+                    const arch = details.family || '';
                     const params = details.parameter_size || '';
                     const quant = details.quantization_level || '';
                     badgesEl.innerHTML = [
-                        arch  ? `<span class="rp-badge-pill" style="color:var(--purple,#9d7cd8)">${arch}</span>` : '',
+                        arch ? `<span class="rp-badge-pill" style="color:var(--purple,#9d7cd8)">${arch}</span>` : '',
                         params ? `<span class="rp-badge-pill" style="color:var(--primary,#7aa2f7)">${params}</span>` : '',
-                        quant  ? `<span class="rp-badge-pill" style="color:var(--warn,#e0af68)">${quant}</span>` : '',
+                        quant ? `<span class="rp-badge-pill" style="color:var(--warn,#e0af68)">${quant}</span>` : '',
                     ].filter(Boolean).join('');
                 }
 
@@ -3320,7 +3400,7 @@ Respond ONLY with valid JSON, no other text:
 
         async function rpPollOllamaPs() {
             try {
-                const res  = await fetch('http://localhost:11434/api/ps');
+                const res = await fetch('http://localhost:11434/api/ps');
                 if (!res.ok) return;
                 const data = await res.json();
                 const models = data.models || [];
@@ -3331,12 +3411,12 @@ Respond ONLY with valid JSON, no other text:
                     set('rp-mem-proc', entry.details?.processor || entry.processor || '—');
                     set('rp-mem-vram', rpFormatBytes(entry.size_vram));
                     const ramVal = (entry.size || 0) - (entry.size_vram || 0);
-                    set('rp-mem-ram',  ramVal > 0 ? rpFormatBytes(ramVal) : '—');
+                    set('rp-mem-ram', ramVal > 0 ? rpFormatBytes(ramVal) : '—');
                     const totalMem = entry.size || 1;
                     const vramBar = document.getElementById('rp-mem-vram-bar');
-                    const ramBar  = document.getElementById('rp-mem-ram-bar');
+                    const ramBar = document.getElementById('rp-mem-ram-bar');
                     if (vramBar) vramBar.style.width = Math.min(100, ((entry.size_vram || 0) / totalMem) * 100).toFixed(1) + '%';
-                    if (ramBar)  ramBar.style.width  = Math.min(100, (Math.max(0, ramVal) / totalMem) * 100).toFixed(1) + '%';
+                    if (ramBar) ramBar.style.width = Math.min(100, (Math.max(0, ramVal) / totalMem) * 100).toFixed(1) + '%';
                     if (entry.expires_at) {
                         const secsLeft = Math.max(0, Math.round((new Date(entry.expires_at) - Date.now()) / 1000));
                         const mins = Math.floor(secsLeft / 60);
@@ -3348,8 +3428,8 @@ Respond ONLY with valid JSON, no other text:
                 } else {
                     set('rp-mem-proc', '—');
                     set('rp-mem-vram', '—');
-                    set('rp-mem-ram',  '—');
-                    set('rp-mem-ttl',  'not loaded');
+                    set('rp-mem-ram', '—');
+                    set('rp-mem-ttl', 'not loaded');
                 }
             } catch (_) { /* Ollama not running — silently skip */ }
         }
@@ -4375,13 +4455,13 @@ Respond ONLY with valid JSON, no other text:
                         }
                         // Capture token stats from the final done=true chunk
                         if (json.done) {
-                            if (json.eval_count          != null) _evalCount          = json.eval_count;
-                            if (json.prompt_eval_count   != null) _promptEvalCount    = json.prompt_eval_count;
-                            if (json.eval_duration       != null) _evalDuration       = json.eval_duration;
-                            if (json.load_duration       != null) _loadDuration       = json.load_duration;
-                            if (json.prompt_eval_duration!= null) _promptEvalDuration = json.prompt_eval_duration;
-                            if (json.total_duration      != null) _totalDuration      = json.total_duration;
-                            if (json.done_reason         != null) _doneReason         = json.done_reason;
+                            if (json.eval_count != null) _evalCount = json.eval_count;
+                            if (json.prompt_eval_count != null) _promptEvalCount = json.prompt_eval_count;
+                            if (json.eval_duration != null) _evalDuration = json.eval_duration;
+                            if (json.load_duration != null) _loadDuration = json.load_duration;
+                            if (json.prompt_eval_duration != null) _promptEvalDuration = json.prompt_eval_duration;
+                            if (json.total_duration != null) _totalDuration = json.total_duration;
+                            if (json.done_reason != null) _doneReason = json.done_reason;
                         }
                     }
                 }
@@ -4621,10 +4701,10 @@ Respond ONLY with valid JSON, no other text:
             els.threatSelect.value = "";
             els.sendBtn.disabled = true;
 
-            const guardBadge   = document.getElementById(msgId + "-badge-guard");
-            const canaryBadge  = document.getElementById(msgId + "-badge-canary");
+            const guardBadge = document.getElementById(msgId + "-badge-guard");
+            const canaryBadge = document.getElementById(msgId + "-badge-canary");
             const llmguardBadge = document.getElementById(msgId + "-badge-llmguard");
-            const airsBadge    = document.getElementById(msgId + "-badge-airs");
+            const airsBadge = document.getElementById(msgId + "-badge-airs");
 
             // ── Phase 0.6: LLM-Guard input ──────────────────────────────────
             const lgResult = await runInputLLMGuardGate(userPrompt, llmguardBadge, chatBox);
@@ -4742,113 +4822,113 @@ Respond ONLY with valid JSON, no other text:
         let els;
         document.addEventListener('DOMContentLoaded', () => {
 
-        // ── Cached DOM references ────────────────────────────────────────
-        els = {
-            // Core UI
-            chatBox:             document.getElementById("chat-box"),
-            userInput:           document.getElementById("user-input"),
-            sendBtn:             document.getElementById("send-btn"),
-            stopBtn:             document.getElementById("stop-btn"),
-            charCounter:         document.getElementById("char-counter"),
-            threatSelect:        document.getElementById("threat-select"),
-            debugStatus:         document.getElementById("debug-status"),
-            // Model / persona
-            modelSelect:         document.getElementById("model-select"),
-            personaSelect:       document.getElementById("persona-select"),
-            systemPrompt:        document.getElementById("system-prompt"),
-            // Gate mode selects (hidden)
-            llmguardMode:        document.getElementById("llmguard-mode"),
-            guardrailMode:       document.getElementById("guardrail-mode"),
-            canaryMode:          document.getElementById("canary-mode"),
-            airsMode:            document.getElementById("airs-mode"),
-            // Gate config
-            guardrailModel:      document.getElementById("guardrail-model"),
-            guardrailThreshold:  document.getElementById("guardrail-threshold"),
-            guardrailSysPrompt:  document.getElementById("guardrail-system-prompt"),
-            canaryModel:         document.getElementById("canary-model"),
-            canaryThreshold:     document.getElementById("canary-threshold"),
-            airsApiKey:          document.getElementById("airs-api-key"),
-            airsProfile:         document.getElementById("airs-profile"),
-            // LLM-Guard input scanner checkboxes
-            lgScanInvisible:     document.getElementById("lg-scan-invisible"),
-            lgScanSecrets:       document.getElementById("lg-scan-secrets"),
-            lgScanInjection:     document.getElementById("lg-scan-injection"),
-            lgScanToxicity:      document.getElementById("lg-scan-toxicity"),
-            lgScanBanTopics:     document.getElementById("lg-scan-bantopics"),
-            lgScanGibberish:     document.getElementById("lg-scan-gibberish"),
-            lgScanLanguage:      document.getElementById("lg-scan-language"),
-            // LLM-Guard output scanner checkboxes
-            lgOutSensitive:      document.getElementById("lg-out-sensitive"),
-            lgOutMalicious:      document.getElementById("lg-out-malicious"),
-            lgOutNoRefusal:      document.getElementById("lg-out-norefusal"),
-            lgOutBias:           document.getElementById("lg-out-bias"),
-            lgOutRelevance:      document.getElementById("lg-out-relevance"),
-            lgOutLanguageSame:   document.getElementById("lg-out-languagesame"),
-            // API Inspector debug panes
-            dbgLgInputReq:       document.getElementById("debug-lgInput-req"),
-            dbgLgInputRes:       document.getElementById("debug-lgInput-res"),
-            dbgGuardReq:         document.getElementById("debug-guard-req"),
-            dbgGuardRes:         document.getElementById("debug-guard-res"),
-            dbgCanaryReq:        document.getElementById("debug-canary-req"),
-            dbgCanaryRes:        document.getElementById("debug-canary-res"),
-            dbgPromptReq:        document.getElementById("debug-prompt-req"),
-            dbgPromptRes:        document.getElementById("debug-prompt-res"),
-            dbgLlmReq:           document.getElementById("debug-req"),
-            dbgLlmRes:           document.getElementById("debug-res"),
-            dbgResponseReq:      document.getElementById("debug-response-req"),
-            dbgResponseRes:      document.getElementById("debug-response-res"),
-            dbgLgOutputReq:      document.getElementById("debug-lgOutput-req"),
-            dbgLgOutputRes:      document.getElementById("debug-lgOutput-res"),
-            // Batch runner
-            batchModalBackdrop:  document.getElementById("batch-modal-backdrop"),
-            batchCatList:        document.getElementById("batch-cat-list"),
-            batchStartBtn:       document.getElementById("batch-start-btn"),
-            batchStopBtn:        document.getElementById("batch-stop-btn"),
-            batchProgressBar:    document.getElementById("batch-progress-bar"),
-            batchProgressLabel:  document.getElementById("batch-progress-label"),
-            batchResultsBody:    document.getElementById("batch-results-body"),
-            batchSummary:        document.getElementById("batch-summary"),
-            // Modals
-            spModalBackdrop:     document.getElementById("sp-modal-backdrop"),
-        };
+            // ── Cached DOM references ────────────────────────────────────────
+            els = {
+                // Core UI
+                chatBox: document.getElementById("chat-box"),
+                userInput: document.getElementById("user-input"),
+                sendBtn: document.getElementById("send-btn"),
+                stopBtn: document.getElementById("stop-btn"),
+                charCounter: document.getElementById("char-counter"),
+                threatSelect: document.getElementById("threat-select"),
+                debugStatus: document.getElementById("debug-status"),
+                // Model / persona
+                modelSelect: document.getElementById("model-select"),
+                personaSelect: document.getElementById("persona-select"),
+                systemPrompt: document.getElementById("system-prompt"),
+                // Gate mode selects (hidden)
+                llmguardMode: document.getElementById("llmguard-mode"),
+                guardrailMode: document.getElementById("guardrail-mode"),
+                canaryMode: document.getElementById("canary-mode"),
+                airsMode: document.getElementById("airs-mode"),
+                // Gate config
+                guardrailModel: document.getElementById("guardrail-model"),
+                guardrailThreshold: document.getElementById("guardrail-threshold"),
+                guardrailSysPrompt: document.getElementById("guardrail-system-prompt"),
+                canaryModel: document.getElementById("canary-model"),
+                canaryThreshold: document.getElementById("canary-threshold"),
+                airsApiKey: document.getElementById("airs-api-key"),
+                airsProfile: document.getElementById("airs-profile"),
+                // LLM-Guard input scanner checkboxes
+                lgScanInvisible: document.getElementById("lg-scan-invisible"),
+                lgScanSecrets: document.getElementById("lg-scan-secrets"),
+                lgScanInjection: document.getElementById("lg-scan-injection"),
+                lgScanToxicity: document.getElementById("lg-scan-toxicity"),
+                lgScanBanTopics: document.getElementById("lg-scan-bantopics"),
+                lgScanGibberish: document.getElementById("lg-scan-gibberish"),
+                lgScanLanguage: document.getElementById("lg-scan-language"),
+                // LLM-Guard output scanner checkboxes
+                lgOutSensitive: document.getElementById("lg-out-sensitive"),
+                lgOutMalicious: document.getElementById("lg-out-malicious"),
+                lgOutNoRefusal: document.getElementById("lg-out-norefusal"),
+                lgOutBias: document.getElementById("lg-out-bias"),
+                lgOutRelevance: document.getElementById("lg-out-relevance"),
+                lgOutLanguageSame: document.getElementById("lg-out-languagesame"),
+                // API Inspector debug panes
+                dbgLgInputReq: document.getElementById("debug-lgInput-req"),
+                dbgLgInputRes: document.getElementById("debug-lgInput-res"),
+                dbgGuardReq: document.getElementById("debug-guard-req"),
+                dbgGuardRes: document.getElementById("debug-guard-res"),
+                dbgCanaryReq: document.getElementById("debug-canary-req"),
+                dbgCanaryRes: document.getElementById("debug-canary-res"),
+                dbgPromptReq: document.getElementById("debug-prompt-req"),
+                dbgPromptRes: document.getElementById("debug-prompt-res"),
+                dbgLlmReq: document.getElementById("debug-req"),
+                dbgLlmRes: document.getElementById("debug-res"),
+                dbgResponseReq: document.getElementById("debug-response-req"),
+                dbgResponseRes: document.getElementById("debug-response-res"),
+                dbgLgOutputReq: document.getElementById("debug-lgOutput-req"),
+                dbgLgOutputRes: document.getElementById("debug-lgOutput-res"),
+                // Batch runner
+                batchModalBackdrop: document.getElementById("batch-modal-backdrop"),
+                batchCatList: document.getElementById("batch-cat-list"),
+                batchStartBtn: document.getElementById("batch-start-btn"),
+                batchStopBtn: document.getElementById("batch-stop-btn"),
+                batchProgressBar: document.getElementById("batch-progress-bar"),
+                batchProgressLabel: document.getElementById("batch-progress-label"),
+                batchResultsBody: document.getElementById("batch-results-body"),
+                batchSummary: document.getElementById("batch-summary"),
+                // Modals
+                spModalBackdrop: document.getElementById("sp-modal-backdrop"),
+            };
 
-        // Initialize App
-        fetchModels();
-        loadCustomPersonas();
-        loadCustomAirsProfiles();
-        loadThreats();
-        loadEnvConfig();
-        // Apply default mode selections (selected attr doesn't fire onchange)
-        toggleGuardrailSettings();
-        toggleCanarySettings();
-        toggleAIRSSettings();
+            // Initialize App
+            fetchModels();
+            loadCustomPersonas();
+            loadCustomAirsProfiles();
+            loadThreats();
+            loadEnvConfig();
+            // Apply default mode selections (selected attr doesn't fire onchange)
+            toggleGuardrailSettings();
+            toggleCanarySettings();
+            toggleAIRSSettings();
 
-        // Param info tooltip (body-level, avoids overflow clipping)
-        const _tooltip = document.createElement("div");
-        _tooltip.id = "param-tooltip";
-        document.body.appendChild(_tooltip);
+            // Param info tooltip (body-level, avoids overflow clipping)
+            const _tooltip = document.createElement("div");
+            _tooltip.id = "param-tooltip";
+            document.body.appendChild(_tooltip);
 
-        document.querySelectorAll(".param-info").forEach(el => {
-            el.addEventListener("mouseenter", e => {
-                _tooltip.textContent = el.dataset.tip;
-                _tooltip.classList.add("visible");
-                _positionTooltip(e);
+            document.querySelectorAll(".param-info").forEach(el => {
+                el.addEventListener("mouseenter", e => {
+                    _tooltip.textContent = el.dataset.tip;
+                    _tooltip.classList.add("visible");
+                    _positionTooltip(e);
+                });
+                el.addEventListener("mousemove", _positionTooltip);
+                el.addEventListener("mouseleave", () => _tooltip.classList.remove("visible"));
             });
-            el.addEventListener("mousemove", _positionTooltip);
-            el.addEventListener("mouseleave", () => _tooltip.classList.remove("visible"));
-        });
 
-        function _positionTooltip(e) {
-            const pad = 12;
-            const tw = _tooltip.offsetWidth;
-            const th = _tooltip.offsetHeight;
-            let x = e.clientX + pad;
-            let y = e.clientY + pad;
-            if (x + tw > window.innerWidth - pad) x = e.clientX - tw - pad;
-            if (y + th > window.innerHeight - pad) y = e.clientY - th - pad;
-            _tooltip.style.left = x + "px";
-            _tooltip.style.top = y + "px";
-        }
+            function _positionTooltip(e) {
+                const pad = 12;
+                const tw = _tooltip.offsetWidth;
+                const th = _tooltip.offsetHeight;
+                let x = e.clientX + pad;
+                let y = e.clientY + pad;
+                if (x + tw > window.innerWidth - pad) x = e.clientX - tw - pad;
+                if (y + th > window.innerHeight - pad) y = e.clientY - th - pad;
+                _tooltip.style.left = x + "px";
+                _tooltip.style.top = y + "px";
+            }
 
         }); // DOMContentLoaded
 
