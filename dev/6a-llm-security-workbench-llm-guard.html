@@ -2100,6 +2100,132 @@
         #nav-panel .gate-row.open {
             border-left: 3px solid var(--primary);
         }
+
+        /* ── Right Telemetry Panel ────────────────────────────── */
+        #right-panel {
+            width: 220px;
+            min-width: 220px;
+            background: var(--panel);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width 0.22s ease, min-width 0.22s ease;
+            flex-shrink: 0;
+        }
+        #right-panel.collapsed {
+            width: 0;
+            min-width: 0;
+        }
+        .rp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px 8px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .rp-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .rp-collapse-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 14px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            line-height: 1;
+        }
+        .rp-collapse-btn:hover { background: var(--rail-icon-hover); }
+
+        .rp-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .rp-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            opacity: 0.7;
+        }
+
+        /* Gate waterfall */
+        .wf-gate {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            margin-bottom: 6px;
+        }
+        .wf-gate-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .wf-gate-name { opacity: 0.85; }
+        .wf-gate-ms {
+            font-variant-numeric: tabular-nums;
+            font-size: 10px;
+            opacity: 0.6;
+        }
+        .wf-bar-track {
+            height: 5px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .wf-bar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.35s ease;
+        }
+        .wf-bar-fill.status-safe    { background: var(--safe, #9ece6a); }
+        .wf-bar-fill.status-block   { background: var(--danger, #f7768e); }
+        .wf-bar-fill.status-alert   { background: var(--warn, #e0af68); }
+        .wf-bar-fill.status-off     { background: var(--border); opacity: 0.4; }
+        .wf-bar-fill.status-error   { background: var(--danger, #f7768e); opacity: 0.5; }
+        .wf-bar-fill.status-pending { background: var(--text-muted); opacity: 0.3; animation: wf-pulse 1s ease-in-out infinite; }
+        @keyframes wf-pulse { 0%,100% { opacity:0.2; } 50% { opacity:0.5; } }
+
+        /* Token + pipeline stats */
+        .rp-stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 2px 0;
+        }
+        .rp-stat-label { opacity: 0.7; font-size: 10px; }
+        .rp-stat-value {
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 11px;
+        }
+        .rp-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 2px 0;
+            opacity: 0.5;
+        }
     </style>
 </head>
 
@@ -2126,6 +2252,9 @@
                 </button>
                 <button class="rail-icon" id="rail-inspector" title="API Inspector" aria-label="API Inspector" onclick="toggleDebugDrawer(this)">
                     🛠️
+                </button>
+                <button class="rail-icon" id="rail-telemetry" title="Live Telemetry" aria-label="Live Telemetry" onclick="toggleRightPanel()">
+                    📊
                 </button>
             </nav>
 
@@ -2694,6 +2823,67 @@ Respond ONLY with valid JSON, no other text:
             </div><!-- .input-container -->
 
         </div><!-- #main-content -->
+
+        <!-- ══ Right Telemetry Panel ══════════════════════════════ -->
+        <div id="right-panel" class="collapsed">
+
+            <div class="rp-header">
+                <span class="rp-title">🎛️ Live Telemetry</span>
+                <button class="rp-collapse-btn" id="rp-collapse-btn" onclick="toggleRightPanel()" title="Collapse telemetry panel">‹</button>
+            </div>
+
+            <div class="rp-body">
+
+                <!-- Gate Latency Waterfall -->
+                <div>
+                    <div class="rp-section-title">Gate Latency</div>
+                    <div id="wf-gates"></div>
+                </div>
+
+                <div class="rp-divider"></div>
+
+                <!-- Pipeline summary -->
+                <div>
+                    <div class="rp-section-title">Pipeline</div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Total time</span>
+                        <span class="rp-stat-value" id="rp-total-ms">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Gates run</span>
+                        <span class="rp-stat-value" id="rp-gates-run">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Blocked by</span>
+                        <span class="rp-stat-value" id="rp-blocked-by">—</span>
+                    </div>
+                </div>
+
+                <div class="rp-divider"></div>
+
+                <!-- Token stats -->
+                <div>
+                    <div class="rp-section-title">Tokens</div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Prompt</span>
+                        <span class="rp-stat-value" id="rp-tok-prompt">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Completion</span>
+                        <span class="rp-stat-value" id="rp-tok-completion">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Total</span>
+                        <span class="rp-stat-value" id="rp-tok-total">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Speed</span>
+                        <span class="rp-stat-value" id="rp-tok-speed">—</span>
+                    </div>
+                </div>
+
+            </div>
+        </div><!-- #right-panel -->
     </div><!-- #app-shell -->
 
     <script>
@@ -2786,6 +2976,105 @@ Respond ONLY with valid JSON, no other text:
             a.download = `api-inspector-${ts}.json`;
             a.click();
             URL.revokeObjectURL(url);
+        }
+
+        // ── Right panel (telemetry) ──────────────────────────────────────
+        const WF_GATES = [
+            { id: 'lg-input',  label: '🔬 LG Input'  },
+            { id: 'semantic',  label: '🧩 Semantic'  },
+            { id: 'canary',    label: '🐦 Canary'    },
+            { id: 'airs-in',   label: '📥 AIRS In'   },
+            { id: 'ollama',    label: '🤖 LLM'       },
+            { id: 'airs-dual', label: '🔀 AIRS Dual' },
+            { id: 'lg-output', label: '🔬 LG Output' },
+        ];
+
+        // Max ms used to normalise bar widths (auto-scales to slowest gate)
+        let _wfMax = 1000;
+        // Per-request telemetry state
+        let _wfData = {};
+        let _rpPipelineStart = 0;
+
+        function toggleRightPanel() {
+            const panel = document.getElementById('right-panel');
+            const btn   = document.getElementById('rp-collapse-btn');
+            const rail  = document.getElementById('rail-telemetry');
+            const collapsed = panel.classList.toggle('collapsed');
+            if (btn)  btn.textContent  = collapsed ? '›' : '‹';
+            if (rail) rail.classList.toggle('active', !collapsed);
+        }
+
+        function rpResetTelemetry() {
+            _wfMax  = 1000;
+            _wfData = {};
+            _rpPipelineStart = performance.now();
+
+            // Build / reset the waterfall rows
+            const container = document.getElementById('wf-gates');
+            if (!container) return;
+            container.innerHTML = WF_GATES.map(g => `
+                <div class="wf-gate" id="wf-row-${g.id}">
+                    <div class="wf-gate-label">
+                        <span class="wf-gate-name">${g.label}</span>
+                        <span class="wf-gate-ms" id="wf-ms-${g.id}">—</span>
+                    </div>
+                    <div class="wf-bar-track">
+                        <div class="wf-bar-fill status-pending" id="wf-bar-${g.id}"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Reset summary stats
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('rp-total-ms',    '—');
+            set('rp-gates-run',   '—');
+            set('rp-blocked-by',  '—');
+            set('rp-tok-prompt',  '—');
+            set('rp-tok-completion', '—');
+            set('rp-tok-total',   '—');
+            set('rp-tok-speed',   '—');
+        }
+
+        function rpUpdateGate(gateId, status, latencyMs) {
+            _wfData[gateId] = { status, latencyMs };
+
+            // Recalculate max for normalisation (only from completed gates)
+            const completedMs = Object.values(_wfData)
+                .filter(d => d.latencyMs > 0)
+                .map(d => d.latencyMs);
+            if (completedMs.length) _wfMax = Math.max(_wfMax, ...completedMs);
+
+            // Update this gate's bar
+            const bar   = document.getElementById('wf-bar-' + gateId);
+            const label = document.getElementById('wf-ms-' + gateId);
+            if (!bar || !label) return;
+
+            const pct = latencyMs > 0 ? Math.min(100, (latencyMs / _wfMax) * 100) : 0;
+            bar.style.width = pct + '%';
+            bar.className   = 'wf-bar-fill status-' + (status || 'safe');
+            label.textContent = latencyMs > 0 ? latencyMs + 'ms' : (status === 'off' ? 'off' : '—');
+
+            // Re-normalise all existing bars relative to new max
+            Object.entries(_wfData).forEach(([id, d]) => {
+                const b = document.getElementById('wf-bar-' + id);
+                if (b && d.latencyMs > 0) b.style.width = Math.min(100, (d.latencyMs / _wfMax) * 100) + '%';
+            });
+
+            // Update pipeline summary
+            const totalMs = Math.round(performance.now() - _rpPipelineStart);
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('rp-total-ms',  totalMs + 'ms');
+            set('rp-gates-run', Object.keys(_wfData).length + ' / ' + WF_GATES.length);
+            if (status === 'block') set('rp-blocked-by', gateId);
+        }
+
+        function rpUpdateTokens(promptTokens, completionTokens, tokensPerSec) {
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('rp-tok-prompt',     promptTokens     ?? '—');
+            set('rp-tok-completion', completionTokens ?? '—');
+            set('rp-tok-total',      (promptTokens != null && completionTokens != null)
+                                        ? (promptTokens + completionTokens) : '—');
+            set('rp-tok-speed',      tokensPerSec != null ? tokensPerSec.toFixed(1) + ' t/s' : '—');
         }
 
         // Nav panel toggle (5d)
@@ -3456,6 +3745,7 @@ Respond ONLY with valid JSON, no other text:
             if (lgMode === "off") {
                 els.dbgLgInputReq.innerText = "LLM-Guard INPUT — Disabled.";
                 els.dbgLgInputRes.innerText = "LLM-Guard INPUT — Disabled.";
+                rpUpdateGate('lg-input', 'off', 0);
                 return { blocked: false };
             }
             const lgScanners = [];
@@ -3466,7 +3756,7 @@ Respond ONLY with valid JSON, no other text:
             if (els.lgScanBanTopics.checked) lgScanners.push("BanTopics");
             if (els.lgScanGibberish.checked) lgScanners.push("Gibberish");
             if (els.lgScanLanguage.checked) lgScanners.push("Language");
-            if (!lgScanners.length) return { blocked: false };
+            if (!lgScanners.length) { rpUpdateGate('lg-input', 'off', 0); return { blocked: false }; }
 
             els.debugStatus.innerText = "🔬 LLM-Guard scanning...";
             const lgInputT0 = Date.now();
@@ -3485,6 +3775,7 @@ Respond ONLY with valid JSON, no other text:
                 warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD — ERROR ${lgInputLat}</strong><br>Scan failed, proceeding without LLM-Guard. <small>${lg.message}</small>`;
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
+                rpUpdateGate('lg-input', 'error', lgInputMs);
             } else if (lg.blocked) {
                 llmguardBadge.style.display = "";
                 llmguardBadge.className = "scan-badge blocked";
@@ -3496,6 +3787,7 @@ Respond ONLY with valid JSON, no other text:
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (LLM-Guard)";
+                rpUpdateGate('lg-input', 'block', lgInputMs);
                 return { blocked: true };
             } else if (lg.flagged) {
                 llmguardBadge.style.display = "";
@@ -3507,11 +3799,13 @@ Respond ONLY with valid JSON, no other text:
                 warnDiv.innerHTML = `<strong>🔬 LLM-GUARD — FLAGGED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Proceeding to Semantic-Guard.`;
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
+                rpUpdateGate('lg-input', 'alert', lgInputMs);
             } else {
                 llmguardBadge.style.display = "";
                 llmguardBadge.className = "scan-badge allowed";
                 llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
                 llmguardBadge.textContent = `🔬 Safe${lgInputShort}`;
+                rpUpdateGate('lg-input', 'safe', lgInputMs);
             }
             return { blocked: false };
         }
@@ -3523,6 +3817,7 @@ Respond ONLY with valid JSON, no other text:
             if (guardrailMode === "off") {
                 els.dbgGuardReq.innerText = "Guardrail Disabled.";
                 els.dbgGuardRes.innerText = "Guardrail Disabled.";
+                rpUpdateGate('semantic', 'off', 0);
                 return { blocked: false };
             }
             const guardModel = els.guardrailModel.value;
@@ -3552,6 +3847,7 @@ Respond ONLY with valid JSON, no other text:
                 warnDiv.innerHTML = `<strong>⚠️ SEMANTIC-GUARD — ERROR</strong><br>Scan failed, proceeding without Semantic-Guard. <small>${gResult.reason}</small>`;
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
+                rpUpdateGate('semantic', 'error', guardMs);
             } else if (gResult.blocked) {
                 if (guardEnforcement === "strict") {
                     guardBadge.className = "scan-badge guardrail-block";
@@ -3562,6 +3858,7 @@ Respond ONLY with valid JSON, no other text:
                     chatBox.appendChild(blockDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                     els.debugStatus.innerText = "Blocked (Semantic-Guard)";
+                    rpUpdateGate('semantic', 'block', guardMs);
                     return { blocked: true };
                 } else {
                     guardBadge.className = "scan-badge guardrail-block";
@@ -3571,10 +3868,12 @@ Respond ONLY with valid JSON, no other text:
                     warnDiv.innerHTML = `<strong>🧩 SEMANTIC-GUARD — FLAGGED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Proceeding to Little-Canary.`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
+                    rpUpdateGate('semantic', 'alert', guardMs);
                 }
             } else {
                 guardBadge.className = "scan-badge guardrail-pass";
                 guardBadge.textContent = `🧩 Safe${guardShort}`;
+                rpUpdateGate('semantic', 'safe', guardMs);
             }
             return { blocked: false };
         }
@@ -3586,6 +3885,7 @@ Respond ONLY with valid JSON, no other text:
             if (canaryMode === "off") {
                 els.dbgCanaryReq.innerText = "Canary Disabled.";
                 els.dbgCanaryRes.innerText = "Canary Disabled.";
+                rpUpdateGate('canary', 'off', 0);
                 return { blocked: false, advisoryPrefix: "" };
             }
             const canaryModel = els.canaryModel.value;
@@ -3609,6 +3909,7 @@ Respond ONLY with valid JSON, no other text:
                 warnDiv.innerHTML = `<strong>⚠️ LITTLE-CANARY — ERROR</strong><br>Scan failed, proceeding without Little-Canary. <small>${cResult.message}</small>`;
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
+                rpUpdateGate('canary', 'error', canaryMs);
             } else if (canaryMode === "full" && (!cResult.safe || cResult.advisory?.flagged)) {
                 canaryBadge.style.display = "inline";
                 canaryBadge.className = "scan-badge canary-block";
@@ -3619,6 +3920,7 @@ Respond ONLY with valid JSON, no other text:
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (Little-Canary)";
+                rpUpdateGate('canary', 'block', canaryMs);
                 return { blocked: true, advisoryPrefix: "" };
             } else if (cResult.advisory?.flagged) {
                 canaryBadge.style.display = "inline";
@@ -3629,11 +3931,13 @@ Respond ONLY with valid JSON, no other text:
                 warnDiv.innerHTML = `<strong>🐦 LITTLE-CANARY — FLAGGED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; Warning injected into system prompt.`;
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
+                rpUpdateGate('canary', 'alert', canaryMs);
                 return { blocked: false, advisoryPrefix: cResult.advisory.system_prefix };
             } else {
                 canaryBadge.style.display = "inline";
                 canaryBadge.className = "scan-badge allowed";
                 canaryBadge.textContent = `🐦 Safe${canaryShort}`;
+                rpUpdateGate('canary', 'safe', canaryMs);
             }
             return { blocked: false, advisoryPrefix: "" };
         }
@@ -3646,6 +3950,7 @@ Respond ONLY with valid JSON, no other text:
                 els.dbgPromptRes.innerText = "AIRS Disabled.";
                 els.dbgResponseReq.innerText = "AIRS Disabled.";
                 els.dbgResponseRes.innerText = "AIRS Disabled.";
+                rpUpdateGate('airs-in', 'off', 0);
                 return { blocked: false };
             }
 
@@ -3676,6 +3981,7 @@ Respond ONLY with valid JSON, no other text:
                 chatBox.appendChild(errDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Error";
+                rpUpdateGate('airs-in', 'error', airsInletMs);
                 return { blocked: true };
             }
 
@@ -3693,6 +3999,7 @@ Respond ONLY with valid JSON, no other text:
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (AIRS-Inlet)";
+                rpUpdateGate('airs-in', 'block', airsInletMs);
                 return { blocked: true };
             }
 
@@ -3708,6 +4015,7 @@ Respond ONLY with valid JSON, no other text:
                 warnDiv.className = "message security-alert alert-warning";
                 warnDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — FLAGGED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Proceeding to LLM.`;
                 chatBox.appendChild(warnDiv);
+                rpUpdateGate('airs-in', 'alert', airsInletMs);
             } else {
                 airsBadge.style.display = "inline";
                 airsBadge.className = "scan-badge allowed";
@@ -3715,6 +4023,7 @@ Respond ONLY with valid JSON, no other text:
                 airsBadge.dataset.verdict = JSON.stringify(promptScan);
                 airsBadge.title = "Click to expand";
                 airsBadge.style.cursor = "pointer";
+                rpUpdateGate('airs-in', 'safe', airsInletMs);
             }
             return { blocked: false };
         }
@@ -3745,6 +4054,10 @@ Respond ONLY with valid JSON, no other text:
             let fullRes = "";
             let streamError = false;
             const llmStreamT0 = Date.now();
+            // Token counters populated from final Ollama stream chunk
+            let _evalCount = null;
+            let _promptEvalCount = null;
+            let _evalDuration = null;
 
             try {
                 const response = await fetch("http://localhost:11434/api/chat", {
@@ -3776,6 +4089,12 @@ Respond ONLY with valid JSON, no other text:
                             botDiv.querySelectorAll("pre code").forEach((el) => hljs.highlightElement(el));
                             els.chatBox.scrollTop = els.chatBox.scrollHeight;
                         }
+                        // Capture token stats from the final done=true chunk
+                        if (json.done) {
+                            if (json.eval_count        != null) _evalCount        = json.eval_count;
+                            if (json.prompt_eval_count != null) _promptEvalCount  = json.prompt_eval_count;
+                            if (json.eval_duration     != null) _evalDuration     = json.eval_duration;
+                        }
                     }
                 }
             } catch (e) {
@@ -3793,6 +4112,11 @@ Respond ONLY with valid JSON, no other text:
                         ? `🤖 ${llmStreamMs}ms`
                         : `🤖 ${(llmStreamMs / 1000).toFixed(1)}s`;
                     llmTimeEl.style.display = "inline-block";
+                }
+                // Update telemetry panel with Ollama latency and token counts
+                rpUpdateGate('ollama', 'safe', llmStreamMs);
+                if (_evalCount != null && _evalDuration != null) {
+                    rpUpdateTokens(_promptEvalCount, _evalCount, _evalCount / (_evalDuration / 1e9));
                 }
             }
             return { fullRes, streamError };
@@ -3823,6 +4147,7 @@ Respond ONLY with valid JSON, no other text:
                     resBadge.style.cursor = "pointer";
                 }
                 els.debugStatus.innerText = "Response Scan Error";
+                rpUpdateGate('airs-dual', 'error', airsDualMs);
             } else if (responseScan.status === "block" || responseScan.status === "alert") {
                 const threats = responseScan.detected.length
                     ? responseScan.detected.join(", ")
@@ -3856,6 +4181,7 @@ Respond ONLY with valid JSON, no other text:
                     }
                 }
                 els.debugStatus.innerText = "Blocked (AIRS-Dual)";
+                rpUpdateGate('airs-dual', responseScan.status === "block" ? 'block' : 'alert', airsDualMs);
             } else if (responseScan.maskedData) {
                 if (resBadge) {
                     resBadge.className = "scan-badge flagged";
@@ -3868,6 +4194,7 @@ Respond ONLY with valid JSON, no other text:
                         <strong>🔀🛡️ AIRS-DUAL — DLP MASKED ${airsDualLat}</strong><br>Sensitive data detected and redacted from response.</div>`;
                 botDiv.querySelector(".content").innerHTML = maskHtml + marked.parse(responseScan.maskedData.data);
                 els.debugStatus.innerText = "Done (DLP Masked)";
+                rpUpdateGate('airs-dual', 'alert', airsDualMs);
             } else {
                 if (resBadge) {
                     resBadge.className = "scan-badge allowed";
@@ -3877,6 +4204,7 @@ Respond ONLY with valid JSON, no other text:
                     resBadge.style.cursor = "pointer";
                 }
                 els.debugStatus.innerText = "Done ✅";
+                rpUpdateGate('airs-dual', 'safe', airsDualMs);
             }
         }
 
@@ -3886,10 +4214,11 @@ Respond ONLY with valid JSON, no other text:
             if (lgMode === "off") {
                 els.dbgLgOutputReq.innerText = "LLM-Guard OUTPUT — Disabled.";
                 els.dbgLgOutputRes.innerText = "LLM-Guard OUTPUT — Disabled.";
+                rpUpdateGate('lg-output', 'off', 0);
                 return;
             }
             const lgOutScanners = _getLGOutputScanners();
-            if (!lgOutScanners.length) return;
+            if (!lgOutScanners.length) { rpUpdateGate('lg-output', 'off', 0); return; }
 
             els.debugStatus.innerText = "🔬 LLM-Guard OUTPUT scanning...";
             const lgOutputT0 = Date.now();
@@ -3903,6 +4232,7 @@ Respond ONLY with valid JSON, no other text:
                 warnDiv.className = "message security-alert alert-warning";
                 warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD OUTPUT — ERROR ${lgOutputLat}</strong><br>Scan failed, output shown unverified. <small>${lgOut.message}</small>`;
                 botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
+                rpUpdateGate('lg-output', 'error', lgOutputMs);
             } else if (lgOut.blocked) {
                 if (resBadge) {
                     resBadge.className = "scan-badge blocked";
@@ -3914,6 +4244,7 @@ Respond ONLY with valid JSON, no other text:
                 blockDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`;
                 botDiv.querySelector(".content").insertAdjacentElement("afterbegin", blockDiv);
                 els.debugStatus.innerText = "Blocked (LLM-Guard OUTPUT)";
+                rpUpdateGate('lg-output', 'block', lgOutputMs);
             } else if (lgOut.flagged) {
                 if (resBadge) {
                     resBadge.className = "scan-badge flagged";
@@ -3925,6 +4256,7 @@ Respond ONLY with valid JSON, no other text:
                 warnDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — FLAGGED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response shown with warning.`;
                 botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
                 els.debugStatus.innerText = "Done (LLM-Guard OUTPUT flagged)";
+                rpUpdateGate('lg-output', 'alert', lgOutputMs);
             } else {
                 if (resBadge && !resBadge.textContent.includes("AIRS-2")) {
                     resBadge.className = "scan-badge allowed";
@@ -3932,6 +4264,7 @@ Respond ONLY with valid JSON, no other text:
                     resBadge.textContent = `🔬 LG-OUT SAFE ${lgOutputLat}`;
                 }
                 els.debugStatus.innerText = "Done ✅";
+                rpUpdateGate('lg-output', 'safe', lgOutputMs);
             }
         }
 
@@ -3957,6 +4290,9 @@ Respond ONLY with valid JSON, no other text:
                 alert("Please enter your Prisma AIRS API Key (x-pan-token) to enable scanning.");
                 return;
             }
+
+            // Reset telemetry panel
+            rpResetTelemetry();
 
             // Reset API Inspector panels at the start of every new prompt
             els.dbgLgInputReq.innerText = "Waiting for LLM-Guard...";
@@ -4045,6 +4381,7 @@ Respond ONLY with valid JSON, no other text:
             if (airsMode !== "off" && fullRes && !streamError) {
                 await runAIRSDualGate(userPrompt, fullRes, botDiv, botMsgId, airsMode, airsProfile, airsApiKey, modelSelect);
             } else if (!streamError) {
+                rpUpdateGate('airs-dual', 'off', 0);
                 els.debugStatus.innerText = "Done";
             }
 
