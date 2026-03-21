@@ -45,28 +45,42 @@ Each gate runs independently in **Off / Advisory / Strict** mode. Local gates (L
 | :--- | :--- |
 | [Node.js](https://nodejs.org/) 18+ | Runs the proxy server |
 | [Ollama](https://ollama.com/) | Local LLM runtime |
-| Python 3.12 | Required for LLM-Guard sidecar (`dev/5b`, `dev/5c`) |
+| Python 3.12 | Required for LLM-Guard sidecar (`dev/5b`, `dev/5c`) — install from [python.org](https://www.python.org/downloads/) (use the installer, not the Microsoft Store version on Windows) |
 | Prisma AIRS API key | Optional — required for AIRS-Inlet and AIRS-Dual gates only |
 
 ---
 
 ## Quick Start
 
-### 1 — Allow Ollama to accept browser requests
+### 1 — Install Ollama and set origins
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+**Windows:**
+Download and run the installer from https://ollama.com/download.
+
+**Set `OLLAMA_ORIGINS`** — required so the browser workbench can reach Ollama:
 
 **macOS:**
 ```bash
 launchctl setenv OLLAMA_ORIGINS "*"
-launchctl setenv OLLAMA_HOST "0.0.0.0"
 ```
 Then relaunch Ollama from the menu bar.
 
 **Windows:**
 1. Quit Ollama (system tray → Quit).
 2. Open **Edit the system environment variables** → **User variables** → **New...**
-   - `OLLAMA_ORIGINS` = `*`
-   - `OLLAMA_HOST` = `0.0.0.0`
+   - Variable: `OLLAMA_ORIGINS` — Value: `*`
 3. Relaunch Ollama.
+
+**Pull a model:**
+```bash
+ollama pull goekdenizguelmez/JOSIEFIED-Qwen3:4b   # main chat + Semantic-Guard
+ollama pull qwen2.5:1.5b                           # Little-Canary probe (small/fast)
+```
 
 ### 2 — Install
 
@@ -89,32 +103,27 @@ The key stays server-side and never reaches the browser. See `docs/5-SETUP-GUIDE
 
 ### 4 — Run
 
-### **Environment Setup (Required)**
+### **Environment Setup (Required for 5b / 5c)**
 
-Before running the security guards, you must initialize the Python virtual environment for the `llm-guard` module. This installs the necessary security libraries.
+**LLM Guard sidecar** (Python 3.12 required):
 
-**On macOS / Linux:**
-
-Bash
-
-```
-cd llm-guard
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cd ..
+**macOS / Linux:**
+```bash
+python3.12 -m venv services/llm-guard/.venv
+source services/llm-guard/.venv/bin/activate
+pip install -r services/llm-guard/requirements.txt
 ```
 
-**On Windows:**
-
-Bash
-
+**Windows:**
+```bash
+py -3.12 -m venv services/llm-guard/.venv
+services/llm-guard/.venv/Scripts/activate
+pip install -r services/llm-guard/requirements.txt
 ```
-cd llm-guard
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-cd ..
+
+**Little-Canary sidecar** (Python 3.9+ works):
+```bash
+pip install flask little-canary
 ```
 
 **To start the guard server:**

@@ -29,13 +29,17 @@ scripts/
   stage.js            # Copies a dev/ file → src/index.html by prefix match
   llmguard.js         # Starts the LLM Guard Python sidecar
 
-llm-guard/
-  llmguard_server.py  # Flask sidecar :5002 (Python 3.12)
-  requirements.txt
-  .venv/              # gitignored — do not commit
+services/
+  llm-guard/
+    llmguard_server.py  # Flask sidecar :5002 (Python 3.12)
+    requirements.txt
+    .venv/              # gitignored — do not commit
+  canary/
+    canary_server.py    # Flask microservice :5001 (Little-Canary)
+    requirements.txt
 
-python/
-  canary_server.py    # Flask microservice :5001 (Little-Canary)
+tools/
+  garak_to_threats.py # Converts garak hitlog JSONL → threats JSON
 
 test/
   sample_threats.json # 68-threat adversarial library
@@ -116,9 +120,9 @@ Always use 5b names in new documentation and code comments.
 
 ## Python Requirements
 
-- LLM Guard (`llm-guard/`) requires **Python 3.12** — not 3.13 or 3.14
+- LLM Guard (`services/llm-guard/`) requires **Python 3.12** — not 3.13 or 3.14
 - Use `py -3.12` explicitly on Windows when creating the venv
-- Little-Canary (`python/`) works with Python 3.9+
+- Little-Canary (`services/canary/`) works with Python 3.9+
 
 ---
 
@@ -133,8 +137,7 @@ Always use 5b names in new documentation and code comments.
 ## What Not to Touch
 
 - `dev/builds/` — archived reference files; do not edit or stage these
-- `llm-guard/.venv/` — Python virtual environment; gitignored, do not commit
-- `llm-guard/llm-guard/` — gitignored pip cache artefact, do not commit
+- `services/llm-guard/.venv/` — Python virtual environment; gitignored, do not commit
 - `.env` — never commit credentials
 
 ---

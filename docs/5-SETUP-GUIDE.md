@@ -84,7 +84,7 @@ Each active gate appends a compact badge to the user message header as it comple
 
 ---
 
-## Step 1 — Install Ollama
+## Step 1 — Install Ollama and Configure Origins
 
 **macOS / Linux:**
 ```bash
@@ -98,6 +98,26 @@ Download the installer from https://ollama.com/download and run it.
 ```bash
 ollama --version
 ```
+
+**Set `OLLAMA_ORIGINS` to allow browser requests** — required or the workbench will be CORS-blocked:
+
+**macOS:**
+```bash
+launchctl setenv OLLAMA_ORIGINS "*"
+```
+Then relaunch Ollama from the menu bar.
+
+**Windows:**
+1. Quit Ollama (system tray → Quit).
+2. Open **Edit the system environment variables** → **User variables** → **New...**
+   - Variable: `OLLAMA_ORIGINS` — Value: `*`
+3. Relaunch Ollama.
+
+**Linux:**
+```bash
+export OLLAMA_ORIGINS="*"
+```
+Add to `~/.bashrc` or `~/.zshrc` to persist across sessions.
 
 **Pull the recommended models:**
 ```bash
@@ -150,19 +170,19 @@ LLM Guard runs as a Python Flask microservice on port 5002. It requires Python 3
 **Create a virtual environment:**
 ```bash
 # Windows
-py -3.12 -m venv llm-guard/.venv
+py -3.12 -m venv services/llm-guard/.venv
 
 # macOS / Linux
-python3.12 -m venv llm-guard/.venv
+python3.12 -m venv services/llm-guard/.venv
 ```
 
 **Install dependencies:**
 ```bash
 # Windows
-llm-guard/.venv/Scripts/pip install -r llm-guard/requirements.txt
+services/llm-guard/.venv/Scripts/pip install -r services/llm-guard/requirements.txt
 
 # macOS / Linux
-llm-guard/.venv/bin/pip install -r llm-guard/requirements.txt
+services/llm-guard/.venv/bin/pip install -r services/llm-guard/requirements.txt
 ```
 
 > **First install takes 5–10 minutes** — downloads PyTorch and Transformers (~3 GB total).
@@ -170,19 +190,19 @@ llm-guard/.venv/bin/pip install -r llm-guard/requirements.txt
 **Optional — faster CPU inference (30–50% speedup):**
 ```bash
 # Windows
-llm-guard/.venv/Scripts/pip install llm-guard[onnxruntime]
+services/llm-guard/.venv/Scripts/pip install llm-guard[onnxruntime]
 
 # macOS / Linux
-llm-guard/.venv/bin/pip install llm-guard[onnxruntime]
+services/llm-guard/.venv/bin/pip install llm-guard[onnxruntime]
 ```
 
 **Verify the install:**
 ```bash
 # Windows
-llm-guard/.venv/Scripts/pip show llm-guard
+services/llm-guard/.venv/Scripts/pip show llm-guard
 
 # macOS / Linux
-llm-guard/.venv/bin/pip show llm-guard
+services/llm-guard/.venv/bin/pip show llm-guard
 ```
 Expected: `Version: 0.3.16`
 
@@ -190,11 +210,19 @@ Expected: `Version: 0.3.16`
 
 ## Step 5 — Set Up the Little Canary Sidecar (🐦 Little-Canary)
 
-Little-Canary runs as a separate Flask microservice on port 5001. It can use the same Python 3.12 venv or a system Python.
+Little-Canary runs as a separate Flask microservice on port 5001. It works with Python 3.9+ and installs into your system Python (no dedicated venv needed).
 
+**macOS / Linux:**
+```bash
+pip3 install little-canary flask
+```
+
+**Windows:**
 ```bash
 pip install little-canary flask
 ```
+
+> If you have multiple Python versions, use `py -3.12 -m pip install little-canary flask` to be explicit.
 
 ---
 
@@ -246,8 +274,9 @@ Expected output:
 
 | URL | File |
 |:---|:---|
-| http://localhost:3080/dev/5b | `5b` — new names & emojis (recommended) |
-| http://localhost:3080/dev/5a | `5a` — legacy phase numbers |
+| http://localhost:3080/dev/5c | `5c` — Tokyo Night accordion sidebar, mode badges ⭐ recommended |
+| http://localhost:3080/dev/5b | `5b` — flat sidebar, emoji gate names (stable reference) |
+| http://localhost:3080/dev/5a | `5a` — legacy phase numbers (archived) |
 
 On first load, the workbench automatically:
 - Fetches available Ollama models and pre-selects `JOSIEFIED-Qwen3:4b`
@@ -264,8 +293,8 @@ On the first scan through LLM-Guard, HuggingFace models download for each scanne
 **Pre-download to avoid waiting during a demo:**
 ```bash
 # Activate the venv first
-llm-guard/.venv/Scripts/activate          # Windows
-# source llm-guard/.venv/bin/activate     # macOS / Linux
+services/llm-guard/.venv/Scripts/activate          # Windows
+# source services/llm-guard/.venv/bin/activate     # macOS / Linux
 
 pip install huggingface_hub
 
@@ -352,12 +381,12 @@ Export options: **JSON** (full result set with per-threat detail) and **Markdown
 **LLM Guard "service unavailable" error**
 - Ensure `npm run llmguard` is running in a separate terminal
 - Check http://localhost:5002/health returns `{"status":"ok"}`
-- Run from the **project root**, not the `llm-guard/` subfolder
+- Run from the **project root**, not the `services/llm-guard/` subfolder
 
 **LLM Guard install fails (Python version error)**
 - `llm-guard>=0.3.14` requires Python 3.9–3.12
 - Run `py -0` (Windows) or `python3 --version` to check
-- Create the venv explicitly with `py -3.12 -m venv llm-guard/.venv`
+- Create the venv explicitly with `py -3.12 -m venv services/llm-guard/.venv`
 
 **LLM-Guard flagging short benign prompts ("hi", "good morning")**
 - Language and Gibberish scanners are unreliable on very short inputs — leave them unchecked (default)
@@ -384,12 +413,14 @@ llm-security-workbench/
 ├── dev/
 │   ├── 5a-llm-security-workbench-llm-guard.html   ← workbench UI (legacy names)
 │   └── 5b-llm-security-workbench-llm-guard.html   ← workbench UI (new names)
-├── llm-guard/
-│   ├── .venv/                                       ← Python 3.12 venv (gitignored)
-│   ├── llmguard_server.py                           ← Flask sidecar :5002
-│   └── requirements.txt
-├── python/
-│   └── canary_server.py                             ← Little-Canary sidecar :5001
+├── services/
+│   ├── llm-guard/
+│   │   ├── .venv/                                   ← Python 3.12 venv (gitignored)
+│   │   ├── llmguard_server.py                       ← Flask sidecar :5002
+│   │   └── requirements.txt
+│   └── canary/
+│       ├── canary_server.py                         ← Little-Canary sidecar :5001
+│       └── requirements.txt
 ├── src/
 │   ├── index.html                                   ← promoted via npm run stage 5b
 │   └── server.js                                    ← Node proxy :3080

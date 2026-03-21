@@ -35,7 +35,7 @@ This guide covers the entry-level workbench files from scratch. No prior install
 
 ---
 
-## Step 1 — Install Ollama
+## Step 1 — Install Ollama and Configure Origins
 
 **macOS / Linux:**
 ```bash
@@ -48,6 +48,25 @@ Download the installer from https://ollama.com/download and run it.
 **Verify:**
 ```bash
 ollama --version
+```
+
+**Set `OLLAMA_ORIGINS`** — `1a` and `1b` open via `file://` in the browser, which Ollama blocks by default. Without this, you'll get a CORS error and no response.
+
+**macOS:**
+```bash
+launchctl setenv OLLAMA_ORIGINS "*"
+```
+Then relaunch Ollama from the menu bar.
+
+**Windows:**
+1. Quit Ollama (system tray → Quit).
+2. Open **Edit the system environment variables** → **User variables** → **New...**
+   - Variable: `OLLAMA_ORIGINS` — Value: `*`
+3. Relaunch Ollama.
+
+**Linux:**
+```bash
+export OLLAMA_ORIGINS="*"
 ```
 
 ---
@@ -106,8 +125,14 @@ Neither file has any security scanning — prompts go straight to Ollama and res
 
 `2a` routes API calls through a Node.js proxy so the AIRS API key is never exposed in browser JavaScript. The proxy must be running before opening the page.
 
-### Step A — Install Node.js dependencies
+### Step A — Install Node.js and dependencies
 
+If you don't have Node.js yet, download and install it from https://nodejs.org/ (v18 or later). Verify:
+```bash
+node --version
+```
+
+Then install the project dependencies:
 ```bash
 npm install
 ```

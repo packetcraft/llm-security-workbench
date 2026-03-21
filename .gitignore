@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 
+# Python virtual environments
+services/llm-guard/.venv/
+services/canary/.venv/
+
 # Environment variables
 .env
 .env.local

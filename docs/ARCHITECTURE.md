@@ -107,13 +107,13 @@ graph LR
         end
 
         subgraph LGFLASK ["Python · npm run llmguard · :5002"]
-            LGSERV["Flask microservice\nllm-guard/llmguard_server.py"]
+            LGSERV["Flask microservice\nservices/llm-guard/llmguard_server.py"]
             LGSCAN["ProtectAI LLM Guard\ntransformer scanners"]
             LGSERV --> LGSCAN
         end
 
         subgraph PYTHON ["Python · npm run canary · :5001"]
-            FLASK["Flask microservice\npython/canary_server.py"]
+            FLASK["Flask microservice\nservices/canary/canary_server.py"]
             LC["little-canary\nSecurityPipeline"]
             FLASK --> LC
         end

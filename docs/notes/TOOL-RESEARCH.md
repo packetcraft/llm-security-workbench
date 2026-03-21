@@ -100,7 +100,7 @@ Upload either file in the **🧪 garak JSONL** tab of the Batch Runner → click
 
 Or use the offline CLI script:
 ```bash
-python scripts/garak_to_threats.py --input garak.XXXX.hitlog.jsonl --output garak_threats.json
+python tools/garak_to_threats.py --input garak.XXXX.hitlog.jsonl --output garak_threats.json
 ```
 
 ### Quick Test (no garak install needed)

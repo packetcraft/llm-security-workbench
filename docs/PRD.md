@@ -89,7 +89,7 @@ A **local ProtectAI transformer scanner suite** running as a Flask sidecar on `:
 **Design rationale:** Catches injection and content threats that are detectable from text patterns alone (invisible characters, secrets, toxicity, banned topics) with ~100–800 ms latency, entirely offline.
 
 **Technical implementation:**
-* Flask microservice at `llm-guard/llmguard_server.py` — `npm run llmguard` to start.
+* Flask microservice at `services/llm-guard/llmguard_server.py` — `npm run llmguard` to start.
 * Input scanners: `InvisibleText`, `Secrets`, `PromptInjection`, `Toxicity`, `BanTopics` (enabled by default); `Gibberish`, `Language` (⚠️ disabled by default — high false-positive rate on short inputs).
 * Node.js proxy routes `POST /api/llmguard-input` → `:5002/scan/input`.
 * Each scanner returns `{ valid, risk_score, sanitized, latency_ms }`.
@@ -237,7 +237,7 @@ Browser → POST /api/canary (Node proxy) → localhost:5001/check (Flask micros
 ```
 
 **Technical implementation:**
-* Flask microservice at `python/canary_server.py` (port `5001`) — `npm run canary` to start.
+* Flask microservice at `services/canary/canary_server.py` (port `5001`) — `npm run canary` to start.
 * `server.js` proxies `/api/canary` → `localhost:5001/check`; returns `502` with a helpful message if the Flask service is down.
 * Fail-open: if the proxy returns an error, a yellow warning is shown in chat and execution continues to Phase 1.
 * Advisory mode stores `cResult.advisory.system_prefix` and prepends it to the Ollama system prompt payload — the LLM is made aware of the suspected attack without hard-blocking.
@@ -523,8 +523,8 @@ Both scans use the same endpoint: `POST /v1/scan/sync/request`
 
 ### 4.8 Little Canary Microservice
 
-**File:** `python/canary_server.py`
-**Dependencies:** `python/requirements.txt` — `flask>=3.0.0`, `little-canary>=0.2.3`
+**File:** `services/canary/canary_server.py`
+**Dependencies:** `services/canary/requirements.txt` — `flask>=3.0.0`, `little-canary>=0.2.3`
 **Port:** `5001`
 
 **Endpoint — `POST /check`:**
@@ -600,17 +600,18 @@ llm-security-workbench/
 │   ├── 5a-llm-security-workbench-llm-guard.html   # archived in dev/builds/ (legacy phase names)
 │   ├── 5b-llm-security-workbench-llm-guard.html   # six-gate pipeline (emoji names, stable ref)
 │   └── 5c-llm-security-workbench-llm-guard.html   # six-gate pipeline (Tokyo Night accordion sidebar)
-├── llm-guard/
-│   ├── .venv/            # Python 3.12 venv (gitignored)
-│   ├── llmguard_server.py # Flask sidecar :5002
-│   └── requirements.txt
-├── python/
-│   ├── canary_server.py  # Flask microservice wrapping little-canary (port 5001)
-│   └── requirements.txt  # flask, little-canary
+├── services/
+│   ├── llm-guard/
+│   │   ├── .venv/            # Python 3.12 venv (gitignored)
+│   │   ├── llmguard_server.py # Flask sidecar :5002
+│   │   └── requirements.txt
+│   └── canary/
+│       ├── canary_server.py  # Flask microservice wrapping little-canary (port 5001)
+│       └── requirements.txt  # flask, little-canary
 ├── test/
 │   └── sample_threats.json   # 68-threat adversarial library
 ├── .env.example          # Committed template — copy to .env and fill in values
-├── .gitignore            # Excludes .env, llm-guard/.venv
+├── .gitignore            # Excludes .env, services/llm-guard/.venv
 ├── package.json          # npm scripts: start, stage, stage:1a … stage:5b, canary, llmguard
 └── README.md
 ```
