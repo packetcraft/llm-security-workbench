@@ -1046,7 +1046,7 @@
         }
 
         .batch-controls label {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-muted);
         }
 
@@ -1055,7 +1055,7 @@
         }
 
         #batch-delay-label {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--primary);
             min-width: 40px;
         }
@@ -1077,25 +1077,25 @@
         }
 
         #batch-progress-label {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--muted);
             margin-top: 3px;
         }
 
         #batch-summary {
-            font-size: 12px;
+            font-size: 13px;
         }
 
         .batch-results-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .batch-results-table th {
             background: var(--bg);
             color: var(--muted);
-            padding: 5px 8px;
+            padding: 6px 10px;
             text-align: left;
             border-bottom: 1px solid var(--border);
             position: sticky;
@@ -1105,7 +1105,7 @@
         }
 
         .batch-results-table td {
-            padding: 5px 8px;
+            padding: 6px 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             vertical-align: top;
             max-width: 200px;
@@ -1388,7 +1388,7 @@
             margin-bottom: 12px;
         }
         .batch-tab {
-            font-size: 12px;
+            font-size: 13px;
             padding: 5px 14px;
             border-radius: 6px 6px 0 0;
             border: 1px solid var(--border);
@@ -1411,9 +1411,9 @@
             border-bottom: 1px solid var(--border);
             margin-bottom: 10px;
         }
-        .pair-field { display: flex; flex-direction: column; gap: 3px; }
+        .pair-field { display: flex; flex-direction: column; gap: 4px; }
         .pair-label {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-muted);
             display: flex;
@@ -1423,8 +1423,8 @@
         .pair-attempt-card {
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 8px 10px;
-            font-size: 11px;
+            padding: 10px 12px;
+            font-size: 12px;
             background: var(--bg);
         }
         .pair-attempt-card.pair-blocked  { border-left: 3px solid var(--danger, #f7768e); }
@@ -1447,8 +1447,8 @@
             white-space: pre-wrap;
         }
         .pair-score-pill {
-            font-size: 10px;
-            padding: 1px 7px;
+            font-size: 11px;
+            padding: 2px 8px;
             border-radius: 10px;
             font-weight: 700;
         }
@@ -1456,7 +1456,7 @@
         .pair-score-mid  { background: rgba(224,175,104,0.15); color: var(--warn,#e0af68); }
         .pair-score-high { background: rgba(158,206,106,0.15); color: var(--safe,#9ece6a); }
         .pair-scope-note {
-            font-size: 10.5px;
+            font-size: 12px;
             color: var(--text-muted);
             background: rgba(122,162,247,0.07);
             border: 1px solid rgba(122,162,247,0.2);
@@ -6436,10 +6436,6 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
         }
 
         function _pairMeta() {
-            const gateMode = (id) => {
-                const el = document.getElementById(id);
-                return el ? el.value : 'off';
-            };
             return {
                 goal:         document.getElementById('pair-goal').value.trim(),
                 targetModel:  els.modelSelect ? els.modelSelect.value : '—',
@@ -6448,10 +6444,10 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
                 threshold:    parseInt(document.getElementById('pair-threshold').value) || 7,
                 maxIter:      parseInt(document.getElementById('pair-max-iter').value) || 10,
                 gates: {
-                    llmguardInput:  gateMode('lg-mode'),
-                    semanticGuard:  gateMode('guard-mode'),
-                    littleCanary:   gateMode('canary-mode'),
-                    airsInlet:      gateMode('airs-mode'),
+                    llmguardInput:  els.llmguardMode  ? els.llmguardMode.value  : 'off',
+                    semanticGuard:  els.guardrailMode ? els.guardrailMode.value : 'off',
+                    littleCanary:   els.canaryMode    ? els.canaryMode.value    : 'off',
+                    airsInlet:      els.airsMode      ? els.airsMode.value      : 'off',
                     airsDual:       'n/a — probe scope',
                     llmguardOutput: 'n/a — probe scope',
                 }
