@@ -9,7 +9,7 @@ Project context and working conventions for Claude Code. Read this before making
 A browser-based LLM security testing workbench. A Node.js proxy (`src/server.js`) serves the UI and routes security scans. All LLM inference runs locally via Ollama. Security scanning uses a six-gate pipeline — some gates local (LLM-Guard, Semantic-Guard, Little-Canary), some cloud (Prisma AIRS).
 
 **Active workbench files:** `dev/5d` and `dev/6a` — these are the ones users run and demo.
-- `6a` — two-layer rail sidebar (icon rail + collapsible nav panel), 🐙PacketCraft branding, refactored codebase — the recommended default
+- `6a` — rail sidebar + live telemetry instrument panel (right panel, open by default) — the recommended default
 - `5d` — same UI as 6a (rail sidebar, PacketCraft branding) but pre-refactor; retained as previous iteration reference
 - `5c` and earlier — archived in `dev/builds/`
 

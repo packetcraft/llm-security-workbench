@@ -20,7 +20,7 @@ Both files implement the same six-gate pipeline with the same two-layer rail sid
 | File | UI / Notes |
 |:---|:---|
 | `dev/5d-rail-sidebar.html` | Two-layer rail sidebar, 🐙PacketCraft branding — unrefactored; retained as previous iteration reference |
-| `dev/6a-llm-security-workbench-llm-guard.html` | Same UI as 5d but with structural improvements: split `sendMessage()`, shared helpers, DOM cache, CSS custom properties, aria-labels — recommended default |
+| `dev/6a-instrument-panel.html` | Rail sidebar + live telemetry instrument panel (right panel, open by default); structural improvements: split `sendMessage()`, shared helpers, DOM cache, CSS custom properties, aria-labels — recommended default |
 
 Use `6a` for demos and new work. `5d` is retained as the previous iteration reference. `5a`–`5c` (earlier sidebar iterations) are archived in `dev/builds/`.
 
@@ -274,7 +274,7 @@ Expected output:
 
 | URL | File |
 |:---|:---|
-| http://localhost:3080/dev/6a | `6a` — two-layer rail sidebar, refactored codebase ⭐ recommended |
+| http://localhost:3080/dev/6a | `6a` — rail sidebar + live telemetry instrument panel (right panel, open by default) ⭐ recommended |
 | http://localhost:3080/dev/5d | `5d` — same UI as 6a, pre-refactor (previous iteration reference) |
 | http://localhost:3080/dev/5c | `5c` — Tokyo Night accordion sidebar (archived) |
 
@@ -283,6 +283,7 @@ On first load, the workbench automatically:
 - Sets all gates to **Strict** mode by default
 - Loads the threat library from `test/sample_threats.json`
 - Checks `.env` for a pre-loaded AIRS key
+- Opens the live telemetry instrument panel (right panel) by default — `6a` only
 
 ---
 
@@ -412,7 +413,7 @@ Export options: **JSON** (full result set with per-threat detail) and **Markdown
 llm-security-workbench/
 ├── dev/
 │   ├── 5d-rail-sidebar.html                         ← workbench UI (pre-refactor, previous iteration)
-│   └── 6a-llm-security-workbench-llm-guard.html    ← workbench UI (refactored, recommended)
+│   └── 6a-instrument-panel.html                     ← workbench UI (instrument panel, recommended)
 ├── services/
 │   ├── llm-guard/
 │   │   ├── .venv/                                   ← Python 3.12 venv (gitignored)

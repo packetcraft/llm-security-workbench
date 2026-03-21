@@ -601,7 +601,7 @@ llm-security-workbench/
 │   ├── 5b-llm-security-workbench-llm-guard.html   # archived in dev/builds/ (emoji gate names)
 │   ├── 5c-llm-security-workbench-llm-guard.html   # archived in dev/builds/ (Tokyo Night accordion sidebar)
 │   ├── 5d-rail-sidebar.html                        # two-layer rail sidebar, PacketCraft branding (pre-refactor)
-│   └── 6a-llm-security-workbench-llm-guard.html   # two-layer rail sidebar, refactored codebase (recommended)
+│   └── 6a-instrument-panel.html                    # rail sidebar + live telemetry instrument panel (right panel, open by default) (recommended)
 ├── services/
 │   ├── llm-guard/
 │   │   ├── .venv/            # Python 3.12 venv (gitignored)
@@ -622,9 +622,9 @@ llm-security-workbench/
 
 ## 7. Recently Implemented
 
-### ✅ Rail Sidebar Refactor — `dev/6a` (v3.3)
+### ✅ Instrument Panel — `dev/6a` (v3.3)
 
-**Code quality refactor** of `dev/5d` with identical UI. No functional changes to the security pipeline:
+**Live telemetry instrument panel** added as a right panel, open by default on page load. Rail sidebar + refactored codebase:
 
 - `sendMessage()` split into 7 focused gate phase functions + an orchestrator
 - Shared `updateGateBadge()` helper replaces duplicated badge update code
@@ -633,6 +633,7 @@ llm-security-workbench/
 - CSS custom properties for layout dimensions (`--rail-width`, `--nav-panel-width`) and shadows
 - Dead CSS removed; descriptive variable names replace cryptic abbreviations
 - `aria-label` added to all icon-only buttons for accessibility
+- Live telemetry instrument panel (right panel) opens by default on page load
 
 **6a is the recommended demo file** — `5d` is retained as the previous iteration reference.
 

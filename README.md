@@ -163,7 +163,7 @@ http://localhost:3080/dev/1a    →  bare Ollama chat, no security
 |   | `5b` — `llm-security-workbench-llm-guard` | Six-gate workbench (emoji gate names) | ✓ |
 |   | `5c` — `llm-security-workbench-llm-guard` | Tokyo Night accordion sidebar, mode badges | ✓ |
 |   | `5d` — `rail-sidebar` | Two-layer rail sidebar, 🐙PacketCraft branding (unrefactored) | ✓ |
-| ⭐ | `6a` — `llm-security-workbench-llm-guard` | Two-layer rail sidebar, refactored codebase — recommended default | ✓ |
+| ⭐ | `6a` — `instrument-panel` | rail sidebar + live telemetry instrument panel (right panel, open by default) | ✓ |
 
 To make a dev file the default at `http://localhost:3080`:
 

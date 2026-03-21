@@ -2290,7 +2290,7 @@
                 <button class="rail-icon" id="rail-inspector" title="API Inspector" aria-label="API Inspector" onclick="toggleDebugDrawer(this)">
                     🛠️
                 </button>
-                <button class="rail-icon" id="rail-telemetry" title="Live Telemetry" aria-label="Live Telemetry" onclick="toggleRightPanel()">
+                <button class="rail-icon active" id="rail-telemetry" title="Live Telemetry" aria-label="Live Telemetry" onclick="toggleRightPanel()">
                     📊
                 </button>
             </nav>
@@ -2862,11 +2862,11 @@ Respond ONLY with valid JSON, no other text:
         </div><!-- #main-content -->
 
         <!-- ══ Right Telemetry Panel ══════════════════════════════ -->
-        <div id="right-panel" class="collapsed">
+        <div id="right-panel">
 
             <div class="rp-header">
                 <span class="rp-title">🎛️ Live Telemetry</span>
-                <button class="rp-collapse-btn" id="rp-collapse-btn" onclick="toggleRightPanel()" title="Collapse telemetry panel">‹</button>
+                <button class="rp-collapse-btn" id="rp-collapse-btn" onclick="toggleRightPanel()" title="Collapse telemetry panel">›</button>
             </div>
 
             <div class="rp-body">
