@@ -5024,6 +5024,12 @@ Respond ONLY with valid JSON, no other text:
                 _tooltip.style.top = y + "px";
             }
 
+        // #6 — Show scroll-to-bottom button when not at bottom
+        els.chatBox.addEventListener("scroll", function () {
+            const notAtBottom = this.scrollHeight - this.scrollTop - this.clientHeight > 80;
+            document.getElementById("scroll-btn").classList.toggle("visible", notAtBottom);
+        });
+
         }); // DOMContentLoaded
 
         // ══════════════════════════════════════════
@@ -5993,17 +5999,6 @@ Respond ONLY with valid JSON, no other text:
                 badge.insertAdjacentElement("afterend", det);
             }
         });
-
-        // #6 — Show scroll-to-bottom button when not at bottom
-        els.chatBox
-            .addEventListener("scroll", function () {
-                const notAtBottom =
-                    this.scrollHeight - this.scrollTop - this.clientHeight >
-                    80;
-                document
-                    .getElementById("scroll-btn")
-                    .classList.toggle("visible", notAtBottom);
-            });
 
         // ══════════════════════════════════════════
         // DYNAMIC RED TEAM — PAIR ALGORITHM
