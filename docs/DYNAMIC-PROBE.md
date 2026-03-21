@@ -129,6 +129,28 @@ The judge prompt requires careful instruction-following. Weak or small models (�
 
 ---
 
+## Network Routing
+
+All three model roles call **Ollama directly from the browser** — the Node proxy is not involved in any LLM inference during a probe run.
+
+| Call | Route | Protocol |
+| :--- | :--- | :--- |
+| Attacker LLM | Browser → `http://localhost:11434/api/chat` | Non-streaming |
+| Target LLM | Browser → `http://localhost:11434/api/chat` | Non-streaming |
+| Judge LLM | Browser → `http://localhost:11434/api/chat` | Non-streaming |
+| LLM-Guard gate check | Browser → Node Proxy `:3080` → Flask `:5002` | Same as chat |
+| Little-Canary gate check | Browser → Node Proxy `:3080` → Flask `:5001` | Same as chat |
+| AIRS-Inlet gate check | Browser → Node Proxy `:3080` → Prisma AIRS (cloud) | Same as chat |
+
+**Implications:**
+
+- **No server-side logging** — attacker prompts, judge scores, and target LLM responses do not pass through `src/server.js` and are not captured in any server log.
+- **AIRS API key irrelevant for attacker/judge** — these calls never touch the proxy; only the gate checks use it.
+- **All three models must be available in Ollama** — they can be the same model or different ones, but all must be pulled locally (`ollama pull <model>`).
+- **`OLLAMA_ORIGINS=*` required** — the browser makes cross-origin requests directly to Ollama; Ollama must be configured to accept them before launch.
+
+---
+
 ## Iteration Feedback Loop
 
 The attacker LLM receives different context depending on what happened in the previous iteration:

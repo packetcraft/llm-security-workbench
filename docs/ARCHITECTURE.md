@@ -130,8 +130,8 @@ graph LR
     %% Browser → Node proxy
     UI -- "GET /  /api/config\nPOST /api/prisma\nPOST /api/canary\nPOST /api/llmguard-input\nPOST /api/llmguard-output" --> PROXY
 
-    %% Browser → Ollama direct (streaming)
-    UI -- "POST /api/chat  streaming\nGET /api/tags\nSemantic-Guard judge + chat LLM" --> OLL
+    %% Browser → Ollama direct (streaming + non-streaming)
+    UI -- "POST /api/chat  streaming\nGET /api/tags\nSemantic-Guard judge + chat LLM\nDynamic Probe: attacker · target · judge" --> OLL
 
     %% Node → Prisma AIRS (cloud)
     PROXY -- "POST /v1/scan/sync/request\nAIRS-Inlet prompt scan\nAIRS-Dual response scan" --> AIRS
@@ -156,7 +156,11 @@ graph LR
 | LLM-Guard input scan | Browser → Node Proxy `:3080/api/llmguard-input` → Flask sidecar `:5002/scan/input` |
 | LLM-Guard output scan | Browser → Node Proxy `:3080/api/llmguard-output` → Flask sidecar `:5002/scan/output` |
 | Little-Canary scan | Browser → Node Proxy `:3080/api/canary` → Flask sidecar `:5001/check` → Ollama |
-| LLM inference | Browser → Local Ollama API `:11434` (direct, streaming) |
+| LLM inference (chat) | Browser → Local Ollama API `:11434` (direct, streaming) |
+| Dynamic Probe — attacker LLM | Browser → Local Ollama API `:11434` (direct, non-streaming) |
+| Dynamic Probe — target LLM | Browser → Local Ollama API `:11434` (direct, non-streaming) |
+| Dynamic Probe — judge LLM | Browser → Local Ollama API `:11434` (direct, non-streaming) |
+| Dynamic Probe — gate checks | Browser → Node Proxy `:3080/api/llmguard-input`, `/api/canary`, `/api/prisma` (same as chat) |
 | Credential config | Browser → `GET /api/config` → `{ hasApiKey, profile }` (key never returned) |
 
 ---
@@ -169,7 +173,13 @@ The Node.js proxy (`src/server.js`) exists for two reasons:
 
 2. **Credential isolation** — `AIRS_API_KEY` is loaded from `.env` at startup and attached to outbound requests by the proxy. The browser never receives the key — only a boolean `hasApiKey` flag from `/api/config`.
 
-**Key design point:** The browser talks **directly** to Ollama for all LLM inference (Semantic-Guard judge calls and chat streaming) but routes through the Node proxy for AIRS, LLM Guard, and Little-Canary. Direct Ollama access avoids double-buffering the streaming response; the proxy exists only to bypass CORS for cloud API calls and to keep the AIRS API key off the client.
+**Key design point:** The browser talks **directly** to Ollama for all LLM inference (Semantic-Guard judge calls, chat streaming, and all three Dynamic Probe roles) but routes through the Node proxy for AIRS, LLM Guard, and Little-Canary. Direct Ollama access avoids double-buffering the streaming response; the proxy exists only to bypass CORS for cloud API calls and to keep the AIRS API key off the client.
+
+**Dynamic Probe — all three model roles call Ollama directly.** The attacker LLM, the target LLM, and the judge LLM all call `http://localhost:11434/api/chat` from the browser with `stream: false`. None of these calls pass through the Node proxy. The only probe traffic that uses the proxy is the security gate checks (`/api/llmguard-input`, `/api/canary`, `/api/prisma`) — identical to the chat pipeline. This means:
+- Attacker and judge traffic is not logged server-side
+- The AIRS API key is irrelevant for attacker and judge (they never touch the proxy)
+- All three models must be pulled and available in the local Ollama instance
+- `OLLAMA_ORIGINS=*` is required for the browser to reach Ollama cross-origin
 
 Ollama requires `OLLAMA_ORIGINS=*` to accept requests from the browser. See the Quick Start in README.md.
 
