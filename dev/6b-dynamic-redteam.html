@@ -5030,6 +5030,38 @@ Respond ONLY with valid JSON, no other text:
             document.getElementById("scroll-btn").classList.toggle("visible", notAtBottom);
         });
 
+        // #7 — Delegated click handler on chat-box (replay + AIRS badge expansion)
+        els.chatBox.addEventListener("click", function (e) {
+            // Replay button
+            if (e.target.classList.contains("replay-btn")) {
+                const msgDiv = e.target.closest(".message");
+                if (msgDiv && msgDiv.dataset.prompt) replayPrompt(msgDiv.dataset.prompt);
+                return;
+            }
+            // AIRS badge expansion
+            if (e.target.classList.contains("scan-badge") && e.target.dataset.verdict) {
+                const badge = e.target;
+                const existing = badge.nextElementSibling;
+                if (existing && existing.classList.contains("verdict-detail")) {
+                    existing.remove();
+                    return;
+                }
+                let v;
+                try { v = JSON.parse(badge.dataset.verdict); } catch { return; }
+                const cls = v.action === "block" ? "blocked" : v.action === "alert" ? "flagged" : "allowed";
+                const rows = [
+                    ["Action", v.action || "—"],
+                    ["Category", v.category || "—"],
+                    ["Detected", (v.detected && v.detected.length) ? v.detected.join(", ") : "none"],
+                    ["Scan ID", v.scanId || "—"],
+                ];
+                const det = document.createElement("div");
+                det.className = `verdict-detail ${cls}`;
+                det.innerHTML = `<table>${rows.map(([k, val]) => `<tr><td>${k}</td><td>${val}</td></tr>`).join("")}</table>`;
+                badge.insertAdjacentElement("afterend", det);
+            }
+        });
+
         }); // DOMContentLoaded
 
         // ══════════════════════════════════════════
@@ -5968,38 +6000,6 @@ Respond ONLY with valid JSON, no other text:
             els.spModalBackdrop.classList.remove("open");
         }
 
-        // Feature 1 & 3 — Delegated click handler on chat-box
-        els.chatBox.addEventListener("click", function (e) {
-            // Replay button
-            if (e.target.classList.contains("replay-btn")) {
-                const msgDiv = e.target.closest(".message");
-                if (msgDiv && msgDiv.dataset.prompt) replayPrompt(msgDiv.dataset.prompt);
-                return;
-            }
-            // AIRS badge expansion
-            if (e.target.classList.contains("scan-badge") && e.target.dataset.verdict) {
-                const badge = e.target;
-                const existing = badge.nextElementSibling;
-                if (existing && existing.classList.contains("verdict-detail")) {
-                    existing.remove();
-                    return;
-                }
-                let v;
-                try { v = JSON.parse(badge.dataset.verdict); } catch { return; }
-                const cls = v.action === "block" ? "blocked" : v.action === "alert" ? "flagged" : "allowed";
-                const rows = [
-                    ["Action", v.action || "—"],
-                    ["Category", v.category || "—"],
-                    ["Detected", (v.detected && v.detected.length) ? v.detected.join(", ") : "none"],
-                    ["Scan ID", v.scanId || "—"],
-                ];
-                const det = document.createElement("div");
-                det.className = `verdict-detail ${cls}`;
-                det.innerHTML = `<table>${rows.map(([k, val]) => `<tr><td>${k}</td><td>${val}</td></tr>`).join("")}</table>`;
-                badge.insertAdjacentElement("afterend", det);
-            }
-        });
-
         // ══════════════════════════════════════════
         // DYNAMIC RED TEAM — PAIR ALGORITHM
         // ══════════════════════════════════════════
@@ -6040,6 +6040,9 @@ Respond ONLY with valid JSON, no other text:
 
         // ── PAIR: start probe ────────────────────────────────────────
         async function startPairRun() {
+            const _sb = document.getElementById('pair-status-bar');
+            if (_sb) _sb.textContent = '⏳ Starting...';
+
             const goal          = document.getElementById('pair-goal').value.trim();
             const attackerModel = document.getElementById('pair-attacker-model').value;
             const judgeModel    = document.getElementById('pair-judge-model').value;
