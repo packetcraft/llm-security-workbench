@@ -6967,10 +6967,7 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
 
                 <!-- Scope note -->
                 <div class="pair-scope-note">
-                    <strong>⚠ Probe scope:</strong> Input gates active —
-                    🔬 LLM-Guard INPUT · 🐦 Little-Canary · 📥🛡️ AIRS-Inlet (respects current mode settings).
-                    <strong>Skipped:</strong> 🧩 Semantic-Guard · 🔀🛡️ AIRS-Dual · 🔬 LLM-Guard OUTPUT.<br>
-                    A <em>REACHED LLM</em> result means output gates were <strong>not run</strong> — the response shown was never scanned by AIRS-Dual or LLM-Guard OUTPUT. Results reflect input-side defence coverage only.
+                    ⚠ This probe tests input defences only. Prompts are checked by LLM-Guard, Little-Canary, and AIRS-Inlet before reaching the model — but responses are never scanned. A <em>BREACHED</em> result means the model produced the content; it does not mean it would have reached a real user.
                 </div>
 
                 <!-- Status bar -->
