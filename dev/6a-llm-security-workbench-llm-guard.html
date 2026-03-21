@@ -4129,7 +4129,7 @@ Respond ONLY with valid JSON, no other text:
             chatBox.appendChild(notice);
         }
 
-        // ── Run after the full DOM is ready so modal elements (placed after </script>) are available ──
+        // ── Run after the full DOM is ready so modal elements defined later in the HTML are available ──
         let els;
         document.addEventListener('DOMContentLoaded', () => {
 
