@@ -17,6 +17,7 @@
     "stage:5a": "node scripts/stage.js 5a",
     "stage:5b": "node scripts/stage.js 5b",
     "stage:5d": "node scripts/stage.js 5d",
+    "stage:6a": "node scripts/stage.js 6a",
     "canary": "python services/canary/canary_server.py",
     "llmguard": "node scripts/llmguard.js"
   },
