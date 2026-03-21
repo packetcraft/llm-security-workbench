@@ -1,28 +1,28 @@
 <!--
-  SCOPE: This guide covers dev/5b and dev/5c only.
+  SCOPE: This guide covers dev/5d and dev/6a only.
   These are the full six-gate LLM security workbench files including the LLM Guard sidecar.
   For the entry-level files (dev/1a, dev/1b, dev/2a), see docs/1-SETUP-GUIDE.md.
   Files dev/3xx and dev/4xx are intermediate builds not covered by any standalone guide.
-  dev/5a (legacy phase names) is archived in dev/builds/.
+  dev/5a–5c (earlier iterations) are archived in dev/builds/.
 -->
 
 # LLM Security Workbench — Six-Gate Setup Guide
-### `dev/5b` · `dev/5c`
+### `dev/5d` · `dev/6a`
 
 This guide walks through a full from-scratch setup of the six-gate LLM security workbench. No prior installation is assumed.
 
 ---
 
-## 5b vs 5c
+## 5d vs 6a
 
-Both files implement the same six-gate pipeline. The difference is the sidebar UI:
+Both files implement the same six-gate pipeline with the same two-layer rail sidebar UI. The difference is code quality:
 
-| File | UI |
+| File | UI / Notes |
 |:---|:---|
-| `dev/5b-llm-security-workbench-llm-guard.html` | Flat panel sidebar with emoji gate names — stable reference build |
-| `dev/5c-llm-security-workbench-llm-guard.html` | Tokyo Night accordion sidebar, mode badge pills, persona header pill — recommended default |
+| `dev/5d-rail-sidebar.html` | Two-layer rail sidebar, 🐙PacketCraft branding — unrefactored; retained as previous iteration reference |
+| `dev/6a-llm-security-workbench-llm-guard.html` | Same UI as 5d but with structural improvements: split `sendMessage()`, shared helpers, DOM cache, CSS custom properties, aria-labels — recommended default |
 
-Use `5c` for demos and new work. `5b` is retained as a stable reference. `5a` (legacy phase numbers) is archived in `dev/builds/`.
+Use `6a` for demos and new work. `5d` is retained as the previous iteration reference. `5a`–`5c` (earlier sidebar iterations) are archived in `dev/builds/`.
 
 ---
 
@@ -60,7 +60,7 @@ User sees response
 
 Each gate has three modes: **Off**, **Advisory** (flag and continue), **Strict** (block). Every gate is independent — you can run any combination.
 
-### Scan badges in the chat header (5b)
+### Scan badges in the chat header
 
 Each active gate appends a compact badge to the user message header as it completes:
 
@@ -274,9 +274,9 @@ Expected output:
 
 | URL | File |
 |:---|:---|
-| http://localhost:3080/dev/5c | `5c` — Tokyo Night accordion sidebar, mode badges ⭐ recommended |
-| http://localhost:3080/dev/5b | `5b` — flat sidebar, emoji gate names (stable reference) |
-| http://localhost:3080/dev/5a | `5a` — legacy phase numbers (archived) |
+| http://localhost:3080/dev/6a | `6a` — two-layer rail sidebar, refactored codebase ⭐ recommended |
+| http://localhost:3080/dev/5d | `5d` — same UI as 6a, pre-refactor (previous iteration reference) |
+| http://localhost:3080/dev/5c | `5c` — Tokyo Night accordion sidebar (archived) |
 
 On first load, the workbench automatically:
 - Fetches available Ollama models and pre-selects `JOSIEFIED-Qwen3:4b`
@@ -326,8 +326,8 @@ After the first prompt, `loaded_input_scanners` and `loaded_output_scanners` sho
 | `npm start` | Start the Node.js proxy on :3080 |
 | `npm run llmguard` | Start the LLM Guard sidecar on :5002 |
 | `npm run canary` | Start the Little-Canary sidecar on :5001 |
-| `npm run stage 5b` | Copy `dev/5b-*.html` → `src/index.html` (makes it the default at `/`) |
-| `npm run stage 5a` | Copy `dev/5a-*.html` → `src/index.html` |
+| `npm run stage 6a` | Copy `dev/6a-*.html` → `src/index.html` (makes it the default at `/`) |
+| `npm run stage 5d` | Copy `dev/5d-*.html` → `src/index.html` |
 
 ---
 
@@ -360,7 +360,7 @@ Bias, Relevance, LanguageSame
 
 ## Batch Threat Runner
 
-The Batch Threat Runner is available inside both `5a` and `5b`. It runs all selected threats from the 68-threat adversarial library through the full pipeline automatically.
+The Batch Threat Runner is available inside both `5d` and `6a`. It runs all selected threats from the 68-threat adversarial library through the full pipeline automatically.
 
 The bottom summary bar shows catches per gate:
 ```
@@ -411,8 +411,8 @@ Export options: **JSON** (full result set with per-threat detail) and **Markdown
 ```
 llm-security-workbench/
 ├── dev/
-│   ├── 5a-llm-security-workbench-llm-guard.html   ← workbench UI (legacy names)
-│   └── 5b-llm-security-workbench-llm-guard.html   ← workbench UI (new names)
+│   ├── 5d-rail-sidebar.html                         ← workbench UI (pre-refactor, previous iteration)
+│   └── 6a-llm-security-workbench-llm-guard.html    ← workbench UI (refactored, recommended)
 ├── services/
 │   ├── llm-guard/
 │   │   ├── .venv/                                   ← Python 3.12 venv (gitignored)
@@ -422,7 +422,7 @@ llm-security-workbench/
 │       ├── canary_server.py                         ← Little-Canary sidecar :5001
 │       └── requirements.txt
 ├── src/
-│   ├── index.html                                   ← promoted via npm run stage 5b
+│   ├── index.html                                   ← promoted via npm run stage 6a
 │   └── server.js                                    ← Node proxy :3080
 ├── test/
 │   └── sample_threats.json                          ← 68-threat adversarial library

@@ -99,7 +99,7 @@ graph LR
         direction TB
 
         subgraph BROWSER ["Browser (workbench UI)"]
-            UI["LLM Security Workbench\ndev/5b · src/index.html"]
+            UI["LLM Security Workbench\ndev/6a · src/index.html"]
         end
 
         subgraph NODE ["Node.js · npm start · :3080"]

@@ -1,7 +1,7 @@
 # 📄 Product Requirements Document: Ollama Pro Workbench
 
-**Version:** 3.2 (5c — Tokyo Night Accordion Sidebar)
-**Date:** 2026-03-19
+**Version:** 3.3 (6a — Rail Sidebar, Refactored Codebase)
+**Date:** 2026-03-21
 **Status:** Feature Complete / Stable Release
 
 ---
@@ -82,7 +82,7 @@ All gates are independent and individually configurable (Off / Advisory / Strict
 
 Every message exchange can pass through up to six independent security gates, each operating at a different layer of the stack. Gates are executed in the following order:
 
-#### 🔬 LLM-Guard Input (local, optional) — `dev/5a` / `dev/5b`
+#### 🔬 LLM-Guard Input (local, optional) — `dev/5d` / `dev/6a`
 
 A **local ProtectAI transformer scanner suite** running as a Flask sidecar on `:5002`. Runs before Semantic-Guard — the first gate in the pipeline.
 
@@ -106,7 +106,7 @@ A **local ProtectAI transformer scanner suite** running as a Flask sidecar on `:
 
 ---
 
-#### 🔬 LLM-Guard Output (local, optional) — `dev/5a` / `dev/5b`
+#### 🔬 LLM-Guard Output (local, optional) — `dev/5d` / `dev/6a`
 
 The same `:5002` sidecar, running **after** LLM generation and AIRS-Dual.
 
@@ -337,15 +337,15 @@ The script uses `fs.copyFileSync` (pure Node, works cross-platform on Windows an
 
 | npm script | Effect |
 | :--- | :--- |
-| `npm run stage 5c` | Copies `5c-*.html` → `src/index.html` (recommended default) |
-| `npm run stage:1a` … `stage:5c` | Named shortcuts for the standard progression files |
+| `npm run stage 6a` | Copies `6a-*.html` → `src/index.html` (recommended default) |
+| `npm run stage:1a` … `stage:6a` | Named shortcuts for the standard progression files |
 | `npm run stage` | Prints all available dev files and usage |
 | `npm run canary` | Starts the Little-Canary Flask microservice on port `5001` |
 | `npm run llmguard` | Starts the LLM Guard Flask sidecar on port `5002` |
 
 ### 3.7 Developer Tools — API Inspector (7-Gate View)
 
-Collapsible full-width panel below the main layout. Displays seven columns in pipeline order (in `dev/5b`/`dev/5c`):
+Slide-up drawer above the prompt bar. Displays seven collapsible accordion sections in pipeline order (in `dev/5d`/`dev/6a`), each with Request | Response columns:
 
 | Column | Contents |
 | :--- | :--- |
@@ -585,7 +585,7 @@ llm-security-workbench/
 ├── docs/
 │   ├── PRD.md            # This document
 │   ├── 1-SETUP-GUIDE.md  # Setup guide for dev/1a, 1b, 2a
-│   ├── 5-SETUP-GUIDE.md  # Setup guide for dev/5b, 5c (six-gate pipeline)
+│   ├── 5-SETUP-GUIDE.md  # Setup guide for dev/5d, 6a (six-gate pipeline)
 │   ├── notes/            # Personal study notes (not linked from README)
 ├── dev/                  # Iteration history — serve via /dev/<prefix> or promote with npm run stage
 │   ├── 1a-ollama-chat-no-security.html
@@ -598,8 +598,10 @@ llm-security-workbench/
 │   ├── 4b-llm-security-workbench-advanced-batch.html
 │   ├── 4c-llm-security-workbench-threat-import.html
 │   ├── 5a-llm-security-workbench-llm-guard.html   # archived in dev/builds/ (legacy phase names)
-│   ├── 5b-llm-security-workbench-llm-guard.html   # six-gate pipeline (emoji names, stable ref)
-│   └── 5c-llm-security-workbench-llm-guard.html   # six-gate pipeline (Tokyo Night accordion sidebar)
+│   ├── 5b-llm-security-workbench-llm-guard.html   # archived in dev/builds/ (emoji gate names)
+│   ├── 5c-llm-security-workbench-llm-guard.html   # archived in dev/builds/ (Tokyo Night accordion sidebar)
+│   ├── 5d-rail-sidebar.html                        # two-layer rail sidebar, PacketCraft branding (pre-refactor)
+│   └── 6a-llm-security-workbench-llm-guard.html   # two-layer rail sidebar, refactored codebase (recommended)
 ├── services/
 │   ├── llm-guard/
 │   │   ├── .venv/            # Python 3.12 venv (gitignored)
@@ -612,13 +614,43 @@ llm-security-workbench/
 │   └── sample_threats.json   # 68-threat adversarial library
 ├── .env.example          # Committed template — copy to .env and fill in values
 ├── .gitignore            # Excludes .env, services/llm-guard/.venv
-├── package.json          # npm scripts: start, stage, stage:1a … stage:5b, canary, llmguard
+├── package.json          # npm scripts: start, stage, stage:1a … stage:6a, canary, llmguard
 └── README.md
 ```
 
 ---
 
 ## 7. Recently Implemented
+
+### ✅ Rail Sidebar Refactor — `dev/6a` (v3.3)
+
+**Code quality refactor** of `dev/5d` with identical UI. No functional changes to the security pipeline:
+
+- `sendMessage()` split into 7 focused gate phase functions + an orchestrator
+- Shared `updateGateBadge()` helper replaces duplicated badge update code
+- `escHtml()` utility added for XSS-safe rendering of user-controlled strings
+- DOM element cache (`const els = {}`) eliminates repeated `getElementById` calls
+- CSS custom properties for layout dimensions (`--rail-width`, `--nav-panel-width`) and shadows
+- Dead CSS removed; descriptive variable names replace cryptic abbreviations
+- `aria-label` added to all icon-only buttons for accessibility
+
+**6a is the recommended demo file** — `5d` is retained as the previous iteration reference.
+
+---
+
+### ✅ Two-Layer Rail Sidebar — `dev/5d` (v3.2.x)
+
+**Sidebar redesign** replacing the accordion layout with a two-layer left sidebar:
+
+- **56px icon rail** (dark purple) — brand/toggle, Security Pipeline, Workspace, Batch Runner, API Inspector icons; footer: Export, New Session, Theme toggle, 🐙PacketCraft vertical branding
+- **272px collapsible nav panel** — two panes: Security Pipeline (gate controls) and Workspace (model + persona); Workspace pane auto-expands all rows on click
+- **API Inspector** redesigned as a slide-up drawer above the prompt bar with 7 collapsible accordion sections, each showing Request | Response columns
+- **AIRS-Inlet defaults to Off** on load
+- 🐙PacketCraft branding in the rail footer
+
+**5d is archived** — `6a` is the recommended build.
+
+---
 
 ### ✅ Tokyo Night Accordion Sidebar — `dev/5c` (v3.2)
 
@@ -633,7 +665,7 @@ llm-security-workbench/
 - **Persona pill in header** — `#header-persona-badge` pill next to the model badge shows `👤 Persona: Default` or the selected persona name; updated by `applyPersona()`
 - **Null-guard startup fix** — `toggleAIRSSettings()`, `updateGuardrailStatus()`, and `updateCanaryStatus()` all added `if (panel)` guards around `classList` operations; missing panels (removed in the accordion restructure) previously caused a `TypeError` on page load that silently killed all subsequent JS, including the Batch Run modal
 
-**5c is the recommended demo file** — `5b` is retained as a stable reference build; `5a` archived in `dev/builds/`.
+**5c is archived in `dev/builds/`** — superseded by `5d` and `6a`.
 
 ---
 

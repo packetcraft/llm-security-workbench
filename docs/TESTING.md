@@ -65,7 +65,7 @@ curl http://localhost:11434/api/tags
 ### Test 4 — Little-Canary
 
 1. Start the canary service: `npm run canary`
-2. Navigate to `http://localhost:3080/dev/5b`
+2. Navigate to `http://localhost:3080/dev/6a`
 3. In the **🐦 Little-Canary** panel, set mode to **Full — block high-confidence attacks**.
 4. Expand **⚙️ Canary Settings** and select a small model (`qwen2.5:1.5b`).
 5. Select the **Prompt Injection** or **Jailbreak** threat and click **Send Message**.
@@ -82,7 +82,7 @@ curl http://localhost:11434/api/tags
 
 ### Test 5 — API Inspector
 
-Click the **🛠️ API Inspector** bar at the bottom. In `dev/5c` (and `dev/5b`) you'll see seven columns in pipeline order — one per gate — showing the full request payload and raw verdict JSON:
+Click the **🛠️ API Inspector** icon in the rail sidebar. In `dev/6a` (and `dev/5d`) you'll see seven collapsible accordion sections in pipeline order — one per gate — showing the full request payload and raw verdict JSON:
 
 | Column | Shows |
 | :--- | :--- |
@@ -143,7 +143,7 @@ All columns reset to "Waiting..." when a new prompt is sent. Gates set to Off sh
 
 ## Usage Tips
 
-* **Sidebar:** Click **◀ Sidebar** to collapse the left panel and give chat full width.
+* **Sidebar:** Click the 🛡️ icon at the top of the icon rail to toggle the nav panel open or closed.
 * **Keyboard hint:** `Shift + Enter` for a new line in the prompt box.
 * **Security panel modes:** All gates use a single mode select (Off / Audit or Advisory / Strict or Full). The panel border and header status dot change colour to reflect the current mode — grey (off), yellow (audit), red/purple (strict).
 * **Model Parameters:** Expand **⚙️ Model Parameters** under the model selector to tune Temperature, Top P, Top K, and Repeat Penalty. Hover the **ℹ** badge on any slider for an explanation.

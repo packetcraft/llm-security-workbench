@@ -1,7 +1,7 @@
 <!--
   SCOPE: This guide covers dev/1a, dev/1b, and dev/2a only.
   These are the entry-level HTML files — minimal Ollama chat and AIRS prompt-gate demo.
-  For the full six-gate pipeline (dev/5a / dev/5b), see docs/5-SETUP-GUIDE.md.
+  For the full six-gate pipeline (dev/5d / dev/6a), see docs/5-SETUP-GUIDE.md.
   Files dev/3xx and dev/4xx are intermediate builds not covered by any standalone guide.
 -->
 
@@ -244,4 +244,4 @@ llm-security-workbench/
 
 `2a` shows a single-gate prompt scan. The full six-gate pipeline (LLM-Guard → Semantic-Guard → Little-Canary → AIRS-Inlet → LLM → AIRS-Dual → LLM-Guard OUTPUT) is covered in:
 
-→ **`docs/5-SETUP-GUIDE.md`**
+→ **`docs/5-SETUP-GUIDE.md`** (`dev/5d` / `dev/6a`)
