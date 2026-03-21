@@ -172,3 +172,58 @@ The Node.js proxy (`src/server.js`) exists for two reasons:
 **Key design point:** The browser talks **directly** to Ollama for all LLM inference (Semantic-Guard judge calls and chat streaming) but routes through the Node proxy for AIRS, LLM Guard, and Little-Canary. Direct Ollama access avoids double-buffering the streaming response; the proxy exists only to bypass CORS for cloud API calls and to keep the AIRS API key off the client.
 
 Ollama requires `OLLAMA_ORIGINS=*` to accept requests from the browser. See the Quick Start in README.md.
+
+---
+
+## UI Layout (dev/6a-instrument-panel)
+
+The workbench uses a full-viewport horizontal flex shell (`#app-shell`) with five named regions:
+
+```
+┌──────────┬───────────────────┬──────────────────────┬──────────────────────┐
+│ Icon     │ Left Nav Panel    │                      │ Right Telemetry      │
+│ Rail     │ (#nav-panel)      │   Main Content       │ Panel                │
+│          │                   │   (#main-content)    │ (#right-panel)       │
+│ 56px     │ 200px (collapsed: │                      │ 220px (collapsed: 0) │
+│ fixed    │ 0, rail stays)    │   flex: 1            │                      │
+└──────────┴───────────────────┴──────────────────────┴──────────────────────┘
+```
+
+### Panel reference
+
+| Panel | HTML ID / class | Default width | Collapsed width | Toggled by |
+| :--- | :--- | :--- | :--- | :--- |
+| Icon rail | `#icon-rail` | `56px` (fixed, never collapses) | — | — |
+| Left nav panel | `#nav-panel` | `200px` | `0` (class `nav-collapsed`) | 🛡️ brand button or `toggleNavPanel()` |
+| Main content | `#main-content` | `flex: 1` (fills remaining space) | — | — |
+| Right telemetry panel | `#right-panel` | `220px` | `0` (class `collapsed`) | 📊 rail icon or `toggleRightPanel()` |
+
+### Main content sub-regions (top → bottom, vertical flex)
+
+| Region | HTML ID / class | Behaviour |
+| :--- | :--- | :--- |
+| Top bar | `.top-bar` | Fixed height (~40px); shows title, model badge, persona badge |
+| Chat scroll area | `#chat-scroll-area` | `flex: 1` — only this region scrolls |
+| API Inspector drawer | `#debug-drawer` | Slides up above prompt bar; `max-height` transition |
+| Prompt bar | `.input-container` | `flex-shrink: 0` — always anchored at bottom |
+
+### Left nav panel panes
+
+The left nav panel hosts two switchable panes, selected via the icon rail:
+
+| Pane | HTML ID | Rail icon | Contents |
+| :--- | :--- | :--- | :--- |
+| Security Pipeline | `#pane-security` | 🔬 | Gate controls (mode badges, settings) for all 6 gates |
+| Workspace | `#pane-workspace` | ⬡ | Model selector, persona selector |
+
+### CSS custom properties for layout dimensions
+
+Defined in `:root` — change these to resize panels globally:
+
+```css
+--rail-width:                56px;
+--nav-panel-width:          200px;
+--debug-drawer-max-height:  360px;
+```
+
+The right panel width (`220px`) is set directly on `#right-panel` and not yet a custom property.
