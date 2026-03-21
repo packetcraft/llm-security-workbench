@@ -141,7 +141,7 @@ http://localhost:3080/dev/1a    →  bare Ollama chat, no security
 
 |   | File | Description | AIRS? |
 | :---: | :--- | :--- | :---: |
-| ⭐ | `1a` — `ollama-chat-no-security` | Baseline — bare Ollama chat | ✗ |
+|   | `1a` — `ollama-chat-no-security` | Baseline — bare Ollama chat | ✗ |
 |   | `1b` — `mechat-no-security` | Personas + model selector, no security | ✗ |
 | ⭐ | `2a` — `mechat-airs-teaching-demo` | AIRS prompt gate teaching demo | ✓ |
 |   | `3a` — `twin-scan` | AIRS prompt + response scan | ✓ |
@@ -150,8 +150,8 @@ http://localhost:3080/dev/1a    →  bare Ollama chat, no security
 |   | `4a` — `batch-runner` | Adds Batch Threat Runner | ✓ |
 |   | `4b` — `advanced-batch` | Background execution, MD export | ✓ |
 |   | `4c` — `threat-import` | garak + JailbreakBench import | ✓ |
-| ⭐ | `5a` — `llm-security-workbench-llm-guard` | Six-gate workbench (legacy phase names) | ✓ |
-| ⭐ | `5b` — `llm-security-workbench-llm-guard` | Six-gate workbench (emoji gate names) | ✓ |
+|   | `5a` — `llm-security-workbench-llm-guard` | Six-gate workbench (legacy phase names) | ✓ |
+|   | `5b` — `llm-security-workbench-llm-guard` | Six-gate workbench (emoji gate names) | ✓ |
 | ⭐ | `5c` — `llm-security-workbench-llm-guard` | Tokyo Night accordion sidebar, mode badges | ✓ |
 
 To make a dev file the default at `http://localhost:3080`:
