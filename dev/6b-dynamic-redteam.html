@@ -978,52 +978,54 @@
             color: var(--text);
         }
 
-        /* Batch runner modal */
-        #batch-modal-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
+        /* ── Batch Threat Runner drawer — sits between chat and prompt bar ── */
+        #batch-drawer {
+            flex-shrink: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease;
+            border-top: 1px solid transparent;
         }
 
-        #batch-modal-backdrop.open {
-            display: flex;
-        }
-
-        #batch-modal {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 20px;
-            width: min(740px, 95vw);
-            max-height: 88vh;
+        #batch-drawer.open {
+            max-height: 540px;
             overflow-y: auto;
+            border-top-color: var(--border);
+        }
+
+        #batch-drawer .batch-drawer-inner {
+            padding: 0 0 12px;
+        }
+
+        /* Tab content needs horizontal padding since it no longer lives inside the modal */
+        #batch-tab-static, #batch-tab-dynamic {
+            padding: 0 16px;
+        }
+
+        #batch-drawer .batch-drawer-header {
+            position: sticky;
+            top: 0;
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--warn, #e0af68) 0%, #d4956a 100%);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            z-index: 2;
         }
 
-        #batch-modal h3 {
-            margin: 0;
-            font-size: 14px;
-            color: var(--primary);
+        #batch-drawer .batch-drawer-header .btn-ghost {
+            border-color: rgba(255,255,255,0.35);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 8px;
         }
 
-        #batch-modal-close {
-            float: right;
-            background: none;
-            border: none;
-            color: var(--muted);
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
-        }
-
-        #batch-modal-close:hover {
-            color: var(--text);
+        #batch-drawer .batch-drawer-header .btn-ghost:hover {
+            background: rgba(255,255,255,0.18);
         }
 
         .batch-controls {
@@ -2448,7 +2450,7 @@
                     onclick="selectPane('workspace', 'Workspace', this)">
                     ⬡
                 </button>
-                <button class="rail-icon" title="Batch Threat Runner" aria-label="Batch Threat Runner"
+                <button class="rail-icon" id="rail-batch" title="Batch Threat Runner" aria-label="Batch Threat Runner"
                     onclick="openBatchRunner()">
                     ⚡
                 </button>
@@ -2853,6 +2855,16 @@ Respond ONLY with valid JSON, no other text:
             </div>
 
             <!-- ── API Inspector drawer (sits above prompt bar) ── -->
+            <!-- ── Batch Threat Runner drawer (sits above prompt bar) ── -->
+            <div id="batch-drawer">
+                <div class="batch-drawer-header">
+                    <span style="cursor:pointer;flex:1;" onclick="openBatchRunner()">⚡ Batch Threat Runner</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:400;margin-right:8px;">+ External Import</span>
+                    <button class="btn-ghost" onclick="closeBatchModal()" title="Close" style="font-size:12px;padding:1px 7px;">✕</button>
+                </div>
+                <div class="batch-drawer-inner" id="batch-drawer-body"></div>
+            </div>
+
             <div id="debug-drawer">
                 <div class="debug-panel">
                     <div class="debug-header">
@@ -4992,7 +5004,7 @@ Respond ONLY with valid JSON, no other text:
                 dbgLgOutputReq: document.getElementById("debug-lgOutput-req"),
                 dbgLgOutputRes: document.getElementById("debug-lgOutput-res"),
                 // Batch runner
-                batchModalBackdrop: document.getElementById("batch-modal-backdrop"),
+                batchDrawer: document.getElementById("batch-drawer"),
                 batchCatList: document.getElementById("batch-cat-list"),
                 batchStartBtn: document.getElementById("batch-start-btn"),
                 batchStopBtn: document.getElementById("batch-stop-btn"),
@@ -5081,6 +5093,14 @@ Respond ONLY with valid JSON, no other text:
                 badge.insertAdjacentElement("afterend", det);
             }
         });
+
+        // #8 — Move batch modal content into the drawer body
+        const _batchModal  = document.getElementById('batch-modal');
+        const _batchDrawerBody = document.getElementById('batch-drawer-body');
+        if (_batchModal && _batchDrawerBody) {
+            while (_batchModal.firstChild) _batchDrawerBody.appendChild(_batchModal.firstChild);
+            document.getElementById('batch-modal-backdrop').remove();
+        }
 
         }); // DOMContentLoaded
 
@@ -5309,7 +5329,14 @@ Respond ONLY with valid JSON, no other text:
             _updateSevCounts();
             _updateRunBtn();
 
-            els.batchModalBackdrop.classList.add("open");
+            const isOpen = els.batchDrawer.classList.toggle("open");
+            const railBtn = document.getElementById("rail-batch");
+            if (railBtn) railBtn.classList.toggle("active", isOpen);
+            // Close API Inspector drawer if open (one drawer at a time)
+            if (isOpen) {
+                const dd = document.getElementById("debug-drawer");
+                if (dd && dd.classList.contains("open")) toggleDebugDrawer(document.getElementById("rail-inspector"));
+            }
         }
 
         function setBatchCatAll(checked) {
@@ -5348,7 +5375,9 @@ Respond ONLY with valid JSON, no other text:
         }
 
         function closeBatchModal() {
-            els.batchModalBackdrop.classList.remove("open");
+            els.batchDrawer.classList.remove("open");
+            const railBtn = document.getElementById("rail-batch");
+            if (railBtn) railBtn.classList.remove("active");
         }
 
         function stopBatchRun() {
@@ -6563,14 +6592,9 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
 
     </script>
 
-    <!-- Batch Threat Runner Modal -->
-    <div id="batch-modal-backdrop" onclick="if(event.target===this)closeBatchModal()">
+    <!-- Batch Threat Runner — source container (moved into drawer at DOMContentLoaded) -->
+    <div id="batch-modal-backdrop" style="display:none">
         <div id="batch-modal">
-            <div>
-                <button id="batch-modal-close" onclick="closeBatchModal()">✕</button>
-                <h3>⚡ Batch Threat Runner <span style="font-size:10px;color:var(--canary-adv);font-weight:400;">+
-                        External Import</span></h3>
-            </div>
             <div class="batch-tab-bar">
                 <button class="batch-tab active" id="btab-static" onclick="switchBatchTab('static')">📋 Static</button>
                 <button class="batch-tab" id="btab-dynamic" onclick="switchBatchTab('dynamic')">🔴 Dynamic Probe</button>
