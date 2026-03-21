@@ -2159,8 +2159,10 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--text-muted);
-            margin-bottom: 8px;
-            opacity: 0.7;
+            margin-bottom: 10px;
+            padding-left: 8px;
+            border-left: 3px solid currentColor;
+            opacity: 0.85;
         }
 
         /* Gate waterfall */
@@ -2225,6 +2227,41 @@
             background: var(--border);
             margin: 2px 0;
             opacity: 0.5;
+        }
+
+        /* Token split bar */
+        .rp-split-bar-track {
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+            background: var(--border);
+        }
+        .rp-split-seg {
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+        .seg-prompt      { background: var(--primary, #7aa2f7); }
+        .seg-completion  { background: var(--safe, #9ece6a); }
+        .rp-split-legend {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+        .seg-prompt-dot      { color: var(--primary, #7aa2f7); }
+        .seg-completion-dot  { color: var(--safe, #9ece6a); }
+
+        /* Model info badge pills */
+        .rp-badge-pill {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            border: 1px solid currentColor;
+            opacity: 0.85;
+            white-space: nowrap;
+            letter-spacing: 0.03em;
         }
     </style>
 </head>
@@ -2835,7 +2872,7 @@ Respond ONLY with valid JSON, no other text:
             <div class="rp-body">
 
                 <!-- Gate Latency Waterfall -->
-                <div>
+                <div style="color:var(--primary)">
                     <div class="rp-section-title">Gate Latency</div>
                     <div id="wf-gates"></div>
                 </div>
@@ -2843,7 +2880,7 @@ Respond ONLY with valid JSON, no other text:
                 <div class="rp-divider"></div>
 
                 <!-- Pipeline summary -->
-                <div>
+                <div style="color:var(--guard, #7aa2f7)">
                     <div class="rp-section-title">Pipeline</div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">Total time</span>
@@ -2862,7 +2899,7 @@ Respond ONLY with valid JSON, no other text:
                 <div class="rp-divider"></div>
 
                 <!-- Token stats -->
-                <div>
+                <div style="color:var(--safe, #9ece6a)">
                     <div class="rp-section-title">Tokens</div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">Prompt</span>
@@ -2880,12 +2917,22 @@ Respond ONLY with valid JSON, no other text:
                         <span class="rp-stat-label">Speed</span>
                         <span class="rp-stat-value" id="rp-tok-speed">—</span>
                     </div>
+                    <div class="rp-split-bar-wrap" style="margin-top:6px;">
+                        <div class="rp-split-bar-track">
+                            <div class="rp-split-seg seg-prompt"  id="rp-tok-bar-prompt"  style="width:50%"></div>
+                            <div class="rp-split-seg seg-completion" id="rp-tok-bar-completion" style="width:50%"></div>
+                        </div>
+                        <div class="rp-split-legend">
+                            <span class="seg-prompt-dot">■</span> Prompt
+                            <span class="seg-completion-dot" style="margin-left:8px;">■</span> Completion
+                        </div>
+                    </div>
                 </div>
 
                 <div class="rp-divider"></div>
 
                 <!-- Ollama Timing -->
-                <div>
+                <div style="color:var(--warn, #e0af68)">
                     <div class="rp-section-title">Ollama Timing</div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">Model load</span>
@@ -2907,28 +2954,35 @@ Respond ONLY with valid JSON, no other text:
                         <span class="rp-stat-label">Stop reason</span>
                         <span class="rp-stat-value" id="rp-ol-stop">—</span>
                     </div>
+                    <div style="margin-top:8px;">
+                        <div class="rp-split-bar-track" style="height:8px;">
+                            <div class="rp-split-seg" id="rp-ol-bar-load"   style="width:0%; background:var(--warn,#e0af68);"></div>
+                            <div class="rp-split-seg" id="rp-ol-bar-prompt" style="width:0%; background:var(--primary,#7aa2f7);"></div>
+                            <div class="rp-split-seg" id="rp-ol-bar-gen"    style="width:0%; background:var(--safe,#9ece6a);"></div>
+                        </div>
+                        <div class="rp-split-legend" style="margin-top:4px;">
+                            <span style="color:var(--warn,#e0af68)">■</span> Load &nbsp;
+                            <span style="color:var(--primary,#7aa2f7)">■</span> Eval &nbsp;
+                            <span style="color:var(--safe,#9ece6a)">■</span> Gen
+                        </div>
+                    </div>
                 </div>
 
                 <div class="rp-divider"></div>
 
                 <!-- Model Info -->
-                <div>
+                <div style="color:var(--purple, #9d7cd8)">
                     <div class="rp-section-title">Model Info</div>
-                    <div class="rp-stat-row">
-                        <span class="rp-stat-label">Architecture</span>
-                        <span class="rp-stat-value" id="rp-m-arch">—</span>
-                    </div>
-                    <div class="rp-stat-row">
-                        <span class="rp-stat-label">Parameters</span>
-                        <span class="rp-stat-value" id="rp-m-params">—</span>
-                    </div>
-                    <div class="rp-stat-row">
-                        <span class="rp-stat-label">Quantization</span>
-                        <span class="rp-stat-value" id="rp-m-quant">—</span>
-                    </div>
-                    <div class="rp-stat-row">
-                        <span class="rp-stat-label">Context window</span>
-                        <span class="rp-stat-value" id="rp-m-ctx">—</span>
+                    <div id="rp-m-badges" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;"></div>
+                    <div style="margin-bottom:6px;">
+                        <div class="wf-gate-label" style="margin-bottom:3px;">
+                            <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">Context window</span>
+                            <span class="wf-gate-ms" id="rp-m-ctx">—</span>
+                        </div>
+                        <div class="wf-bar-track">
+                            <div class="wf-bar-fill" id="rp-ctx-bar" style="background:var(--purple,#9d7cd8);width:0%;transition:width 0.4s ease;"></div>
+                        </div>
+                        <div style="font-size:9px;color:var(--text-muted);margin-top:2px;opacity:0.6;" id="rp-ctx-used-label"></div>
                     </div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">File size</span>
@@ -2939,19 +2993,29 @@ Respond ONLY with valid JSON, no other text:
                 <div class="rp-divider"></div>
 
                 <!-- Memory -->
-                <div>
+                <div style="color:var(--canary, #ff9e64)">
                     <div class="rp-section-title">Memory</div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">Processor</span>
                         <span class="rp-stat-value" id="rp-mem-proc">—</span>
                     </div>
-                    <div class="rp-stat-row">
-                        <span class="rp-stat-label">VRAM</span>
-                        <span class="rp-stat-value" id="rp-mem-vram">—</span>
+                    <div style="margin-bottom:6px;">
+                        <div class="wf-gate-label" style="margin-bottom:3px;">
+                            <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">VRAM</span>
+                            <span class="wf-gate-ms"   id="rp-mem-vram">—</span>
+                        </div>
+                        <div class="wf-bar-track">
+                            <div class="wf-bar-fill" id="rp-mem-vram-bar" style="background:var(--canary,#ff9e64);width:0%;transition:width 0.4s ease;"></div>
+                        </div>
                     </div>
-                    <div class="rp-stat-row">
-                        <span class="rp-stat-label">RAM</span>
-                        <span class="rp-stat-value" id="rp-mem-ram">—</span>
+                    <div style="margin-bottom:6px;">
+                        <div class="wf-gate-label" style="margin-bottom:3px;">
+                            <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">RAM</span>
+                            <span class="wf-gate-ms"   id="rp-mem-ram">—</span>
+                        </div>
+                        <div class="wf-bar-track">
+                            <div class="wf-bar-fill" id="rp-mem-ram-bar" style="background:var(--purple,#9d7cd8);width:0%;transition:width 0.4s ease;"></div>
+                        </div>
                     </div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">Unloads in</span>
@@ -3072,6 +3136,8 @@ Respond ONLY with valid JSON, no other text:
         // Per-request telemetry state
         let _wfData = {};
         let _rpPipelineStart = 0;
+        // Context window size for fill bar
+        let _rpCtxWindow = 0;
 
         function toggleRightPanel() {
             const panel = document.getElementById('right-panel');
@@ -3132,6 +3198,13 @@ Respond ONLY with valid JSON, no other text:
             bar.className   = 'wf-bar-fill status-' + (status || 'safe');
             label.textContent = latencyMs > 0 ? latencyMs + 'ms' : (status === 'off' ? 'off' : '—');
 
+            const msEl = document.getElementById('wf-ms-' + gateId);
+            if (msEl && latencyMs > 0) {
+                msEl.style.color = latencyMs > 3000 ? 'var(--danger,#f7768e)'
+                                 : latencyMs > 1000 ? 'var(--warn,#e0af68)'
+                                 : 'var(--safe,#9ece6a)';
+            }
+
             // Re-normalise all existing bars relative to new max
             Object.entries(_wfData).forEach(([id, d]) => {
                 const b = document.getElementById('wf-bar-' + id);
@@ -3153,16 +3226,50 @@ Respond ONLY with valid JSON, no other text:
             set('rp-tok-total',      (promptTokens != null && completionTokens != null)
                                         ? (promptTokens + completionTokens) : '—');
             set('rp-tok-speed',      tokensPerSec != null ? tokensPerSec.toFixed(1) + ' t/s' : '—');
+            const total = (promptTokens || 0) + (completionTokens || 0);
+            if (total > 0) {
+                const pp = document.getElementById('rp-tok-bar-prompt');
+                const cp = document.getElementById('rp-tok-bar-completion');
+                if (pp) pp.style.width = ((promptTokens / total) * 100).toFixed(1) + '%';
+                if (cp) cp.style.width = ((completionTokens / total) * 100).toFixed(1) + '%';
+            }
+            if (_rpCtxWindow > 0 && promptTokens != null) {
+                const ctxBar   = document.getElementById('rp-ctx-bar');
+                const ctxLabel = document.getElementById('rp-ctx-used-label');
+                const pct = Math.min(100, (promptTokens / _rpCtxWindow) * 100);
+                if (ctxBar)   ctxBar.style.width = pct.toFixed(1) + '%';
+                if (ctxLabel) ctxLabel.textContent = `${promptTokens.toLocaleString()} / ${_rpCtxWindow.toLocaleString()} used`;
+                if (ctxBar) ctxBar.style.background = pct > 80 ? 'var(--danger,#f7768e)' : pct > 60 ? 'var(--warn,#e0af68)' : 'var(--purple,#9d7cd8)';
+            }
         }
 
         function rpUpdateOllamaTiming(loadNs, promptEvalNs, evalNs, totalNs, doneReason) {
             const ms = ns => ns ? Math.round(ns / 1e6) + 'ms' : '—';
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-            set('rp-ol-load',        loadNs ? (Math.round(loadNs / 1e6) === 0 ? '0ms (hot)' : ms(loadNs)) : '—');
+            const loadEl = document.getElementById('rp-ol-load');
+            if (loadEl) {
+                const loadMsVal = loadNs ? Math.round(loadNs / 1e6) : 0;
+                if (loadMsVal < 10) {
+                    loadEl.innerHTML = '<span style="color:var(--safe,#9ece6a);font-weight:700;">● HOT</span>';
+                } else {
+                    loadEl.textContent = loadMsVal + 'ms';
+                    loadEl.style.color = loadMsVal > 500 ? 'var(--warn,#e0af68)' : '';
+                }
+            }
             set('rp-ol-prompt-eval', ms(promptEvalNs));
             set('rp-ol-gen',         ms(evalNs));
             set('rp-ol-total',       ms(totalNs));
             set('rp-ol-stop',        doneReason || '—');
+            const loadMs   = loadNs   ? Math.round(loadNs / 1e6)   : 0;
+            const promptMs = promptEvalNs ? Math.round(promptEvalNs / 1e6) : 0;
+            const genMs    = evalNs   ? Math.round(evalNs / 1e6)   : 0;
+            const barTotal = loadMs + promptMs + genMs;
+            if (barTotal > 0) {
+                const setW = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = pct.toFixed(1) + '%'; };
+                setW('rp-ol-bar-load',   (loadMs   / barTotal) * 100);
+                setW('rp-ol-bar-prompt', (promptMs / barTotal) * 100);
+                setW('rp-ol-bar-gen',    (genMs    / barTotal) * 100);
+            }
         }
 
         async function rpFetchModelInfo(modelName) {
@@ -3180,13 +3287,22 @@ Respond ONLY with valid JSON, no other text:
                 const info     = data.model_info || {};
                 const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '—'; };
 
-                set('rp-m-arch',   details.family || (Object.keys(info).find(k => k.endsWith('.architecture')) ? info[Object.keys(info).find(k => k.endsWith('.architecture'))] : null) || '—');
-                set('rp-m-params', details.parameter_size || '—');
-                set('rp-m-quant',  details.quantization_level || '—');
+                const badgesEl = document.getElementById('rp-m-badges');
+                if (badgesEl) {
+                    const arch  = details.family || '';
+                    const params = details.parameter_size || '';
+                    const quant = details.quantization_level || '';
+                    badgesEl.innerHTML = [
+                        arch  ? `<span class="rp-badge-pill" style="color:var(--purple,#9d7cd8)">${arch}</span>` : '',
+                        params ? `<span class="rp-badge-pill" style="color:var(--primary,#7aa2f7)">${params}</span>` : '',
+                        quant  ? `<span class="rp-badge-pill" style="color:var(--warn,#e0af68)">${quant}</span>` : '',
+                    ].filter(Boolean).join('');
+                }
 
                 const ctxKey = Object.keys(info).find(k => k.includes('context_length'));
                 const ctxVal = ctxKey ? info[ctxKey] : null;
                 set('rp-m-ctx', ctxVal ? ctxVal.toLocaleString() : '—');
+                _rpCtxWindow = ctxVal || 0;
 
                 const bytes = data.size;
                 if (bytes) {
@@ -3214,8 +3330,13 @@ Respond ONLY with valid JSON, no other text:
                 if (entry) {
                     set('rp-mem-proc', entry.details?.processor || entry.processor || '—');
                     set('rp-mem-vram', rpFormatBytes(entry.size_vram));
-                    const ram = (entry.size || 0) - (entry.size_vram || 0);
-                    set('rp-mem-ram',  ram > 0 ? rpFormatBytes(ram) : '—');
+                    const ramVal = (entry.size || 0) - (entry.size_vram || 0);
+                    set('rp-mem-ram',  ramVal > 0 ? rpFormatBytes(ramVal) : '—');
+                    const totalMem = entry.size || 1;
+                    const vramBar = document.getElementById('rp-mem-vram-bar');
+                    const ramBar  = document.getElementById('rp-mem-ram-bar');
+                    if (vramBar) vramBar.style.width = Math.min(100, ((entry.size_vram || 0) / totalMem) * 100).toFixed(1) + '%';
+                    if (ramBar)  ramBar.style.width  = Math.min(100, (Math.max(0, ramVal) / totalMem) * 100).toFixed(1) + '%';
                     if (entry.expires_at) {
                         const secsLeft = Math.max(0, Math.round((new Date(entry.expires_at) - Date.now()) / 1000));
                         const mins = Math.floor(secsLeft / 60);
