@@ -60,6 +60,14 @@
             --rail-icon-active: rgba(255, 255, 255, 0.20);
             --rail-icon-active-color: #ffffff;
             --rail-brand-bg: rgba(255, 255, 255, 0.15);
+            /* Layout dimensions */
+            --rail-width: 56px;
+            --nav-panel-width: 272px;
+            --debug-drawer-max-height: 360px;
+            /* Shadows */
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 2px 10px rgba(0,0,0,0.5);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.4);
         }
 
         /* ── Tokyo Night ── */
@@ -224,7 +232,7 @@
             background: var(--panel);
             overflow-y: auto;
             padding: 18px 22px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-sm);
             /* #8 — Styled scrollbar */
             scrollbar-width: thin;
             scrollbar-color: var(--border) transparent;
@@ -678,7 +686,7 @@
             padding: 0;
             line-height: 34px;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--shadow-md);
             z-index: 10;
             transition: opacity 0.2s;
         }
@@ -724,7 +732,7 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.15s;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--shadow-lg);
             border: 1px solid var(--tooltip-border);
         }
 
@@ -1178,7 +1186,7 @@
         }
 
         #batch-results-wrap {
-            max-height: 360px;
+            max-height: var(--debug-drawer-max-height);
             overflow-y: auto;
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -1630,7 +1638,7 @@
         }
 
         #icon-rail {
-            width: 56px;
+            width: var(--rail-width);
             flex-shrink: 0;
             background: var(--rail-bg);
             display: flex;
@@ -1772,7 +1780,7 @@
         }
 
         #nav-panel {
-            width: 272px;
+            width: var(--nav-panel-width);
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
@@ -1794,7 +1802,7 @@
             padding: 12px 14px 10px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
-            min-width: 272px;
+            min-width: var(--nav-panel-width);
             box-sizing: border-box;
         }
 
@@ -1926,7 +1934,7 @@
         }
 
         #debug-drawer.open {
-            max-height: 360px;
+            max-height: var(--debug-drawer-max-height);
             overflow-y: auto;
         }
 
@@ -2072,11 +2080,6 @@
             overflow-y: auto;
         }
 
-        /* Remove old .chat-area rule — no longer needed */
-        .chat-area {
-            display: contents;
-        }
-
         #nav-panel .sidebar-panel,
         #nav-panel .workspace-panel {
             border-radius: 0;
@@ -2105,21 +2108,23 @@
 
         <!-- Icon Rail -->
         <div id="icon-rail">
-            <div class="rail-brand" title="Toggle sidebar" onclick="toggleNavPanel()">🛡️</div>
+            <div class="rail-brand" title="Toggle sidebar" aria-label="Toggle sidebar" onclick="toggleNavPanel()">🛡️</div>
 
             <nav class="rail-nav">
                 <button class="rail-icon active" id="rail-security" title="Security Pipeline"
+                    aria-label="Security Pipeline"
                     onclick="selectPane('security', 'Security Pipeline', this)">
                     🔬
                 </button>
                 <button class="rail-icon" id="rail-workspace" title="Workspace"
+                    aria-label="Workspace"
                     onclick="selectPane('workspace', 'Workspace', this)">
                     ⬡
                 </button>
-                <button class="rail-icon" title="Batch Threat Runner" onclick="openBatchRunner()">
+                <button class="rail-icon" title="Batch Threat Runner" aria-label="Batch Threat Runner" onclick="openBatchRunner()">
                     ⚡
                 </button>
-                <button class="rail-icon" id="rail-inspector" title="API Inspector" onclick="toggleDebugDrawer(this)">
+                <button class="rail-icon" id="rail-inspector" title="API Inspector" aria-label="API Inspector" onclick="toggleDebugDrawer(this)">
                     🛠️
                 </button>
             </nav>
@@ -2136,13 +2141,13 @@
                 <div class="rail-divider"></div>
 
                 <!-- [3] Export session -->
-                <button class="rail-icon" title="Export session" onclick="exportSession()">📥</button>
+                <button class="rail-icon" title="Export session" aria-label="Export session" onclick="exportSession()">📥</button>
 
                 <!-- [2] New session -->
-                <button class="rail-icon" title="New session" onclick="startNewSession()">🔄</button>
+                <button class="rail-icon" title="New session" aria-label="New session" onclick="startNewSession()">🔄</button>
 
                 <!-- [1] Theme toggle — bottom most -->
-                <button class="rail-icon" title="Toggle light/dark theme"
+                <button class="rail-icon" title="Toggle light/dark theme" aria-label="Toggle light/dark theme"
                     onclick="document.body.classList.toggle('dark')">🌓</button>
 
             </div>
@@ -2153,7 +2158,7 @@
             <div class="nav-panel-header">
                 <span class="nav-panel-title" id="nav-panel-title">Security Pipeline</span>
                 <button class="nav-panel-collapse-btn" id="nav-collapse-btn" onclick="toggleNavPanel()"
-                    title="Collapse sidebar">‹</button>
+                    title="Collapse sidebar" aria-label="Collapse sidebar">‹</button>
             </div>
             <div class="nav-panel-body">
 
@@ -2734,7 +2739,7 @@ Respond ONLY with valid JSON, no other text:
         function updateModelBadge() {
             const badge = document.getElementById("header-model-badge");
             const full =
-                document.getElementById("model-select").value || "No model";
+                els.modelSelect.value || "No model";
             const short = full.includes("/") ? full.split("/").pop() : full;
             badge.textContent = "⬡ " + short;
             badge.title = full; // Full name on hover
@@ -2742,7 +2747,7 @@ Respond ONLY with valid JSON, no other text:
 
         // #6 — Scroll to bottom
         function scrollToBottom() {
-            const chatBox = document.getElementById("chat-box");
+            const chatBox = els.chatBox;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -2886,7 +2891,7 @@ Respond ONLY with valid JSON, no other text:
 
         // #12 — API key visibility
         function toggleApiKeyVisibility() {
-            const input = document.getElementById("airs-api-key");
+            const input = els.airsApiKey;
             input.type = input.type === "password" ? "text" : "password";
         }
 
@@ -2919,9 +2924,9 @@ Respond ONLY with valid JSON, no other text:
 
         // 📋 AUTO-SELECT MODEL
         async function fetchModels() {
-            const selector = document.getElementById("model-select");
-            const guardSelector = document.getElementById("guardrail-model");
-            const canarySelector = document.getElementById("canary-model");
+            const selector = els.modelSelect;
+            const guardSelector = els.guardrailModel;
+            const canarySelector = els.canaryModel;
             try {
                 const response = await fetch(
                     "http://localhost:11434/api/tags",
@@ -2972,16 +2977,16 @@ Respond ONLY with valid JSON, no other text:
 
         // 💾 PERSONA MANAGEMENT
         function applyPersona() {
-            const val = document.getElementById("persona-select").value;
+            const val = els.personaSelect.value;
             const custom = JSON.parse(
                 localStorage.getItem("customPersonas") || "{}",
             );
-            document.getElementById("system-prompt").value =
+            els.systemPrompt.value =
                 basePersonas[val] || custom[val] || "";
             // Update header persona pill
             const badge = document.getElementById("header-persona-badge");
             if (badge) {
-                const sel = document.getElementById("persona-select");
+                const sel = els.personaSelect;
                 const label = val ? sel.options[sel.selectedIndex].text : "Default";
                 badge.textContent = "👤 " + label;
             }
@@ -3020,7 +3025,7 @@ Respond ONLY with valid JSON, no other text:
                 const cfg = await res.json();
 
                 if (cfg.hasApiKey) {
-                    const keyEl = document.getElementById("airs-api-key");
+                    const keyEl = els.airsApiKey;
                     keyEl.value = "••••••••••••••••";
                     keyEl.disabled = true;
                     keyEl.dataset.fromEnv = "true";
@@ -3028,7 +3033,7 @@ Respond ONLY with valid JSON, no other text:
                 }
 
                 if (cfg.profile) {
-                    const profileSel = document.getElementById("airs-profile");
+                    const profileSel = els.airsProfile;
                     const opt = document.createElement("option");
                     opt.value = cfg.profile;
                     opt.textContent = cfg.profile + " (.env)";
@@ -3044,10 +3049,10 @@ Respond ONLY with valid JSON, no other text:
 
         // 🛡️ SECURITY PROFILE MANAGEMENT
         function toggleAIRSSettings() {
-            const mode = document.getElementById("airs-mode").value;
+            const mode = els.airsMode.value;
             const isDisabled = mode === "off";
-            const keyEl = document.getElementById("airs-api-key");
-            const profileEl = document.getElementById("airs-profile");
+            const keyEl = els.airsApiKey;
+            const profileEl = els.airsProfile;
             if (!keyEl.dataset.fromEnv) keyEl.disabled = isDisabled;
             if (!profileEl.dataset.fromEnv) profileEl.disabled = isDisabled;
             document.getElementById("add-airs-btn").disabled = isDisabled;
@@ -3074,7 +3079,7 @@ Respond ONLY with valid JSON, no other text:
                 JSON.stringify(customAirs),
             );
             loadCustomAirsProfiles();
-            document.getElementById("airs-profile").value = profileId; // Auto-select it
+            els.airsProfile.value = profileId; // Auto-select it
         }
 
         function loadCustomAirsProfiles() {
@@ -3095,13 +3100,13 @@ Respond ONLY with valid JSON, no other text:
                 SAMPLE_THREATS = await res.json();
             } catch (e) {
                 console.warn("Could not load sample_threats.json:", e.message);
-                document.getElementById("threat-select").insertAdjacentHTML(
+                els.threatSelect.insertAdjacentHTML(
                     "afterend",
                     `<small style="color:var(--warning);font-size:10px;">⚠️ Threat library unavailable — is server.js running?</small>`
                 );
                 return;
             }
-            const select = document.getElementById("threat-select");
+            const select = els.threatSelect;
             // Clear any stale options beyond the placeholder
             while (select.options.length > 1) select.remove(1);
             SAMPLE_THREATS.forEach((categoryGroup) => {
@@ -3118,8 +3123,8 @@ Respond ONLY with valid JSON, no other text:
         }
 
         function applyThreat() {
-            const select = document.getElementById("threat-select");
-            const input = document.getElementById("user-input");
+            const select = els.threatSelect;
+            const input = els.userInput;
             input.value = select.value;
 
             // Trigger auto-resize for the text box
@@ -3136,7 +3141,7 @@ Respond ONLY with valid JSON, no other text:
         // ══════════════════════════════════════════════════════════════
 
         function toggleGuardrailSettings() {
-            const mode = document.getElementById("guardrail-mode").value;
+            const mode = els.guardrailMode.value;
             const enabled = mode !== "off";
             ["guardrail-model", "guardrail-threshold", "guardrail-system-prompt"]
                 .forEach(id => document.getElementById(id).disabled = !enabled);
@@ -3162,7 +3167,7 @@ Respond ONLY with valid JSON, no other text:
 
         // 🐦 LITTLE CANARY — Phase 0.5
         function toggleCanarySettings() {
-            const mode = document.getElementById("canary-mode").value;
+            const mode = els.canaryMode.value;
             const enabled = mode !== "off";
             ["canary-model", "canary-threshold"].forEach(id => document.getElementById(id).disabled = !enabled);
             updateCanaryStatus(mode);
@@ -3188,12 +3193,12 @@ Respond ONLY with valid JSON, no other text:
         // ── Phase 0.6: LLM Guard (local scanner sidecar) ──────────────
         function _getLGOutputScanners() {
             const out = [];
-            if (document.getElementById("lg-out-sensitive").checked) out.push("Sensitive");
-            if (document.getElementById("lg-out-malicious").checked) out.push("MaliciousURLs");
-            if (document.getElementById("lg-out-norefusal").checked) out.push("NoRefusal");
-            if (document.getElementById("lg-out-bias").checked) out.push("Bias");
-            if (document.getElementById("lg-out-relevance").checked) out.push("Relevance");
-            if (document.getElementById("lg-out-languagesame").checked) out.push("LanguageSame");
+            if (els.lgOutSensitive.checked) out.push("Sensitive");
+            if (els.lgOutMalicious.checked) out.push("MaliciousURLs");
+            if (els.lgOutNoRefusal.checked) out.push("NoRefusal");
+            if (els.lgOutBias.checked) out.push("Bias");
+            if (els.lgOutRelevance.checked) out.push("Relevance");
+            if (els.lgOutLanguageSame.checked) out.push("LanguageSame");
             return out;
         }
 
@@ -3201,8 +3206,8 @@ Respond ONLY with valid JSON, no other text:
             // mode: "strict" | "advisory" | "off"
             // Returns { error, valid, blocked, flagged, failingScanners, summary, results }
             const payload = { text, scanners };
-            const inReqEl = document.getElementById("debug-lgInput-req");
-            const inResEl = document.getElementById("debug-lgInput-res");
+            const inReqEl = els.dbgLgInputReq;
+            const inResEl = els.dbgLgInputRes;
             if (inReqEl) inReqEl.innerText = JSON.stringify(payload, null, 2);
             if (inResEl) inResEl.innerText = "Scanning...";
             try {
@@ -3247,8 +3252,8 @@ Respond ONLY with valid JSON, no other text:
             // mode: "strict" | "advisory" | "off"
             // Returns { error, valid, blocked, flagged, failingScanners, summary, results }
             const payload = { prompt, response, scanners };
-            const outReqEl = document.getElementById("debug-lgOutput-req");
-            const outResEl = document.getElementById("debug-lgOutput-res");
+            const outReqEl = els.dbgLgOutputReq;
+            const outResEl = els.dbgLgOutputRes;
             if (outReqEl) outReqEl.innerText = JSON.stringify({ prompt: prompt.slice(0, 200) + (prompt.length > 200 ? "…" : ""), response: response.slice(0, 200) + (response.length > 200 ? "…" : ""), scanners }, null, 2);
             if (outResEl) outResEl.innerText = "Scanning...";
             try {
@@ -3291,8 +3296,8 @@ Respond ONLY with valid JSON, no other text:
 
         async function runLittleCanary(prompt, model, mode, threshold) {
             const payload = { input: prompt, model, mode, threshold };
-            document.getElementById("debug-canary-req").innerText = JSON.stringify(payload, null, 2);
-            document.getElementById("debug-canary-res").innerText = "Scanning...";
+            els.dbgCanaryReq.innerText = JSON.stringify(payload, null, 2);
+            els.dbgCanaryRes.innerText = "Scanning...";
             try {
                 const res = await fetch("http://localhost:3080/api/canary", {
                     method: "POST",
@@ -3301,10 +3306,10 @@ Respond ONLY with valid JSON, no other text:
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-                document.getElementById("debug-canary-res").innerText = JSON.stringify(data, null, 2);
+                els.dbgCanaryRes.innerText = JSON.stringify(data, null, 2);
                 return data;
             } catch (e) {
-                document.getElementById("debug-canary-res").innerText = "Error: " + e.message;
+                els.dbgCanaryRes.innerText = "Error: " + e.message;
                 return { error: true, message: e.message };
             }
         }
@@ -3321,8 +3326,8 @@ Respond ONLY with valid JSON, no other text:
                 options: { temperature: 0.1 }
             };
 
-            document.getElementById("debug-guard-req").innerText = JSON.stringify(payload, null, 2);
-            document.getElementById("debug-guard-res").innerText = "Waiting for verdict...";
+            els.dbgGuardReq.innerText = JSON.stringify(payload, null, 2);
+            els.dbgGuardRes.innerText = "Waiting for verdict...";
 
             try {
                 const res = await fetch("http://localhost:11434/api/chat", {
@@ -3333,7 +3338,7 @@ Respond ONLY with valid JSON, no other text:
                 });
                 if (!res.ok) throw new Error(`Ollama HTTP ${res.status}`);
                 const data = await res.json();
-                document.getElementById("debug-guard-res").innerText = JSON.stringify(data, null, 2);
+                els.dbgGuardRes.innerText = JSON.stringify(data, null, 2);
                 const verdict = JSON.parse(data.message.content);
                 const safe = verdict.safe === true || verdict.status === "SAFE";
                 const confidence = parseFloat(verdict.confidence ?? 1.0);
@@ -3343,7 +3348,7 @@ Respond ONLY with valid JSON, no other text:
                 const blocked = !safe && confidence >= threshold;
                 return { blocked, safe, confidence, reason, raw: verdict };
             } catch (e) {
-                document.getElementById("debug-guard-res").innerText = "Error: " + e.message;
+                els.dbgGuardRes.innerText = "Error: " + e.message;
                 return { blocked: false, safe: true, confidence: 0, reason: "Guardrail error: " + e.message, error: true };
             }
         }
@@ -3459,59 +3464,539 @@ Respond ONLY with valid JSON, no other text:
                 }
             });
 
-        async function sendMessage() {
-            const input = document.getElementById("user-input");
-            const chatBox = document.getElementById("chat-box");
-            const modelSelect =
-                document.getElementById("model-select").value;
-            const personaSelect = document.getElementById("persona-select");
+        // ── Gate Phase Functions ─────────────────────────────────────────────
 
-            if (
-                !input.value.trim() ||
-                document.getElementById("send-btn").disabled
-            )
+        // LLM-Guard input scan (Phase 0.6)
+        // Returns { blocked: true } to halt pipeline, or { blocked: false }
+        async function runInputLLMGuardGate(prompt, llmguardBadge, chatBox) {
+            const lgMode = els.llmguardMode.value;
+            if (lgMode === "off") {
+                els.dbgLgInputReq.innerText = "LLM-Guard INPUT — Disabled.";
+                els.dbgLgInputRes.innerText = "LLM-Guard INPUT — Disabled.";
+                return { blocked: false };
+            }
+            const lgScanners = [];
+            if (els.lgScanInvisible.checked) lgScanners.push("InvisibleText");
+            if (els.lgScanSecrets.checked) lgScanners.push("Secrets");
+            if (els.lgScanInjection.checked) lgScanners.push("PromptInjection");
+            if (els.lgScanToxicity.checked) lgScanners.push("Toxicity");
+            if (els.lgScanBanTopics.checked) lgScanners.push("BanTopics");
+            if (els.lgScanGibberish.checked) lgScanners.push("Gibberish");
+            if (els.lgScanLanguage.checked) lgScanners.push("Language");
+            if (!lgScanners.length) return { blocked: false };
+
+            els.debugStatus.innerText = "🔬 LLM-Guard scanning...";
+            const lgInputT0 = Date.now();
+            const lg = await runLLMGuard(prompt, lgMode, lgScanners);
+            const lgInputMs = Date.now() - lgInputT0;
+            const lgInputLat = lgInputMs < 1000 ? `· ${lgInputMs}ms` : `· ${(lgInputMs / 1000).toFixed(1)}s`;
+            const lgInputShort = lgInputMs < 1000 ? `-${lgInputMs}ms` : `-${(lgInputMs / 1000).toFixed(1)}s`;
+
+            if (lg.error) {
+                llmguardBadge.style.display = "";
+                llmguardBadge.className = "scan-badge";
+                llmguardBadge.style.cssText = "border-color:var(--warning);color:var(--warning)";
+                llmguardBadge.textContent = `🔬 Error${lgInputShort}`;
+                const warnDiv = document.createElement("div");
+                warnDiv.className = "message security-alert alert-warning";
+                warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD — ERROR ${lgInputLat}</strong><br>Scan failed, proceeding without LLM-Guard. <small>${lg.message}</small>`;
+                chatBox.appendChild(warnDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else if (lg.blocked) {
+                llmguardBadge.style.display = "";
+                llmguardBadge.className = "scan-badge blocked";
+                llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                llmguardBadge.textContent = `🔬 Blocked${lgInputShort}`;
+                const blockDiv = document.createElement("div");
+                blockDiv.className = "message security-alert alert-llmguard";
+                blockDiv.innerHTML = `<strong>🔬 LLM-GUARD — BLOCKED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Semantic-Guard, Little-Canary, AIRS-Inlet and LLM not reached.`;
+                chatBox.appendChild(blockDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                els.debugStatus.innerText = "Blocked (LLM-Guard)";
+                return { blocked: true };
+            } else if (lg.flagged) {
+                llmguardBadge.style.display = "";
+                llmguardBadge.className = "scan-badge flagged";
+                llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                llmguardBadge.textContent = `🔬 Flagged${lgInputShort}`;
+                const warnDiv = document.createElement("div");
+                warnDiv.className = "message security-alert alert-llmguard";
+                warnDiv.innerHTML = `<strong>🔬 LLM-GUARD — FLAGGED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Proceeding to Semantic-Guard.`;
+                chatBox.appendChild(warnDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                llmguardBadge.style.display = "";
+                llmguardBadge.className = "scan-badge allowed";
+                llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                llmguardBadge.textContent = `🔬 Safe${lgInputShort}`;
+            }
+            return { blocked: false };
+        }
+
+        // Semantic-Guard / Native Guardrail (Phase 0)
+        // Returns { blocked: true } to halt pipeline, or { blocked: false }
+        async function runSemanticGuardGate(prompt, guardBadge, chatBox) {
+            const guardrailMode = els.guardrailMode.value;
+            if (guardrailMode === "off") {
+                els.dbgGuardReq.innerText = "Guardrail Disabled.";
+                els.dbgGuardRes.innerText = "Guardrail Disabled.";
+                return { blocked: false };
+            }
+            const guardModel = els.guardrailModel.value;
+            const guardThreshold = parseFloat(els.guardrailThreshold.value);
+            const guardEnforcement = guardrailMode;
+            const guardSystemPrompt = els.guardrailSysPrompt.value;
+
+            if (!guardModel) {
+                alert("Semantic-Guard: please select a judge model.");
+                return { blocked: true };
+            }
+
+            guardBadge.style.display = "inline";
+            guardBadge.className = "scan-badge off";
+            guardBadge.textContent = "🧩 SCANNING...";
+            els.debugStatus.innerText = "🧩 Semantic-Guard scanning...";
+
+            const guardT0 = Date.now();
+            const gResult = await runNativeGuardrail(prompt, guardModel, guardSystemPrompt, guardThreshold);
+            const guardMs = Date.now() - guardT0;
+            const guardLat = guardMs < 1000 ? `· ${guardMs}ms` : `· ${(guardMs / 1000).toFixed(1)}s`;
+            const guardShort = guardMs < 1000 ? `-${guardMs}ms` : `-${(guardMs / 1000).toFixed(1)}s`;
+
+            if (gResult.error) {
+                const warnDiv = document.createElement("div");
+                warnDiv.className = "message security-alert alert-warning";
+                warnDiv.innerHTML = `<strong>⚠️ SEMANTIC-GUARD — ERROR</strong><br>Scan failed, proceeding without Semantic-Guard. <small>${gResult.reason}</small>`;
+                chatBox.appendChild(warnDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else if (gResult.blocked) {
+                if (guardEnforcement === "strict") {
+                    guardBadge.className = "scan-badge guardrail-block";
+                    guardBadge.textContent = `🧩 Blocked${guardShort}`;
+                    const blockDiv = document.createElement("div");
+                    blockDiv.className = "message security-alert alert-semantic";
+                    blockDiv.innerHTML = `<strong>🧩 SEMANTIC-GUARD — BLOCKED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Little-Canary, AIRS-Inlet and LLM not reached.`;
+                    chatBox.appendChild(blockDiv);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    els.debugStatus.innerText = "Blocked (Semantic-Guard)";
+                    return { blocked: true };
+                } else {
+                    guardBadge.className = "scan-badge guardrail-block";
+                    guardBadge.textContent = `🧩 Flagged${guardShort}`;
+                    const warnDiv = document.createElement("div");
+                    warnDiv.className = "message security-alert alert-semantic";
+                    warnDiv.innerHTML = `<strong>🧩 SEMANTIC-GUARD — FLAGGED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Proceeding to Little-Canary.`;
+                    chatBox.appendChild(warnDiv);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            } else {
+                guardBadge.className = "scan-badge guardrail-pass";
+                guardBadge.textContent = `🧩 Safe${guardShort}`;
+            }
+            return { blocked: false };
+        }
+
+        // Little-Canary gate (Phase 0.5)
+        // Returns { blocked: true } or { blocked: false, advisoryPrefix: string }
+        async function runCanaryGate(prompt, canaryBadge, chatBox) {
+            const canaryMode = els.canaryMode.value;
+            if (canaryMode === "off") {
+                els.dbgCanaryReq.innerText = "Canary Disabled.";
+                els.dbgCanaryRes.innerText = "Canary Disabled.";
+                return { blocked: false, advisoryPrefix: "" };
+            }
+            const canaryModel = els.canaryModel.value;
+            const canaryThreshold = parseFloat(els.canaryThreshold.value);
+
+            if (!canaryModel) {
+                alert("Little-Canary: please select a canary model.");
+                return { blocked: true, advisoryPrefix: "" };
+            }
+
+            els.debugStatus.innerText = "🐦 Little-Canary scanning...";
+            const canaryT0 = Date.now();
+            const cResult = await runLittleCanary(prompt, canaryModel, canaryMode, canaryThreshold);
+            const canaryMs = Date.now() - canaryT0;
+            const canaryLat = canaryMs < 1000 ? `· ${canaryMs}ms` : `· ${(canaryMs / 1000).toFixed(1)}s`;
+            const canaryShort = canaryMs < 1000 ? `-${canaryMs}ms` : `-${(canaryMs / 1000).toFixed(1)}s`;
+
+            if (cResult.error) {
+                const warnDiv = document.createElement("div");
+                warnDiv.className = "message security-alert alert-warning";
+                warnDiv.innerHTML = `<strong>⚠️ LITTLE-CANARY — ERROR</strong><br>Scan failed, proceeding without Little-Canary. <small>${cResult.message}</small>`;
+                chatBox.appendChild(warnDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else if (canaryMode === "full" && (!cResult.safe || cResult.advisory?.flagged)) {
+                canaryBadge.style.display = "inline";
+                canaryBadge.className = "scan-badge canary-block";
+                canaryBadge.textContent = `🐦 Blocked${canaryShort}`;
+                const blockDiv = document.createElement("div");
+                blockDiv.className = "message security-alert alert-canary-blk";
+                blockDiv.innerHTML = `<strong>🐦 LITTLE-CANARY — BLOCKED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; AIRS-Inlet and LLM not reached.`;
+                chatBox.appendChild(blockDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                els.debugStatus.innerText = "Blocked (Little-Canary)";
+                return { blocked: true, advisoryPrefix: "" };
+            } else if (cResult.advisory?.flagged) {
+                canaryBadge.style.display = "inline";
+                canaryBadge.className = "scan-badge canary-advisory";
+                canaryBadge.textContent = `🐦 Flagged${canaryShort}`;
+                const warnDiv = document.createElement("div");
+                warnDiv.className = "message security-alert alert-canary-adv";
+                warnDiv.innerHTML = `<strong>🐦 LITTLE-CANARY — FLAGGED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; Warning injected into system prompt.`;
+                chatBox.appendChild(warnDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                return { blocked: false, advisoryPrefix: cResult.advisory.system_prefix };
+            } else {
+                canaryBadge.style.display = "inline";
+                canaryBadge.className = "scan-badge allowed";
+                canaryBadge.textContent = `🐦 Safe${canaryShort}`;
+            }
+            return { blocked: false, advisoryPrefix: "" };
+        }
+
+        // AIRS-Inlet gate (Phase 1 — pre-flight prompt scan)
+        // Returns { blocked: true } or { blocked: false }
+        async function runAIRSInletGate(prompt, airsBadge, chatBox, airsMode, airsProfile, airsApiKey, modelSelect) {
+            if (airsMode === "off") {
+                els.dbgPromptReq.innerText = "AIRS Disabled.";
+                els.dbgPromptRes.innerText = "AIRS Disabled.";
+                els.dbgResponseReq.innerText = "AIRS Disabled.";
+                els.dbgResponseRes.innerText = "AIRS Disabled.";
+                return { blocked: false };
+            }
+
+            els.debugStatus.innerText = "📥🛡️ AIRS-Inlet scanning...";
+            els.dbgResponseReq.innerText = "Waiting for AIRS-Dual...";
+            els.dbgResponseRes.innerText = "Waiting for AIRS-Dual...";
+
+            const airsInletT0 = Date.now();
+            const promptScan = await scanWithAIRS(
+                { prompt },
+                "prompt",
+                airsMode,
+                airsProfile,
+                airsApiKey,
+                modelSelect,
+            );
+            const airsInletMs = Date.now() - airsInletT0;
+            const airsInletLat = airsInletMs < 1000 ? `· ${airsInletMs}ms` : `· ${(airsInletMs / 1000).toFixed(1)}s`;
+            const airsInletShort = airsInletMs < 1000 ? `-${airsInletMs}ms` : `-${(airsInletMs / 1000).toFixed(1)}s`;
+
+            if (promptScan.status === "error") {
+                airsBadge.style.display = "inline";
+                airsBadge.className = "scan-badge";
+                airsBadge.textContent = `📥🛡️ Error${airsInletShort}`;
+                const errDiv = document.createElement("div");
+                errDiv.className = "message security-alert alert-warning";
+                errDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — ERROR ${airsInletLat}</strong><br>${promptScan.message} &nbsp;|&nbsp; Prompt aborted. <small>Ensure server.js is running on :3080.</small>`;
+                chatBox.appendChild(errDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                els.debugStatus.innerText = "Error";
+                return { blocked: true };
+            }
+
+            if (promptScan.status === "block") {
+                airsBadge.style.display = "inline";
+                airsBadge.className = "scan-badge blocked";
+                airsBadge.textContent = `📥🛡️ Blocked${airsInletShort}`;
+                airsBadge.dataset.verdict = JSON.stringify(promptScan);
+                airsBadge.title = "Click to expand";
+                airsBadge.style.cursor = "pointer";
+                const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
+                const blockDiv = document.createElement("div");
+                blockDiv.className = "message security-alert alert-danger";
+                blockDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — BLOCKED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`;
+                chatBox.appendChild(blockDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                els.debugStatus.innerText = "Blocked (AIRS-Inlet)";
+                return { blocked: true };
+            }
+
+            if (promptScan.status === "alert") {
+                airsBadge.style.display = "inline";
+                airsBadge.className = "scan-badge flagged";
+                airsBadge.textContent = `📥🛡️ Flagged${airsInletShort}`;
+                airsBadge.dataset.verdict = JSON.stringify(promptScan);
+                airsBadge.title = "Click to expand";
+                airsBadge.style.cursor = "pointer";
+                const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
+                const warnDiv = document.createElement("div");
+                warnDiv.className = "message security-alert alert-warning";
+                warnDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — FLAGGED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Proceeding to LLM.`;
+                chatBox.appendChild(warnDiv);
+            } else {
+                airsBadge.style.display = "inline";
+                airsBadge.className = "scan-badge allowed";
+                airsBadge.textContent = `📥🛡️ Safe${airsInletShort}`;
+                airsBadge.dataset.verdict = JSON.stringify(promptScan);
+                airsBadge.title = "Click to expand";
+                airsBadge.style.cursor = "pointer";
+            }
+            return { blocked: false };
+        }
+
+        // Ollama LLM streaming (core generation)
+        // Returns { fullRes: string, streamError: boolean }
+        async function runOllamaLLM(prompt, systemPrompt, modelSelect, botDiv, botMsgId) {
+            const ollamaPayload = {
+                model: modelSelect,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: prompt },
+                ],
+                stream: true,
+                options: {
+                    temperature: parseFloat(document.getElementById("param-temperature").value),
+                    top_p: parseFloat(document.getElementById("param-top-p").value),
+                    top_k: parseInt(document.getElementById("param-top-k").value),
+                    repeat_penalty: parseFloat(document.getElementById("param-repeat-penalty").value),
+                },
+            };
+
+            els.dbgLlmReq.innerText = JSON.stringify(ollamaPayload, null, 2);
+            els.debugStatus.innerText = "🤖 Streaming LLM...";
+            els.stopBtn.disabled = false;
+            controller = new AbortController();
+
+            let fullRes = "";
+            let streamError = false;
+            const llmStreamT0 = Date.now();
+
+            try {
+                const response = await fetch("http://localhost:11434/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    signal: controller.signal,
+                    body: JSON.stringify(ollamaPayload),
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value);
+                    els.dbgLlmRes.innerText = chunk;
+                    buffer += chunk;
+                    let lines = buffer.split("\n");
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        const json = JSON.parse(line);
+                        if (json.message?.content) {
+                            fullRes += json.message.content;
+                            botDiv.querySelector(".content").innerHTML = marked.parse(fullRes);
+                            botDiv.querySelectorAll("pre code").forEach((el) => hljs.highlightElement(el));
+                            els.chatBox.scrollTop = els.chatBox.scrollHeight;
+                        }
+                    }
+                }
+            } catch (e) {
+                streamError = true;
+                botDiv.querySelector(".content").innerHTML +=
+                    `<p style="color:red">${e.name === "AbortError" ? "Stopped by user" : e.message}</p>`;
+                els.debugStatus.innerText = e.name === "AbortError" ? "Stopped" : "LLM Error";
+            } finally {
+                botDiv.querySelector(".cursor")?.remove();
+                els.stopBtn.disabled = true;
+                const llmStreamMs = Date.now() - llmStreamT0;
+                const llmTimeEl = document.getElementById(botMsgId + "-llm-time");
+                if (llmTimeEl) {
+                    llmTimeEl.textContent = llmStreamMs < 1000
+                        ? `🤖 ${llmStreamMs}ms`
+                        : `🤖 ${(llmStreamMs / 1000).toFixed(1)}s`;
+                    llmTimeEl.style.display = "inline-block";
+                }
+            }
+            return { fullRes, streamError };
+        }
+
+        // AIRS-Dual gate (Phase 2 — post-response scan)
+        async function runAIRSDualGate(prompt, response, botDiv, botMsgId, airsMode, airsProfile, airsApiKey, modelSelect) {
+            const resBadge = document.getElementById(botMsgId + "-badge");
+
+            const airsDualT0 = Date.now();
+            const responseScan = await scanWithAIRS(
+                { prompt, response },
+                "response",
+                airsMode,
+                airsProfile,
+                airsApiKey,
+                modelSelect,
+            );
+            const airsDualMs = Date.now() - airsDualT0;
+            const airsDualLat = airsDualMs < 1000 ? `· ${airsDualMs}ms` : `· ${(airsDualMs / 1000).toFixed(1)}s`;
+
+            if (responseScan.status === "error") {
+                if (resBadge) {
+                    resBadge.className = "scan-badge";
+                    resBadge.textContent = `🔀🛡️ AIRS-Dual ERR ${airsDualLat}`;
+                    resBadge.dataset.verdict = JSON.stringify(responseScan);
+                    resBadge.title = "Click to expand";
+                    resBadge.style.cursor = "pointer";
+                }
+                els.debugStatus.innerText = "Response Scan Error";
+            } else if (responseScan.status === "block" || responseScan.status === "alert") {
+                const threats = responseScan.detected.length
+                    ? responseScan.detected.join(", ")
+                    : responseScan.category;
+                if (resBadge) {
+                    resBadge.className = "scan-badge blocked";
+                    resBadge.textContent = `🔀🛡️ AIRS-Dual BLOCKED ${airsDualLat}`;
+                    resBadge.dataset.verdict = JSON.stringify(responseScan);
+                    resBadge.title = "Click to expand";
+                    resBadge.style.cursor = "pointer";
+                }
+                if (airsMode === "strict") {
+                    botDiv.querySelector(".content").innerHTML = `
+                            <div class="security-alert alert-danger">
+                                <strong>🔀🛡️ AIRS-DUAL — BLOCKED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response withheld.
+                            </div>`;
+                } else {
+                    const warnHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
+                            <strong>🔀🛡️ AIRS-DUAL — FLAGGED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response shown with warning.</div>`;
+                    if (responseScan.maskedData) {
+                        botDiv.querySelector(".content").innerHTML = warnHtml + marked.parse(responseScan.maskedData.data);
+                    } else {
+                        botDiv.querySelector(".content").insertAdjacentHTML("afterbegin", warnHtml);
+                    }
+                    if (resBadge) {
+                        resBadge.className = "scan-badge flagged";
+                        resBadge.textContent = `🔀🛡️ AIRS-Dual FLAGGED ${airsDualLat}`;
+                        resBadge.dataset.verdict = JSON.stringify(responseScan);
+                        resBadge.title = "Click to expand";
+                        resBadge.style.cursor = "pointer";
+                    }
+                }
+                els.debugStatus.innerText = "Blocked (AIRS-Dual)";
+            } else if (responseScan.maskedData) {
+                if (resBadge) {
+                    resBadge.className = "scan-badge flagged";
+                    resBadge.textContent = `🔀🛡️ AIRS-Dual MASKED ${airsDualLat}`;
+                    resBadge.dataset.verdict = JSON.stringify(responseScan);
+                    resBadge.title = "Click to expand";
+                    resBadge.style.cursor = "pointer";
+                }
+                const maskHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
+                        <strong>🔀🛡️ AIRS-DUAL — DLP MASKED ${airsDualLat}</strong><br>Sensitive data detected and redacted from response.</div>`;
+                botDiv.querySelector(".content").innerHTML = maskHtml + marked.parse(responseScan.maskedData.data);
+                els.debugStatus.innerText = "Done (DLP Masked)";
+            } else {
+                if (resBadge) {
+                    resBadge.className = "scan-badge allowed";
+                    resBadge.textContent = `🔀🛡️ AIRS-Dual CLEAN ${airsDualLat}`;
+                    resBadge.dataset.verdict = JSON.stringify(responseScan);
+                    resBadge.title = "Click to expand";
+                    resBadge.style.cursor = "pointer";
+                }
+                els.debugStatus.innerText = "Done ✅";
+            }
+        }
+
+        // LLM-Guard output scan (Phase 2.5)
+        async function runOutputLLMGuardGate(prompt, response, botDiv, botMsgId) {
+            const lgMode = els.llmguardMode.value;
+            if (lgMode === "off") {
+                els.dbgLgOutputReq.innerText = "LLM-Guard OUTPUT — Disabled.";
+                els.dbgLgOutputRes.innerText = "LLM-Guard OUTPUT — Disabled.";
                 return;
+            }
+            const lgOutScanners = _getLGOutputScanners();
+            if (!lgOutScanners.length) return;
+
+            els.debugStatus.innerText = "🔬 LLM-Guard OUTPUT scanning...";
+            const lgOutputT0 = Date.now();
+            const lgOut = await runLLMGuardOutput(prompt, response, lgMode, lgOutScanners);
+            const lgOutputMs = Date.now() - lgOutputT0;
+            const lgOutputLat = lgOutputMs < 1000 ? `· ${lgOutputMs}ms` : `· ${(lgOutputMs / 1000).toFixed(1)}s`;
+
+            const resBadge = document.getElementById(botMsgId + "-badge");
+            if (lgOut.error) {
+                const warnDiv = document.createElement("div");
+                warnDiv.className = "message security-alert alert-warning";
+                warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD OUTPUT — ERROR ${lgOutputLat}</strong><br>Scan failed, output shown unverified. <small>${lgOut.message}</small>`;
+                botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
+            } else if (lgOut.blocked) {
+                if (resBadge) {
+                    resBadge.className = "scan-badge blocked";
+                    resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                    resBadge.textContent = `🔬 LG-OUT BLOCKED ${lgOutputLat}`;
+                }
+                const blockDiv = document.createElement("div");
+                blockDiv.className = "message security-alert alert-llmguard";
+                blockDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`;
+                botDiv.querySelector(".content").insertAdjacentElement("afterbegin", blockDiv);
+                els.debugStatus.innerText = "Blocked (LLM-Guard OUTPUT)";
+            } else if (lgOut.flagged) {
+                if (resBadge) {
+                    resBadge.className = "scan-badge flagged";
+                    resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                    resBadge.textContent = `🔬 LG-OUT FLAGGED ${lgOutputLat}`;
+                }
+                const warnDiv = document.createElement("div");
+                warnDiv.className = "message security-alert alert-llmguard";
+                warnDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — FLAGGED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response shown with warning.`;
+                botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
+                els.debugStatus.innerText = "Done (LLM-Guard OUTPUT flagged)";
+            } else {
+                if (resBadge && !resBadge.textContent.includes("AIRS-2")) {
+                    resBadge.className = "scan-badge allowed";
+                    resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                    resBadge.textContent = `🔬 LG-OUT SAFE ${lgOutputLat}`;
+                }
+                els.debugStatus.innerText = "Done ✅";
+            }
+        }
+
+        // ── Orchestrator ─────────────────────────────────────────────────────
+        async function sendMessage() {
+            const input = els.userInput;
+            const chatBox = els.chatBox;
+            const modelSelect = els.modelSelect.value;
+            const personaSelect = els.personaSelect;
+
+            if (!input.value.trim() || els.sendBtn.disabled) return;
 
             const userPrompt = input.value;
-            const personaLabel =
-                personaSelect.options[personaSelect.selectedIndex].text ||
-                "Custom";
-            const airsMode = document.getElementById("airs-mode").value;
-            const airsProfile = document.getElementById("airs-profile").value;
-            const airsKeyEl = document.getElementById("airs-api-key");
+            const personaLabel = personaSelect.options[personaSelect.selectedIndex].text || "Custom";
+            const airsMode = els.airsMode.value;
+            const airsProfile = els.airsProfile.value;
+            const airsKeyEl = els.airsApiKey;
             const airsKeyFromEnv = !!airsKeyEl.dataset.fromEnv;
             const airsApiKey = airsKeyFromEnv ? "" : airsKeyEl.value.trim();
 
-            // Reset API Inspector panels at the start of every new prompt
-            {
-                const resetMap = {
-                    "debug-lgInput-req": "Waiting for LLM-Guard...",
-                    "debug-lgInput-res": "Waiting for LLM-Guard...",
-                    "debug-guard-req": "Waiting for Semantic-Guard...",
-                    "debug-guard-res": "Waiting for Semantic-Guard...",
-                    "debug-canary-req": "Waiting for Little-Canary...",
-                    "debug-canary-res": "Waiting for Little-Canary...",
-                    "debug-prompt-req": "Waiting for AIRS-Inlet...",
-                    "debug-prompt-res": "Waiting for AIRS-Inlet...",
-                    "debug-req": "Waiting for Ollama...",
-                    "debug-res": "Waiting for Ollama...",
-                    "debug-response-req": "Waiting for AIRS-Dual...",
-                    "debug-response-res": "Waiting for AIRS-Dual...",
-                    "debug-lgOutput-req": "Waiting for LLM...",
-                    "debug-lgOutput-res": "Waiting for LLM...",
-                };
-                Object.entries(resetMap).forEach(([id, msg]) => {
-                    const el = document.getElementById(id);
-                    if (el) el.innerText = msg;
-                });
-                document.getElementById("debug-status").innerText = "Processing...";
+            // Validate AIRS key early
+            if (airsMode !== "off" && !airsKeyFromEnv && !airsApiKey) {
+                alert("Please enter your Prisma AIRS API Key (x-pan-token) to enable scanning.");
+                return;
             }
+
+            // Reset API Inspector panels at the start of every new prompt
+            els.dbgLgInputReq.innerText = "Waiting for LLM-Guard...";
+            els.dbgLgInputRes.innerText = "Waiting for LLM-Guard...";
+            els.dbgGuardReq.innerText = "Waiting for Semantic-Guard...";
+            els.dbgGuardRes.innerText = "Waiting for Semantic-Guard...";
+            els.dbgCanaryReq.innerText = "Waiting for Little-Canary...";
+            els.dbgCanaryRes.innerText = "Waiting for Little-Canary...";
+            els.dbgPromptReq.innerText = "Waiting for AIRS-Inlet...";
+            els.dbgPromptRes.innerText = "Waiting for AIRS-Inlet...";
+            els.dbgLlmReq.innerText = "Waiting for Ollama...";
+            els.dbgLlmRes.innerText = "Waiting for Ollama...";
+            els.dbgResponseReq.innerText = "Waiting for AIRS-Dual...";
+            els.dbgResponseRes.innerText = "Waiting for AIRS-Dual...";
+            els.dbgLgOutputReq.innerText = "Waiting for LLM...";
+            els.dbgLgOutputRes.innerText = "Waiting for LLM...";
+            els.debugStatus.innerText = "Processing...";
 
             // Remove empty state on first message
             const emptyState = document.getElementById("chat-empty-state");
             if (emptyState) emptyState.remove();
 
-            // User message with prompt scan badge placeholder
+            // User message with prompt scan badge placeholders
             const msgId = "msg-" + Date.now();
             const userDiv = document.createElement("div");
             userDiv.className = "message";
@@ -3524,322 +4009,33 @@ Respond ONLY with valid JSON, no other text:
             // Clear input
             input.value = "";
             input.style.height = "auto";
-            document.getElementById("char-counter").textContent = "0 chars";
-            document.getElementById("threat-select").value = "";
-            document.getElementById("send-btn").disabled = true;
+            els.charCounter.textContent = "0 chars";
+            els.threatSelect.value = "";
+            els.sendBtn.disabled = true;
 
-            const guardBadge = document.getElementById(msgId + "-badge-guard");
-            const canaryBadge = document.getElementById(msgId + "-badge-canary");
+            const guardBadge   = document.getElementById(msgId + "-badge-guard");
+            const canaryBadge  = document.getElementById(msgId + "-badge-canary");
             const llmguardBadge = document.getElementById(msgId + "-badge-llmguard");
-            const airsBadge = document.getElementById(msgId + "-badge-airs");
+            const airsBadge    = document.getElementById(msgId + "-badge-airs");
 
-            // ══════════════════════════════════════════
-            // PHASE 0.6 — LLM GUARD INPUT SCAN
-            // ══════════════════════════════════════════
-            const lgMode = document.getElementById("llmguard-mode").value;
-            if (lgMode !== "off") {
-                const lgScanners = [];
-                if (document.getElementById("lg-scan-invisible").checked) lgScanners.push("InvisibleText");
-                if (document.getElementById("lg-scan-secrets").checked) lgScanners.push("Secrets");
-                if (document.getElementById("lg-scan-injection").checked) lgScanners.push("PromptInjection");
-                if (document.getElementById("lg-scan-toxicity").checked) lgScanners.push("Toxicity");
-                if (document.getElementById("lg-scan-bantopics").checked) lgScanners.push("BanTopics");
-                if (document.getElementById("lg-scan-gibberish").checked) lgScanners.push("Gibberish");
-                if (document.getElementById("lg-scan-language").checked) lgScanners.push("Language");
+            // ── Phase 0.6: LLM-Guard input ──────────────────────────────────
+            const lgResult = await runInputLLMGuardGate(userPrompt, llmguardBadge, chatBox);
+            if (lgResult.blocked) { els.sendBtn.disabled = false; return; }
 
-                if (lgScanners.length) {
-                    document.getElementById("debug-status").innerText = "🔬 LLM-Guard scanning...";
-                    const _lg0 = Date.now();
-                    const lg = await runLLMGuard(userPrompt, lgMode, lgScanners);
-                    const _lgMs = Date.now() - _lg0;
-                    const _lgLat = _lgMs < 1000 ? `· ${_lgMs}ms` : `· ${(_lgMs / 1000).toFixed(1)}s`;
-                    const _lgShrt = _lgMs < 1000 ? `-${_lgMs}ms` : `-${(_lgMs / 1000).toFixed(1)}s`;
+            // ── Phase 0: Semantic-Guard ─────────────────────────────────────
+            const sgResult = await runSemanticGuardGate(userPrompt, guardBadge, chatBox);
+            if (sgResult.blocked) { els.sendBtn.disabled = false; return; }
 
-                    if (lg.error) {
-                        llmguardBadge.style.display = "";
-                        llmguardBadge.className = "scan-badge";
-                        llmguardBadge.style.cssText = "border-color:var(--warning);color:var(--warning)";
-                        llmguardBadge.textContent = `🔬 Error${_lgShrt}`;
-                        const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert alert-warning";
-                        warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD — ERROR ${_lgLat}</strong><br>Scan failed, proceeding without LLM-Guard. <small>${lg.message}</small>`;
-                        chatBox.appendChild(warnDiv);
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    } else if (lg.blocked) {
-                        llmguardBadge.style.display = "";
-                        llmguardBadge.className = "scan-badge blocked";
-                        llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
-                        llmguardBadge.textContent = `🔬 Blocked${_lgShrt}`;
-                        const blockDiv = document.createElement("div");
-                        blockDiv.className = "message security-alert alert-llmguard";
-                        blockDiv.innerHTML = `<strong>🔬 LLM-GUARD — BLOCKED ${_lgLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Semantic-Guard, Little-Canary, AIRS-Inlet and LLM not reached.`;
-                        chatBox.appendChild(blockDiv);
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                        document.getElementById("debug-status").innerText = "Blocked (LLM-Guard)";
-                        document.getElementById("send-btn").disabled = false;
-                        return;
-                    } else if (lg.flagged) {
-                        llmguardBadge.style.display = "";
-                        llmguardBadge.className = "scan-badge flagged";
-                        llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
-                        llmguardBadge.textContent = `🔬 Flagged${_lgShrt}`;
-                        const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert alert-llmguard";
-                        warnDiv.innerHTML = `<strong>🔬 LLM-GUARD — FLAGGED ${_lgLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Proceeding to Semantic-Guard.`;
-                        chatBox.appendChild(warnDiv);
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    } else {
-                        llmguardBadge.style.display = "";
-                        llmguardBadge.className = "scan-badge allowed";
-                        llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
-                        llmguardBadge.textContent = `🔬 Safe${_lgShrt}`;
-                    }
-                }
-            } else {
-                const inReqEl2 = document.getElementById("debug-lgInput-req");
-                const inResEl2 = document.getElementById("debug-lgInput-res");
-                if (inReqEl2) inReqEl2.innerText = "LLM-Guard INPUT — Disabled.";
-                if (inResEl2) inResEl2.innerText = "LLM-Guard INPUT — Disabled.";
-            }
+            // ── Phase 0.5: Little-Canary ────────────────────────────────────
+            const caResult = await runCanaryGate(userPrompt, canaryBadge, chatBox);
+            if (caResult.blocked) { els.sendBtn.disabled = false; return; }
+            const canaryAdvisoryPrefix = caResult.advisoryPrefix;
 
-            // ══════════════════════════════════════════
-            // PHASE 0 — NATIVE GUARDRAIL (LLM-as-judge)
-            // ══════════════════════════════════════════
-            const guardrailMode = document.getElementById("guardrail-mode").value;
-            const guardrailEnabled = guardrailMode !== "off";
-            if (guardrailEnabled) {
-                const guardModel = document.getElementById("guardrail-model").value;
-                const guardThreshold = parseFloat(document.getElementById("guardrail-threshold").value);
-                const guardEnforcement = guardrailMode;
-                const guardSystemPrompt = document.getElementById("guardrail-system-prompt").value;
+            // ── Phase 1: AIRS-Inlet ─────────────────────────────────────────
+            const airsInletResult = await runAIRSInletGate(userPrompt, airsBadge, chatBox, airsMode, airsProfile, airsApiKey, modelSelect);
+            if (airsInletResult.blocked) { els.sendBtn.disabled = false; return; }
 
-                if (!guardModel) {
-                    alert("Semantic-Guard: please select a judge model.");
-                    document.getElementById("send-btn").disabled = false;
-                    return;
-                }
-
-                guardBadge.style.display = "inline";
-                guardBadge.className = "scan-badge off";
-                guardBadge.textContent = "🧩 SCANNING...";
-                document.getElementById("debug-status").innerText = "🧩 Semantic-Guard scanning...";
-
-                const _gt0 = Date.now();
-                const gResult = await runNativeGuardrail(userPrompt, guardModel, guardSystemPrompt, guardThreshold);
-                const _gMs = Date.now() - _gt0;
-                const _gLat = _gMs < 1000 ? `· ${_gMs}ms` : `· ${(_gMs / 1000).toFixed(1)}s`;
-                const _gShrt = _gMs < 1000 ? `-${_gMs}ms` : `-${(_gMs / 1000).toFixed(1)}s`;
-
-                if (gResult.error) {
-                    // Guardrail call failed — fail open, show warning in chat
-                    const warnDiv = document.createElement("div");
-                    warnDiv.className = "message security-alert alert-warning";
-                    warnDiv.innerHTML = `<strong>⚠️ SEMANTIC-GUARD — ERROR</strong><br>Scan failed, proceeding without Semantic-Guard. <small>${gResult.reason}</small>`;
-                    chatBox.appendChild(warnDiv);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                } else if (gResult.blocked) {
-                    if (guardEnforcement === "strict") {
-                        guardBadge.className = "scan-badge guardrail-block";
-                        guardBadge.textContent = `🧩 Blocked${_gShrt}`;
-                        const blockDiv = document.createElement("div");
-                        blockDiv.className = "message security-alert alert-semantic";
-                        blockDiv.innerHTML = `<strong>🧩 SEMANTIC-GUARD — BLOCKED ${_gLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Little-Canary, AIRS-Inlet and LLM not reached.`;
-                        chatBox.appendChild(blockDiv);
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                        document.getElementById("debug-status").innerText = "Blocked (Semantic-Guard)";
-                        document.getElementById("send-btn").disabled = false;
-                        return;
-                    } else {
-                        // Audit: flag but proceed
-                        guardBadge.className = "scan-badge guardrail-block";
-                        guardBadge.textContent = `🧩 Flagged${_gShrt}`;
-                        const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert alert-semantic";
-                        warnDiv.innerHTML = `<strong>🧩 SEMANTIC-GUARD — FLAGGED ${_gLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Proceeding to Little-Canary.`;
-                        chatBox.appendChild(warnDiv);
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    }
-                } else {
-                    guardBadge.className = "scan-badge guardrail-pass";
-                    guardBadge.textContent = `🧩 Safe${_gShrt}`;
-                }
-            }
-
-            // ══════════════════════════════════════════
-            // PHASE 0.5 — LITTLE CANARY
-            // ══════════════════════════════════════════
-            let canaryAdvisoryPrefix = "";
-            const canaryMode = document.getElementById("canary-mode").value;
-            if (canaryMode !== "off") {
-                const canaryModel = document.getElementById("canary-model").value;
-                const canaryThreshold = parseFloat(document.getElementById("canary-threshold").value);
-
-                if (!canaryModel) {
-                    alert("Little-Canary: please select a canary model.");
-                    document.getElementById("send-btn").disabled = false;
-                    return;
-                }
-
-                document.getElementById("debug-status").innerText = "🐦 Little-Canary scanning...";
-                const _ct0 = Date.now();
-                const cResult = await runLittleCanary(userPrompt, canaryModel, canaryMode, canaryThreshold);
-                const _cMs = Date.now() - _ct0;
-                const _cLat = _cMs < 1000 ? `· ${_cMs}ms` : `· ${(_cMs / 1000).toFixed(1)}s`;
-                const _cShrt = _cMs < 1000 ? `-${_cMs}ms` : `-${(_cMs / 1000).toFixed(1)}s`;
-
-                if (cResult.error) {
-                    const warnDiv = document.createElement("div");
-                    warnDiv.className = "message security-alert alert-warning";
-                    warnDiv.innerHTML = `<strong>⚠️ LITTLE-CANARY — ERROR</strong><br>Scan failed, proceeding without Little-Canary. <small>${cResult.message}</small>`;
-                    chatBox.appendChild(warnDiv);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                } else if (canaryMode === "full" && (!cResult.safe || cResult.advisory?.flagged)) {
-                    // Full mode: block on unsafe OR flagged advisory
-                    canaryBadge.style.display = "inline";
-                    canaryBadge.className = "scan-badge canary-block";
-                    canaryBadge.textContent = `🐦 Blocked${_cShrt}`;
-                    const blockDiv = document.createElement("div");
-                    blockDiv.className = "message security-alert alert-canary-blk";
-                    blockDiv.innerHTML = `<strong>🐦 LITTLE-CANARY — BLOCKED ${_cLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; AIRS-Inlet and LLM not reached.`;
-                    chatBox.appendChild(blockDiv);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                    document.getElementById("debug-status").innerText = "Blocked (Little-Canary)";
-                    document.getElementById("send-btn").disabled = false;
-                    return;
-                } else if (cResult.advisory?.flagged) {
-                    // Advisory mode only — inject warning prefix into system prompt
-                    canaryAdvisoryPrefix = cResult.advisory.system_prefix;
-                    canaryBadge.style.display = "inline";
-                    canaryBadge.className = "scan-badge canary-advisory";
-                    canaryBadge.textContent = `🐦 Flagged${_cShrt}`;
-                    const warnDiv = document.createElement("div");
-                    warnDiv.className = "message security-alert alert-canary-adv";
-                    warnDiv.innerHTML = `<strong>🐦 LITTLE-CANARY — FLAGGED ${_cLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; Warning injected into system prompt.`;
-                    chatBox.appendChild(warnDiv);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                } else {
-                    canaryBadge.style.display = "inline";
-                    canaryBadge.className = "scan-badge allowed";
-                    canaryBadge.textContent = `🐦 Safe${_cShrt}`;
-                }
-            } else {
-                document.getElementById("debug-canary-req").innerText = "Canary Disabled.";
-                document.getElementById("debug-canary-res").innerText = "Canary Disabled.";
-            }
-
-            // ══════════════════════════════════════════
-            // PHASE 1 — PRE-FLIGHT PROMPT SCAN
-            // ══════════════════════════════════════════
-            if (airsMode !== "off") {
-                if (!airsKeyFromEnv && !airsApiKey) {
-                    alert(
-                        "Please enter your Prisma AIRS API Key (x-pan-token) to enable scanning.",
-                    );
-                    document.getElementById("send-btn").disabled = false;
-                    return;
-                }
-
-                document.getElementById("debug-status").innerText =
-                    "📥🛡️ AIRS-Inlet scanning...";
-                document.getElementById("debug-response-req").innerText =
-                    "Waiting for AIRS-Dual...";
-                document.getElementById("debug-response-res").innerText =
-                    "Waiting for AIRS-Dual...";
-
-                const _at0 = Date.now();
-                const promptScan = await scanWithAIRS(
-                    { prompt: userPrompt },
-                    "prompt",
-                    airsMode,
-                    airsProfile,
-                    airsApiKey,
-                    modelSelect,
-                );
-                const _aMs = Date.now() - _at0;
-                const _aLat = _aMs < 1000 ? `· ${_aMs}ms` : `· ${(_aMs / 1000).toFixed(1)}s`;
-                const _aShrt = _aMs < 1000 ? `-${_aMs}ms` : `-${(_aMs / 1000).toFixed(1)}s`;
-
-                if (promptScan.status === "error") {
-                    airsBadge.style.display = "inline";
-                    airsBadge.className = "scan-badge";
-                    airsBadge.textContent = `📥🛡️ Error${_aShrt}`;
-                    const errDiv = document.createElement("div");
-                    errDiv.className = "message security-alert alert-warning";
-                    errDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — ERROR ${_aLat}</strong><br>${promptScan.message} &nbsp;|&nbsp; Prompt aborted. <small>Ensure server.js is running on :3080.</small>`;
-                    chatBox.appendChild(errDiv);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                    document.getElementById("debug-status").innerText =
-                        "Error";
-                    document.getElementById("send-btn").disabled = false;
-                    return;
-                }
-
-                if (promptScan.status === "block") {
-                    // Strict mode: LLM never reached
-                    airsBadge.style.display = "inline";
-                    airsBadge.className = "scan-badge blocked";
-                    airsBadge.textContent = `📥🛡️ Blocked${_aShrt}`;
-                    airsBadge.dataset.verdict = JSON.stringify(promptScan);
-                    airsBadge.title = "Click to expand";
-                    airsBadge.style.cursor = "pointer";
-                    const threats = promptScan.detected.length
-                        ? promptScan.detected.join(", ")
-                        : promptScan.category;
-                    const blockDiv = document.createElement("div");
-                    blockDiv.className = "message security-alert alert-danger";
-                    blockDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — BLOCKED ${_aLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`;
-                    chatBox.appendChild(blockDiv);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                    document.getElementById("debug-status").innerText =
-                        "Blocked (AIRS-Inlet)";
-                    document.getElementById("send-btn").disabled = false;
-                    return;
-                }
-
-                if (promptScan.status === "alert") {
-                    // Audit mode: flag but proceed to LLM
-                    airsBadge.style.display = "inline";
-                    airsBadge.className = "scan-badge flagged";
-                    airsBadge.textContent = `📥🛡️ Flagged${_aShrt}`;
-                    airsBadge.dataset.verdict = JSON.stringify(promptScan);
-                    airsBadge.title = "Click to expand";
-                    airsBadge.style.cursor = "pointer";
-                    const threats = promptScan.detected.length
-                        ? promptScan.detected.join(", ")
-                        : promptScan.category;
-                    const warnDiv = document.createElement("div");
-                    warnDiv.className = "message security-alert alert-warning";
-                    warnDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — FLAGGED ${_aLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Proceeding to LLM.`;
-                    chatBox.appendChild(warnDiv);
-                } else {
-                    airsBadge.style.display = "inline";
-                    airsBadge.className = "scan-badge allowed";
-                    airsBadge.textContent = `📥🛡️ Safe${_aShrt}`;
-                    airsBadge.dataset.verdict = JSON.stringify(promptScan);
-                    airsBadge.title = "Click to expand";
-                    airsBadge.style.cursor = "pointer";
-                }
-            } else {
-                [
-                    "debug-prompt-req",
-                    "debug-prompt-res",
-                    "debug-response-req",
-                    "debug-response-res",
-                ].forEach(
-                    (id) =>
-                    (document.getElementById(id).innerText =
-                        "AIRS Disabled."),
-                );
-            }
-
-            if (!guardrailEnabled) {
-                document.getElementById("debug-guard-req").innerText = "Guardrail Disabled.";
-                document.getElementById("debug-guard-res").innerText = "Guardrail Disabled.";
-            }
-
-            // ══════════════════════════════════════════
-            // LLM EXECUTION
-            // ══════════════════════════════════════════
+            // ── Build bot message shell ─────────────────────────────────────
             const botMsgId = "bot-" + Date.now();
             const botDiv = document.createElement("div");
             botDiv.className = "message";
@@ -3856,258 +4052,25 @@ Respond ONLY with valid JSON, no other text:
                 `;
             chatBox.appendChild(botDiv);
 
-            const ollamaPayload = {
-                model: modelSelect,
-                messages: [
-                    {
-                        role: "system",
-                        content: canaryAdvisoryPrefix
-                            ? canaryAdvisoryPrefix + "\n\n" + document.getElementById("system-prompt").value
-                            : document.getElementById("system-prompt").value,
-                    },
-                    { role: "user", content: userPrompt },
-                ],
-                stream: true,
-                options: {
-                    temperature: parseFloat(document.getElementById("param-temperature").value),
-                    top_p: parseFloat(document.getElementById("param-top-p").value),
-                    top_k: parseInt(document.getElementById("param-top-k").value),
-                    repeat_penalty: parseFloat(document.getElementById("param-repeat-penalty").value),
-                },
-            };
+            // ── LLM execution ───────────────────────────────────────────────
+            const systemPrompt = canaryAdvisoryPrefix
+                ? canaryAdvisoryPrefix + "\n\n" + els.systemPrompt.value
+                : els.systemPrompt.value;
+            const { fullRes, streamError } = await runOllamaLLM(userPrompt, systemPrompt, modelSelect, botDiv, botMsgId);
 
-            document.getElementById("debug-req").innerText = JSON.stringify(
-                ollamaPayload,
-                null,
-                2,
-            );
-            document.getElementById("debug-status").innerText =
-                "🤖 Streaming LLM...";
-            document.getElementById("stop-btn").disabled = false;
-            controller = new AbortController();
-
-            let fullRes = "";
-            let streamError = false;
-            const _llmT0 = Date.now();
-
-            try {
-                const response = await fetch(
-                    "http://localhost:11434/api/chat",
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        signal: controller.signal,
-                        body: JSON.stringify(ollamaPayload),
-                    },
-                );
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = "";
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    const chunk = decoder.decode(value);
-                    document.getElementById("debug-res").innerText = chunk;
-                    buffer += chunk;
-                    let lines = buffer.split("\n");
-                    buffer = lines.pop();
-
-                    for (const line of lines) {
-                        if (!line.trim()) continue;
-                        const json = JSON.parse(line);
-                        if (json.message?.content) {
-                            fullRes += json.message.content;
-                            botDiv.querySelector(".content").innerHTML =
-                                marked.parse(fullRes);
-                            botDiv
-                                .querySelectorAll("pre code")
-                                .forEach((el) => hljs.highlightElement(el));
-                            chatBox.scrollTop = chatBox.scrollHeight;
-                        }
-                    }
-                }
-            } catch (e) {
-                streamError = true;
-                botDiv.querySelector(".content").innerHTML +=
-                    `<p style="color:red">${e.name === "AbortError" ? "Stopped by user" : e.message}</p>`;
-                document.getElementById("debug-status").innerText =
-                    e.name === "AbortError" ? "Stopped" : "LLM Error";
-            } finally {
-                botDiv.querySelector(".cursor")?.remove();
-                document.getElementById("stop-btn").disabled = true;
-                const _llmMs = Date.now() - _llmT0;
-                const llmTimeEl = document.getElementById(botMsgId + "-llm-time");
-                if (llmTimeEl) {
-                    llmTimeEl.textContent = _llmMs < 1000
-                        ? `🤖 ${_llmMs}ms`
-                        : `🤖 ${(_llmMs / 1000).toFixed(1)}s`;
-                    llmTimeEl.style.display = "inline-block";
-                }
-            }
-
-            // ══════════════════════════════════════════
-            // PHASE 2 — POST-RESPONSE SCAN
-            // ══════════════════════════════════════════
+            // ── Phase 2: AIRS-Dual ──────────────────────────────────────────
             if (airsMode !== "off" && fullRes && !streamError) {
-                document.getElementById("debug-status").innerText =
-                    "🔀🛡️ AIRS-Dual scanning...";
-                const resBadge = document.getElementById(
-                    botMsgId + "-badge",
-                );
-
-                const _r0 = Date.now();
-                const responseScan = await scanWithAIRS(
-                    { prompt: userPrompt, response: fullRes },
-                    "response",
-                    airsMode,
-                    airsProfile,
-                    airsApiKey,
-                    modelSelect,
-                );
-                const _rMs = Date.now() - _r0;
-                const _rLat = _rMs < 1000 ? `· ${_rMs}ms` : `· ${(_rMs / 1000).toFixed(1)}s`;
-
-                if (responseScan.status === "error") {
-                    if (resBadge) {
-                        resBadge.className = "scan-badge";
-                        resBadge.textContent = `🔀🛡️ AIRS-Dual ERR ${_rLat}`;
-                        resBadge.dataset.verdict = JSON.stringify(responseScan);
-                        resBadge.title = "Click to expand";
-                        resBadge.style.cursor = "pointer";
-                    }
-                    document.getElementById("debug-status").innerText =
-                        "Response Scan Error";
-                } else if (
-                    responseScan.status === "block" ||
-                    responseScan.status === "alert"
-                ) {
-                    const threats = responseScan.detected.length
-                        ? responseScan.detected.join(", ")
-                        : responseScan.category;
-                    if (resBadge) {
-                        resBadge.className = "scan-badge blocked";
-                        resBadge.textContent = `🔀🛡️ AIRS-Dual BLOCKED ${_rLat}`;
-                        resBadge.dataset.verdict = JSON.stringify(responseScan);
-                        resBadge.title = "Click to expand";
-                        resBadge.style.cursor = "pointer";
-                    }
-
-                    if (airsMode === "strict") {
-                        // Replace LLM response entirely
-                        botDiv.querySelector(".content").innerHTML = `
-                                <div class="security-alert alert-danger">
-                                    <strong>🔀🛡️ AIRS-DUAL — BLOCKED ${_rLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response withheld.
-                                </div>`;
-                    } else {
-                        // Audit: warn + show masked version if available, else keep response
-                        const warnHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
-                                <strong>🔀🛡️ AIRS-DUAL — FLAGGED ${_rLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response shown with warning.</div>`;
-                        if (responseScan.maskedData) {
-                            botDiv.querySelector(".content").innerHTML =
-                                warnHtml +
-                                marked.parse(responseScan.maskedData.data);
-                        } else {
-                            botDiv
-                                .querySelector(".content")
-                                .insertAdjacentHTML("afterbegin", warnHtml);
-                        }
-                        if (resBadge) {
-                            resBadge.className = "scan-badge flagged";
-                            resBadge.textContent = `🔀🛡️ AIRS-Dual FLAGGED ${_rLat}`;
-                            resBadge.dataset.verdict = JSON.stringify(responseScan);
-                            resBadge.title = "Click to expand";
-                            resBadge.style.cursor = "pointer";
-                        }
-                    }
-                    document.getElementById("debug-status").innerText =
-                        "Blocked (AIRS-Dual)";
-                } else if (responseScan.maskedData) {
-                    // Allowed but DLP masking applied
-                    if (resBadge) {
-                        resBadge.className = "scan-badge flagged";
-                        resBadge.textContent = `🔀🛡️ AIRS-Dual MASKED ${_rLat}`;
-                        resBadge.dataset.verdict = JSON.stringify(responseScan);
-                        resBadge.title = "Click to expand";
-                        resBadge.style.cursor = "pointer";
-                    }
-                    const maskHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
-                            <strong>🔀🛡️ AIRS-DUAL — DLP MASKED ${_rLat}</strong><br>Sensitive data detected and redacted from response.</div>`;
-                    botDiv.querySelector(".content").innerHTML =
-                        maskHtml +
-                        marked.parse(responseScan.maskedData.data);
-                    document.getElementById("debug-status").innerText =
-                        "Done (DLP Masked)";
-                } else {
-                    if (resBadge) {
-                        resBadge.className = "scan-badge allowed";
-                        resBadge.textContent = `🔀🛡️ AIRS-Dual CLEAN ${_rLat}`;
-                        resBadge.dataset.verdict = JSON.stringify(responseScan);
-                        resBadge.title = "Click to expand";
-                        resBadge.style.cursor = "pointer";
-                    }
-                    document.getElementById("debug-status").innerText =
-                        "Done ✅";
-                }
+                await runAIRSDualGate(userPrompt, fullRes, botDiv, botMsgId, airsMode, airsProfile, airsApiKey, modelSelect);
             } else if (!streamError) {
-                document.getElementById("debug-status").innerText = "Done";
+                els.debugStatus.innerText = "Done";
             }
 
-            // ══════════════════════════════════════════
-            // PHASE 2.5 — LLM GUARD OUTPUT SCAN
-            // ══════════════════════════════════════════
-            if (lgMode !== "off" && fullRes && !streamError) {
-                const lgOutScanners = _getLGOutputScanners();
-                if (lgOutScanners.length) {
-                    document.getElementById("debug-status").innerText = "🔬 LLM-Guard OUTPUT scanning...";
-                    const _lg25t0 = Date.now();
-                    const lgOut = await runLLMGuardOutput(userPrompt, fullRes, lgMode, lgOutScanners);
-                    const _lg25ms = Date.now() - _lg25t0;
-                    const _lg25lat = _lg25ms < 1000 ? `· ${_lg25ms}ms` : `· ${(_lg25ms / 1000).toFixed(1)}s`;
-
-                    const resBadge = document.getElementById(botMsgId + "-badge");
-                    if (lgOut.error) {
-                        const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert alert-warning";
-                        warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD OUTPUT — ERROR ${_lg25lat}</strong><br>Scan failed, output shown unverified. <small>${lgOut.message}</small>`;
-                        botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
-                    } else if (lgOut.blocked) {
-                        if (resBadge) {
-                            resBadge.className = "scan-badge blocked";
-                            resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
-                            resBadge.textContent = `🔬 LG-OUT BLOCKED ${_lg25lat}`;
-                        }
-                        const blockDiv = document.createElement("div");
-                        blockDiv.className = "message security-alert alert-llmguard";
-                        blockDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${_lg25lat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`;
-                        botDiv.querySelector(".content").insertAdjacentElement("afterbegin", blockDiv);
-                        document.getElementById("debug-status").innerText = "Blocked (LLM-Guard OUTPUT)";
-                    } else if (lgOut.flagged) {
-                        if (resBadge) {
-                            resBadge.className = "scan-badge flagged";
-                            resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
-                            resBadge.textContent = `🔬 LG-OUT FLAGGED ${_lg25lat}`;
-                        }
-                        const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert alert-llmguard";
-                        warnDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — FLAGGED ${_lg25lat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response shown with warning.`;
-                        botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
-                        document.getElementById("debug-status").innerText = "Done (LLM-Guard OUTPUT flagged)";
-                    } else {
-                        if (resBadge && !resBadge.textContent.includes("AIRS-2")) {
-                            resBadge.className = "scan-badge allowed";
-                            resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
-                            resBadge.textContent = `🔬 LG-OUT SAFE ${_lg25lat}`;
-                        }
-                        document.getElementById("debug-status").innerText = "Done ✅";
-                    }
-                }
-            } else {
-                const outReqEl2 = document.getElementById("debug-lgOutput-req");
-                const outResEl2 = document.getElementById("debug-lgOutput-res");
-                if (outReqEl2) outReqEl2.innerText = "LLM-Guard OUTPUT — Disabled.";
-                if (outResEl2) outResEl2.innerText = "LLM-Guard OUTPUT — Disabled.";
+            // ── Phase 2.5: LLM-Guard output ─────────────────────────────────
+            if (els.llmguardMode.value !== "off" && fullRes && !streamError) {
+                await runOutputLLMGuardGate(userPrompt, fullRes, botDiv, botMsgId);
+            } else if (els.llmguardMode.value === "off") {
+                els.dbgLgOutputReq.innerText = "LLM-Guard OUTPUT — Disabled.";
+                els.dbgLgOutputRes.innerText = "LLM-Guard OUTPUT — Disabled.";
             }
 
             // Copy button
@@ -4119,47 +4082,44 @@ Respond ONLY with valid JSON, no other text:
                     .writeText(botDiv.querySelector(".content").innerText)
                     .then(() => {
                         copyBtn.textContent = "✅ Copied!";
-                        setTimeout(
-                            () => (copyBtn.textContent = "📋 Copy"),
-                            2000,
-                        );
+                        setTimeout(() => (copyBtn.textContent = "📋 Copy"), 2000);
                     });
             };
             botDiv.querySelector(".bot-label").appendChild(copyBtn);
-            document.getElementById("send-btn").disabled = false;
+            els.sendBtn.disabled = false;
         }
 
         function startNewSession() {
             // Clear chat messages
-            const chatBox = document.getElementById("chat-box");
+            const chatBox = els.chatBox;
             chatBox.innerHTML = "";
 
             // Reset all API Inspector panels
-            document.getElementById("debug-lgInput-req").innerText =
+            els.dbgLgInputReq.innerText =
                 "Waiting for LLM-Guard...";
-            document.getElementById("debug-lgInput-res").innerText =
+            els.dbgLgInputRes.innerText =
                 "Waiting for LLM-Guard...";
-            document.getElementById("debug-guard-req").innerText =
+            els.dbgGuardReq.innerText =
                 "Waiting for Semantic-Guard...";
-            document.getElementById("debug-guard-res").innerText =
+            els.dbgGuardRes.innerText =
                 "Waiting for Semantic-Guard...";
-            document.getElementById("debug-canary-req").innerText =
+            els.dbgCanaryReq.innerText =
                 "Waiting for Little-Canary...";
-            document.getElementById("debug-canary-res").innerText =
+            els.dbgCanaryRes.innerText =
                 "Waiting for Little-Canary...";
-            document.getElementById("debug-prompt-req").innerText =
+            els.dbgPromptReq.innerText =
                 "Waiting for AIRS-Inlet...";
-            document.getElementById("debug-prompt-res").innerText =
+            els.dbgPromptRes.innerText =
                 "Waiting for AIRS-Inlet...";
-            document.getElementById("debug-response-req").innerText =
+            els.dbgResponseReq.innerText =
                 "Waiting for AIRS-Dual...";
-            document.getElementById("debug-response-res").innerText =
+            els.dbgResponseRes.innerText =
                 "Waiting for AIRS-Dual...";
-            document.getElementById("debug-lgOutput-req").innerText =
+            els.dbgLgOutputReq.innerText =
                 "Waiting for LLM...";
-            document.getElementById("debug-lgOutput-res").innerText =
+            els.dbgLgOutputRes.innerText =
                 "Waiting for LLM...";
-            document.getElementById("debug-status").innerText = "Idle";
+            els.debugStatus.innerText = "Idle";
 
             // Visual confirmation in chat
             const notice = document.createElement("div");
@@ -4168,6 +4128,76 @@ Respond ONLY with valid JSON, no other text:
             notice.textContent = "🔄 New session started";
             chatBox.appendChild(notice);
         }
+
+        // ── Cached DOM references (populated once at startup) ────────────
+        const els = {
+            // Core UI
+            chatBox:             document.getElementById("chat-box"),
+            userInput:           document.getElementById("user-input"),
+            sendBtn:             document.getElementById("send-btn"),
+            stopBtn:             document.getElementById("stop-btn"),
+            charCounter:         document.getElementById("char-counter"),
+            threatSelect:        document.getElementById("threat-select"),
+            debugStatus:         document.getElementById("debug-status"),
+            // Model / persona
+            modelSelect:         document.getElementById("model-select"),
+            personaSelect:       document.getElementById("persona-select"),
+            systemPrompt:        document.getElementById("system-prompt"),
+            // Gate mode selects (hidden)
+            llmguardMode:        document.getElementById("llmguard-mode"),
+            guardrailMode:       document.getElementById("guardrail-mode"),
+            canaryMode:          document.getElementById("canary-mode"),
+            airsMode:            document.getElementById("airs-mode"),
+            // Gate config
+            guardrailModel:      document.getElementById("guardrail-model"),
+            guardrailThreshold:  document.getElementById("guardrail-threshold"),
+            guardrailSysPrompt:  document.getElementById("guardrail-system-prompt"),
+            canaryModel:         document.getElementById("canary-model"),
+            canaryThreshold:     document.getElementById("canary-threshold"),
+            airsApiKey:          document.getElementById("airs-api-key"),
+            airsProfile:         document.getElementById("airs-profile"),
+            // LLM-Guard input scanner checkboxes
+            lgScanInvisible:     document.getElementById("lg-scan-invisible"),
+            lgScanSecrets:       document.getElementById("lg-scan-secrets"),
+            lgScanInjection:     document.getElementById("lg-scan-injection"),
+            lgScanToxicity:      document.getElementById("lg-scan-toxicity"),
+            lgScanBanTopics:     document.getElementById("lg-scan-bantopics"),
+            lgScanGibberish:     document.getElementById("lg-scan-gibberish"),
+            lgScanLanguage:      document.getElementById("lg-scan-language"),
+            // LLM-Guard output scanner checkboxes
+            lgOutSensitive:      document.getElementById("lg-out-sensitive"),
+            lgOutMalicious:      document.getElementById("lg-out-malicious"),
+            lgOutNoRefusal:      document.getElementById("lg-out-norefusal"),
+            lgOutBias:           document.getElementById("lg-out-bias"),
+            lgOutRelevance:      document.getElementById("lg-out-relevance"),
+            lgOutLanguageSame:   document.getElementById("lg-out-languagesame"),
+            // API Inspector debug panes
+            dbgLgInputReq:       document.getElementById("debug-lgInput-req"),
+            dbgLgInputRes:       document.getElementById("debug-lgInput-res"),
+            dbgGuardReq:         document.getElementById("debug-guard-req"),
+            dbgGuardRes:         document.getElementById("debug-guard-res"),
+            dbgCanaryReq:        document.getElementById("debug-canary-req"),
+            dbgCanaryRes:        document.getElementById("debug-canary-res"),
+            dbgPromptReq:        document.getElementById("debug-prompt-req"),
+            dbgPromptRes:        document.getElementById("debug-prompt-res"),
+            dbgLlmReq:           document.getElementById("debug-req"),
+            dbgLlmRes:           document.getElementById("debug-res"),
+            dbgResponseReq:      document.getElementById("debug-response-req"),
+            dbgResponseRes:      document.getElementById("debug-response-res"),
+            dbgLgOutputReq:      document.getElementById("debug-lgOutput-req"),
+            dbgLgOutputRes:      document.getElementById("debug-lgOutput-res"),
+            // Batch runner
+            batchModalBackdrop:  document.getElementById("batch-modal-backdrop"),
+            batchCatList:        document.getElementById("batch-cat-list"),
+            batchStartBtn:       document.getElementById("batch-start-btn"),
+            batchStopBtn:        document.getElementById("batch-stop-btn"),
+            batchProgressBar:    document.getElementById("batch-progress-bar"),
+            batchProgressLabel:  document.getElementById("batch-progress-label"),
+            batchResultsBody:    document.getElementById("batch-results-body"),
+            batchSummary:        document.getElementById("batch-summary"),
+            // Modals
+            spModalBackdrop:     document.getElementById("sp-modal-backdrop"),
+        };
 
         // Initialize App
         fetchModels();
@@ -4232,7 +4262,7 @@ Respond ONLY with valid JSON, no other text:
             else SAMPLE_THREATS.push(group);
 
             // Re-render category list in batch runner
-            const catList = document.getElementById("batch-cat-list");
+            const catList = els.batchCatList;
             catList.innerHTML = SAMPLE_THREATS.map(g =>
                 `<label class="batch-cat-cb">
                     <input type="checkbox" data-cat="${g.categoryId}" checked onchange="_updateRunBtn()">
@@ -4416,7 +4446,7 @@ Respond ONLY with valid JSON, no other text:
 
         function openBatchRunner() {
             // Populate category checkboxes if they haven't been built yet
-            const catList = document.getElementById("batch-cat-list");
+            const catList = els.batchCatList;
             if (catList.children.length === 0 || catList.innerHTML.includes("no threats loaded")) {
                 if (SAMPLE_THREATS.length === 0) {
                     catList.innerHTML = `<span style="color:var(--muted);font-size:11px">(no threats loaded — is the server running?)</span>`;
@@ -4432,7 +4462,7 @@ Respond ONLY with valid JSON, no other text:
             _updateSevCounts();
             _updateRunBtn();
 
-            document.getElementById("batch-modal-backdrop").classList.add("open");
+            els.batchModalBackdrop.classList.add("open");
         }
 
         function setBatchCatAll(checked) {
@@ -4443,7 +4473,7 @@ Respond ONLY with valid JSON, no other text:
 
         function _updateRunBtn() {
             const threats = getSelectedThreats();
-            document.getElementById("batch-start-btn").textContent = `▶ Run (${threats.length})`;
+            els.batchStartBtn.textContent = `▶ Run (${threats.length})`;
             // Update per-category counts to reflect active severity filter
             document.querySelectorAll("#batch-cat-list input[type=checkbox]").forEach(cb => {
                 const g = SAMPLE_THREATS.find(g => g.categoryId === cb.dataset.cat);
@@ -4471,54 +4501,54 @@ Respond ONLY with valid JSON, no other text:
         }
 
         function closeBatchModal() {
-            document.getElementById("batch-modal-backdrop").classList.remove("open");
+            els.batchModalBackdrop.classList.remove("open");
         }
 
         function stopBatchRun() {
             batchStop = true;
-            document.getElementById("batch-stop-btn").disabled = true;
+            els.batchStopBtn.disabled = true;
         }
 
         async function startBatchRun() {
             // Snapshot which phases are active
-            const guardrailMode = document.getElementById("guardrail-mode").value;
-            const canaryMode = document.getElementById("canary-mode").value;
-            const airsMode = document.getElementById("airs-mode").value;
+            const guardrailMode = els.guardrailMode.value;
+            const canaryMode = els.canaryMode.value;
+            const airsMode = els.airsMode.value;
 
-            const lgMode06Check = document.getElementById("llmguard-mode").value;
+            const lgMode06Check = els.llmguardMode.value;
             if (guardrailMode === "off" && canaryMode === "off" && lgMode06Check === "off" && airsMode === "off") {
                 alert("Batch runner: enable at least one security phase (Semantic-Guard, Little-Canary, LLM-Guard, or AIRS-Inlet).");
                 return;
             }
 
             // Phase 0 config
-            const guardModel = document.getElementById("guardrail-model").value;
-            const guardThreshold = parseFloat(document.getElementById("guardrail-threshold").value) || 0.7;
-            const guardSysPrompt = document.getElementById("guardrail-system-prompt").value;
+            const guardModel = els.guardrailModel.value;
+            const guardThreshold = parseFloat(els.guardrailThreshold.value) || 0.7;
+            const guardSysPrompt = els.guardrailSysPrompt.value;
             const phase0Active = guardrailMode !== "off" && !!guardModel;
 
             // Phase 0.5 config
-            const canaryModel = document.getElementById("canary-model").value;
-            const canaryThreshold = parseFloat(document.getElementById("canary-threshold").value) || 0.7;
+            const canaryModel = els.canaryModel.value;
+            const canaryThreshold = parseFloat(els.canaryThreshold.value) || 0.7;
             const phase05Active = canaryMode !== "off" && !!canaryModel;
 
             // Phase 0.6 config
-            const lgMode06 = document.getElementById("llmguard-mode").value;
+            const lgMode06 = els.llmguardMode.value;
             const lgScanners06 = [];
-            if (document.getElementById("lg-scan-invisible").checked) lgScanners06.push("InvisibleText");
-            if (document.getElementById("lg-scan-secrets").checked) lgScanners06.push("Secrets");
-            if (document.getElementById("lg-scan-injection").checked) lgScanners06.push("PromptInjection");
-            if (document.getElementById("lg-scan-toxicity").checked) lgScanners06.push("Toxicity");
-            if (document.getElementById("lg-scan-bantopics").checked) lgScanners06.push("BanTopics");
-            if (document.getElementById("lg-scan-gibberish").checked) lgScanners06.push("Gibberish");
-            if (document.getElementById("lg-scan-language").checked) lgScanners06.push("Language");
+            if (els.lgScanInvisible.checked) lgScanners06.push("InvisibleText");
+            if (els.lgScanSecrets.checked) lgScanners06.push("Secrets");
+            if (els.lgScanInjection.checked) lgScanners06.push("PromptInjection");
+            if (els.lgScanToxicity.checked) lgScanners06.push("Toxicity");
+            if (els.lgScanBanTopics.checked) lgScanners06.push("BanTopics");
+            if (els.lgScanGibberish.checked) lgScanners06.push("Gibberish");
+            if (els.lgScanLanguage.checked) lgScanners06.push("Language");
             const phase06Active = lgMode06 !== "off" && lgScanners06.length > 0;
 
             // Phase 1 config
-            const airsProfile = document.getElementById("airs-profile").value;
-            const airsKeyEl = document.getElementById("airs-api-key");
+            const airsProfile = els.airsProfile.value;
+            const airsKeyEl = els.airsApiKey;
             const airsApiKey = airsKeyEl.dataset.fromEnv ? "" : airsKeyEl.value.trim();
-            const modelSelect = document.getElementById("model-select").value;
+            const modelSelect = els.modelSelect.value;
             const phase1Active = airsMode !== "off";
 
             const delayMs = parseInt(document.getElementById("batch-delay").value) || 600;
@@ -4532,16 +4562,16 @@ Respond ONLY with valid JSON, no other text:
             batchStop = false;
             isBatchRunning = true;
             _batchResults = [];
-            document.getElementById("batch-results-body").innerHTML = "";
-            document.getElementById("batch-summary").innerHTML = "";
-            document.getElementById("batch-start-btn").disabled = true;
-            document.getElementById("batch-stop-btn").disabled = false;
+            els.batchResultsBody.innerHTML = "";
+            els.batchSummary.innerHTML = "";
+            els.batchStartBtn.disabled = true;
+            els.batchStopBtn.disabled = false;
 
             for (let i = 0; i < total; i++) {
                 if (batchStop) break;
                 const threat = allThreats[i];
-                document.getElementById("batch-progress-bar").style.width = Math.round((i / total) * 100) + "%";
-                document.getElementById("batch-progress-label").textContent = `${i + 1} / ${total}  —  ${threat.type}`;
+                els.batchProgressBar.style.width = Math.round((i / total) * 100) + "%";
+                els.batchProgressLabel.textContent = `${i + 1} / ${total}  —  ${threat.type}`;
 
                 const t0 = Date.now();
 
@@ -4632,12 +4662,12 @@ Respond ONLY with valid JSON, no other text:
                 // ── Phase 2: AIRS-Dual Response Scan ──────────────────
                 let batchGeneratedText = "";
                 if (phase1Active && finalStatus !== "block" && finalStatus !== "error") {
-                    document.getElementById("batch-progress-label").textContent = `${i + 1} / ${total}  —  ${threat.type} (Generating LLM Response...)`;
+                    els.batchProgressLabel.textContent = `${i + 1} / ${total}  —  ${threat.type} (Generating LLM Response...)`;
                     try {
                         const ollamaPayload = {
                             model: modelSelect,
                             messages: [
-                                { role: "system", content: document.getElementById("system-prompt").value },
+                                { role: "system", content: els.systemPrompt.value },
                                 { role: "user", content: threat.example }
                             ],
                             stream: false,
@@ -4686,12 +4716,12 @@ Respond ONLY with valid JSON, no other text:
                 // ── LG-out: LLM-Guard OUTPUT Scan ─────────────────────
                 if (phase06Active && finalStatus !== "block" && finalStatus !== "error") {
                     const lgOutScanners25 = [];
-                    if (document.getElementById("lg-out-sensitive").checked) lgOutScanners25.push("Sensitive");
-                    if (document.getElementById("lg-out-malicious").checked) lgOutScanners25.push("MaliciousURLs");
-                    if (document.getElementById("lg-out-norefusal").checked) lgOutScanners25.push("NoRefusal");
-                    if (document.getElementById("lg-out-bias").checked) lgOutScanners25.push("Bias");
-                    if (document.getElementById("lg-out-relevance").checked) lgOutScanners25.push("Relevance");
-                    if (document.getElementById("lg-out-languagesame").checked) lgOutScanners25.push("LanguageSame");
+                    if (els.lgOutSensitive.checked) lgOutScanners25.push("Sensitive");
+                    if (els.lgOutMalicious.checked) lgOutScanners25.push("MaliciousURLs");
+                    if (els.lgOutNoRefusal.checked) lgOutScanners25.push("NoRefusal");
+                    if (els.lgOutBias.checked) lgOutScanners25.push("Bias");
+                    if (els.lgOutRelevance.checked) lgOutScanners25.push("Relevance");
+                    if (els.lgOutLanguageSame.checked) lgOutScanners25.push("LanguageSame");
                     if (lgOutScanners25.length) {
                         // Generate LLM response if AIRS-Dual was off
                         if (!batchGeneratedText) {
@@ -4702,7 +4732,7 @@ Respond ONLY with valid JSON, no other text:
                                     body: JSON.stringify({
                                         model: modelSelect,
                                         messages: [
-                                            { role: "system", content: document.getElementById("system-prompt").value },
+                                            { role: "system", content: els.systemPrompt.value },
                                             { role: "user", content: threat.example }
                                         ],
                                         stream: false,
@@ -4792,7 +4822,7 @@ Respond ONLY with valid JSON, no other text:
                     <td>${outLabel}</td>
                     <td title="${detectedStr}">${detectedStr}</td>
                     <td>${latStr}</td>`;
-                document.getElementById("batch-results-body").appendChild(tr);
+                els.batchResultsBody.appendChild(tr);
                 document.getElementById("batch-results-wrap").scrollTop = 9999;
 
                 _batchResults.push({
@@ -4808,7 +4838,7 @@ Respond ONLY with valid JSON, no other text:
                     latencyMs: latMs, scanId,
                 });
 
-                document.getElementById("batch-summary").innerHTML =
+                els.batchSummary.innerHTML =
                     `<div class="s-row">` +
                     `<span class="s-phase06" title="Caught by LLM-Guard (input)">🔬 LLM-Guard: ${p06}</span>` +
                     `<span class="s-phase0"  title="Caught by Semantic-Guard">🧩 Semantic-Guard: ${p0}</span>` +
@@ -4834,11 +4864,11 @@ Respond ONLY with valid JSON, no other text:
 
             isBatchRunning = false;
             const ran = blocked + flagged + allowed + errors;
-            document.getElementById("batch-progress-bar").style.width = "100%";
-            document.getElementById("batch-progress-label").textContent =
+            els.batchProgressBar.style.width = "100%";
+            els.batchProgressLabel.textContent =
                 batchStop ? `Stopped after ${ran} / ${total}` : `Complete — ${total} threats tested`;
-            document.getElementById("batch-start-btn").disabled = false;
-            document.getElementById("batch-stop-btn").disabled = true;
+            els.batchStartBtn.disabled = false;
+            els.batchStopBtn.disabled = true;
         }
 
         function exportBatchResults() {
@@ -4859,35 +4889,35 @@ Respond ONLY with valid JSON, no other text:
             const p2 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("AIRS-Dual")).length;
 
             const lg06Scanners = [];
-            if (document.getElementById("lg-scan-invisible").checked) lg06Scanners.push("InvisibleText");
-            if (document.getElementById("lg-scan-secrets").checked) lg06Scanners.push("Secrets");
-            if (document.getElementById("lg-scan-injection").checked) lg06Scanners.push("PromptInjection");
-            if (document.getElementById("lg-scan-toxicity").checked) lg06Scanners.push("Toxicity");
-            if (document.getElementById("lg-scan-bantopics").checked) lg06Scanners.push("BanTopics");
-            if (document.getElementById("lg-scan-gibberish").checked) lg06Scanners.push("Gibberish");
-            if (document.getElementById("lg-scan-language").checked) lg06Scanners.push("Language");
+            if (els.lgScanInvisible.checked) lg06Scanners.push("InvisibleText");
+            if (els.lgScanSecrets.checked) lg06Scanners.push("Secrets");
+            if (els.lgScanInjection.checked) lg06Scanners.push("PromptInjection");
+            if (els.lgScanToxicity.checked) lg06Scanners.push("Toxicity");
+            if (els.lgScanBanTopics.checked) lg06Scanners.push("BanTopics");
+            if (els.lgScanGibberish.checked) lg06Scanners.push("Gibberish");
+            if (els.lgScanLanguage.checked) lg06Scanners.push("Language");
 
             const payload = {
                 exported_at: new Date().toISOString(),
-                model: document.getElementById("model-select").value,
+                model: els.modelSelect.value,
                 severity_filter: _severityFilter,
-                phase0_mode: document.getElementById("guardrail-mode").value,
-                phase05_mode: document.getElementById("canary-mode").value,
-                phase06_mode: document.getElementById("llmguard-mode").value,
+                phase0_mode: els.guardrailMode.value,
+                phase05_mode: els.canaryMode.value,
+                phase06_mode: els.llmguardMode.value,
                 phase06_scanners: lg06Scanners,
                 phase06_output_scanners: (() => {
                     const o = [];
-                    if (document.getElementById("lg-out-sensitive").checked) o.push("Sensitive");
-                    if (document.getElementById("lg-out-malicious").checked) o.push("MaliciousURLs");
-                    if (document.getElementById("lg-out-norefusal").checked) o.push("NoRefusal");
-                    if (document.getElementById("lg-out-bias").checked) o.push("Bias");
-                    if (document.getElementById("lg-out-relevance").checked) o.push("Relevance");
-                    if (document.getElementById("lg-out-languagesame").checked) o.push("LanguageSame");
+                    if (els.lgOutSensitive.checked) o.push("Sensitive");
+                    if (els.lgOutMalicious.checked) o.push("MaliciousURLs");
+                    if (els.lgOutNoRefusal.checked) o.push("NoRefusal");
+                    if (els.lgOutBias.checked) o.push("Bias");
+                    if (els.lgOutRelevance.checked) o.push("Relevance");
+                    if (els.lgOutLanguageSame.checked) o.push("LanguageSame");
                     return o;
                 })(),
-                phase1_mode: document.getElementById("airs-mode").value,
-                phase2_mode: document.getElementById("airs-mode").value !== "off" ? "active" : "off",
-                airs_profile: document.getElementById("airs-profile").value,
+                phase1_mode: els.airsMode.value,
+                phase2_mode: els.airsMode.value !== "off" ? "active" : "off",
+                airs_profile: els.airsProfile.value,
                 summary: {
                     total: _batchResults.length,
                     blocked, flagged, allowed, errors,
@@ -4913,11 +4943,11 @@ Respond ONLY with valid JSON, no other text:
         function exportBatchResultsMD() {
             if (!_batchResults.length) { alert("Run the batch first."); return; }
 
-            const model = document.getElementById("model-select").value;
-            const p0Mode = document.getElementById("guardrail-mode").value;
-            const p05Mode = document.getElementById("canary-mode").value;
-            const p1Mode = document.getElementById("airs-mode").value;
-            const airsProfile = document.getElementById("airs-profile").value;
+            const model = els.modelSelect.value;
+            const p0Mode = els.guardrailMode.value;
+            const p05Mode = els.canaryMode.value;
+            const p1Mode = els.airsMode.value;
+            const airsProfile = els.airsProfile.value;
             const ts = new Date().toISOString();
 
             // Tally from results
@@ -4934,23 +4964,23 @@ Respond ONLY with valid JSON, no other text:
             const p1 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("AIRS-Inlet")).length;
             const p2 = _batchResults.filter(r => (r.firstCaughtBy || "").includes("AIRS-Dual")).length;
 
-            const p06Mode = document.getElementById("llmguard-mode").value;
+            const p06Mode = els.llmguardMode.value;
             const lg06Scanners = [];
-            if (document.getElementById("lg-scan-invisible").checked) lg06Scanners.push("InvisibleText");
-            if (document.getElementById("lg-scan-secrets").checked) lg06Scanners.push("Secrets");
-            if (document.getElementById("lg-scan-injection").checked) lg06Scanners.push("PromptInjection");
-            if (document.getElementById("lg-scan-toxicity").checked) lg06Scanners.push("Toxicity");
-            if (document.getElementById("lg-scan-bantopics").checked) lg06Scanners.push("BanTopics");
-            if (document.getElementById("lg-scan-gibberish").checked) lg06Scanners.push("Gibberish");
-            if (document.getElementById("lg-scan-language").checked) lg06Scanners.push("Language");
+            if (els.lgScanInvisible.checked) lg06Scanners.push("InvisibleText");
+            if (els.lgScanSecrets.checked) lg06Scanners.push("Secrets");
+            if (els.lgScanInjection.checked) lg06Scanners.push("PromptInjection");
+            if (els.lgScanToxicity.checked) lg06Scanners.push("Toxicity");
+            if (els.lgScanBanTopics.checked) lg06Scanners.push("BanTopics");
+            if (els.lgScanGibberish.checked) lg06Scanners.push("Gibberish");
+            if (els.lgScanLanguage.checked) lg06Scanners.push("Language");
 
             const lgOutScanners25MD = [];
-            if (document.getElementById("lg-out-sensitive").checked) lgOutScanners25MD.push("Sensitive");
-            if (document.getElementById("lg-out-malicious").checked) lgOutScanners25MD.push("MaliciousURLs");
-            if (document.getElementById("lg-out-norefusal").checked) lgOutScanners25MD.push("NoRefusal");
-            if (document.getElementById("lg-out-bias").checked) lgOutScanners25MD.push("Bias");
-            if (document.getElementById("lg-out-relevance").checked) lgOutScanners25MD.push("Relevance");
-            if (document.getElementById("lg-out-languagesame").checked) lgOutScanners25MD.push("LanguageSame");
+            if (els.lgOutSensitive.checked) lgOutScanners25MD.push("Sensitive");
+            if (els.lgOutMalicious.checked) lgOutScanners25MD.push("MaliciousURLs");
+            if (els.lgOutNoRefusal.checked) lgOutScanners25MD.push("NoRefusal");
+            if (els.lgOutBias.checked) lgOutScanners25MD.push("Bias");
+            if (els.lgOutRelevance.checked) lgOutScanners25MD.push("Relevance");
+            if (els.lgOutLanguageSame.checked) lgOutScanners25MD.push("LanguageSame");
 
             const lines = [
                 `# Batch Threat Runner — Results`,
@@ -5016,7 +5046,7 @@ Respond ONLY with valid JSON, no other text:
         // SESSION EXPORT
         // ══════════════════════════════════════════
         function exportSession() {
-            const chatBox = document.getElementById("chat-box");
+            const chatBox = els.chatBox;
             const messages = [];
 
             chatBox.querySelectorAll(".message").forEach(div => {
@@ -5056,13 +5086,13 @@ Respond ONLY with valid JSON, no other text:
             if (!messages.length) { alert("Nothing to export — chat is empty."); return; }
 
             const config = {
-                model: document.getElementById("model-select").value,
-                persona: document.getElementById("persona-select").value,
-                system_prompt: document.getElementById("system-prompt").value,
-                airs_mode: document.getElementById("airs-mode").value,
-                airs_profile: document.getElementById("airs-profile").value,
-                guardrail_mode: document.getElementById("guardrail-mode")?.value || "off",
-                canary_mode: document.getElementById("canary-mode")?.value || "off",
+                model: els.modelSelect.value,
+                persona: els.personaSelect.value,
+                system_prompt: els.systemPrompt.value,
+                airs_mode: els.airsMode.value,
+                airs_profile: els.airsProfile.value,
+                guardrail_mode: els.guardrailMode?.value || "off",
+                canary_mode: els.canaryMode?.value || "off",
             };
 
             // Build Markdown
@@ -5118,33 +5148,33 @@ Respond ONLY with valid JSON, no other text:
 
         // Feature 1 — Replay prompt
         function replayPrompt(text) {
-            const input = document.getElementById("user-input");
+            const input = els.userInput;
             input.value = text;
             input.style.height = "auto";
             input.style.height = input.scrollHeight + "px";
-            document.getElementById("char-counter").textContent = text.length + " chars";
-            document.getElementById("send-btn").disabled = false;
+            els.charCounter.textContent = text.length + " chars";
+            els.sendBtn.disabled = false;
             input.focus();
         }
 
         // Feature 2 — View active system prompt
         function viewSystemPrompt() {
-            const sysProm = document.getElementById("system-prompt").value.trim();
-            const canaryMode = document.getElementById("canary-mode").value;
+            const sysProm = els.systemPrompt.value.trim();
+            const canaryMode = els.canaryMode.value;
             const body = document.getElementById("sp-modal-body");
             let html = `<pre>${sysProm || "(empty — no system instructions set)"}</pre>`;
             if (canaryMode !== "off" && canaryMode !== "monitor") {
                 html += `<div class="sp-note">⚠️ Little-Canary is active — a canary advisory prefix is dynamically prepended to this prompt at send time. The exact prefix appears in API Inspector → Little-Canary Verdict.</div>`;
             }
             body.innerHTML = html;
-            document.getElementById("sp-modal-backdrop").classList.add("open");
+            els.spModalBackdrop.classList.add("open");
         }
         function closeSPModal() {
-            document.getElementById("sp-modal-backdrop").classList.remove("open");
+            els.spModalBackdrop.classList.remove("open");
         }
 
         // Feature 1 & 3 — Delegated click handler on chat-box
-        document.getElementById("chat-box").addEventListener("click", function (e) {
+        els.chatBox.addEventListener("click", function (e) {
             // Replay button
             if (e.target.classList.contains("replay-btn")) {
                 const msgDiv = e.target.closest(".message");
@@ -5176,8 +5206,7 @@ Respond ONLY with valid JSON, no other text:
         });
 
         // #6 — Show scroll-to-bottom button when not at bottom
-        document
-            .getElementById("chat-box")
+        els.chatBox
             .addEventListener("scroll", function () {
                 const notAtBottom =
                     this.scrollHeight - this.scrollTop - this.clientHeight >
