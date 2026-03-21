@@ -6321,17 +6321,22 @@ Respond ONLY with valid JSON, no other text:
                     try {
                         // Build the same payload structure as scanWithAIRS({ prompt }, "prompt", ...)
                         const airsProfile = els.airsProfile ? els.airsProfile.value : '';
-                        const airsApiKey  = els.airsApiKey  ? els.airsApiKey.value  : '';
                         const modelName   = els.modelSelect ? els.modelSelect.value : '';
+                        // Strip control characters — Fetch rejects headers with null bytes / newlines.
+                        // Server uses process.env.AIRS_API_KEY as primary; only send header as fallback.
+                        const rawKey  = els.airsApiKey ? els.airsApiKey.value : '';
+                        const airsApiKey = rawKey.replace(/[^\x20-\x7E]/g, '').trim();
                         const airsPayload = {
                             tr_id: 'probe-' + Date.now(),
                             ai_profile: { profile_name: airsProfile },
                             metadata: { ai_model: modelName, app_name: 'LLM Security Workbench' },
                             contents: [{ prompt }]
                         };
+                        const probeHeaders = { 'Content-Type': 'application/json' };
+                        if (airsApiKey) probeHeaders['x-pan-token'] = airsApiKey;
                         const r = await fetch('/api/prisma', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'x-pan-token': airsApiKey },
+                            headers: probeHeaders,
                             body: JSON.stringify(airsPayload)
                         });
                         const d = await r.json();
