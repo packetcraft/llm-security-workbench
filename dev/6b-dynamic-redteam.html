@@ -6250,10 +6250,11 @@ Respond ONLY with valid JSON, no other text:
                             });
                             const d = await r.json();
                             const ms = Date.now() - t0;
-                            const flaggedScanners = Object.entries(d.scanners_results || {})
-                                .filter(([, v]) => v?.is_valid === false)
-                                .map(([k]) => k);
-                            const isClean   = d.is_valid !== false;
+                            // sidecar returns { valid, results } — same shape as runLLMGuard()
+                            const flaggedScanners = Object.entries(d.results || {})
+                                .filter(([, v]) => v?.valid === false)
+                                .map(([k, v]) => `${k}(${typeof v.risk_score === 'number' ? v.risk_score.toFixed(2) : '?'})`);
+                            const isClean   = d.valid !== false;
                             const isBlocked = lgModeVal === 'strict' && !isClean;
                             const isFlagged = lgModeVal !== 'strict' && !isClean;
                             const detail    = isClean
