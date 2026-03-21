@@ -980,17 +980,27 @@
 
         /* ── Batch Threat Runner drawer — sits between chat and prompt bar ── */
         #batch-drawer {
-            flex-shrink: 0;
-            max-height: 0;
+            flex: 0 0 0;
+            min-height: 0;
             overflow: hidden;
-            transition: max-height 0.25s ease;
-            border-top: 1px solid transparent;
+            transition: flex-basis 0.25s ease, border-color 0.25s ease;
+            border: 2px solid transparent;
+            border-radius: 6px 6px 0 0;
+            margin: 0 6px;
         }
 
         #batch-drawer.open {
-            max-height: 540px;
+            flex: 1 1 0;
+            min-height: 0;
             overflow-y: auto;
-            border-top-color: var(--border);
+            border-color: var(--warn, #e0af68);
+        }
+
+        /* Collapse chat area while batch drawer is open */
+        #chat-scroll-area.batch-open {
+            flex: 0 !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
         }
 
         #batch-drawer .batch-drawer-inner {
@@ -5330,6 +5340,7 @@ Respond ONLY with valid JSON, no other text:
             _updateRunBtn();
 
             const isOpen = els.batchDrawer.classList.toggle("open");
+            document.getElementById("chat-scroll-area").classList.toggle("batch-open", isOpen);
             const railBtn = document.getElementById("rail-batch");
             if (railBtn) railBtn.classList.toggle("active", isOpen);
             // Close API Inspector drawer if open (one drawer at a time)
@@ -5376,6 +5387,7 @@ Respond ONLY with valid JSON, no other text:
 
         function closeBatchModal() {
             els.batchDrawer.classList.remove("open");
+            document.getElementById("chat-scroll-area").classList.remove("batch-open");
             const railBtn = document.getElementById("rail-batch");
             if (railBtn) railBtn.classList.remove("active");
         }
