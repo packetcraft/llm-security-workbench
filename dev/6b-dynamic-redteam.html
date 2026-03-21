@@ -6430,7 +6430,7 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
                         `Iteration ${i} / ${maxIter} — running pipeline check...`;
 
                     // Step 2: run through security pipeline
-                    const { blocked, blockedBy } = await runPipelineCheck(attackPrompt);
+                    const { blocked, blockedBy, gateTrace } = await runPipelineCheck(attackPrompt);
 
                     let llmResponse = '';
                     let score = 0;
@@ -6472,7 +6472,18 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
                     }
                 }
             } catch(e) {
+                console.error('[PAIR] loop error:', e);
                 document.getElementById('pair-status-bar').textContent = `Error: ${e.message}`;
+                document.getElementById('pair-results').style.display = '';
+                const errBanner = document.getElementById('pair-verdict-banner');
+                if (errBanner) {
+                    errBanner.textContent = `⚠ Probe error — ${e.message}`;
+                    errBanner.style.cssText = 'padding:8px 12px;border-radius:6px;font-size:13px;font-weight:700;margin-bottom:10px;background:rgba(224,175,104,0.15);color:var(--warn,#e0af68);border:1px solid var(--warn,#e0af68);';
+                }
+                _pairRunning = false;
+                document.getElementById('pair-run-btn').style.display  = '';
+                document.getElementById('pair-stop-btn').style.display = 'none';
+                return;
             }
 
             // ── Final verdict ───────────────────────────────────────────────
