@@ -978,7 +978,7 @@
             color: var(--text);
         }
 
-        /* ── Batch Threat Runner drawer — sits between chat and prompt bar ── */
+        /* ── Red Teaming drawer — sits between chat and prompt bar ── */
         #batch-drawer {
             flex: 0 0 0;
             min-height: 0;
@@ -2549,7 +2549,7 @@
                     onclick="selectPane('workspace', 'Workspace', this)">
                     ⬡
                 </button>
-                <button class="rail-icon" id="rail-batch" title="Batch Threat Runner" aria-label="Batch Threat Runner"
+                <button class="rail-icon" id="rail-batch" title="Red Teaming" aria-label="Red Teaming"
                     onclick="openBatchRunner()">
                     ⚡
                 </button>
@@ -2954,10 +2954,10 @@ Respond ONLY with valid JSON, no other text:
             </div>
 
             <!-- ── API Inspector drawer (sits above prompt bar) ── -->
-            <!-- ── Batch Threat Runner drawer (sits above prompt bar) ── -->
+            <!-- ── Red Teaming drawer (sits above prompt bar) ── -->
             <div id="batch-drawer">
                 <div class="batch-drawer-header">
-                    <span style="cursor:pointer;flex:1;" onclick="openBatchRunner()">⚡ Batch Threat Runner</span>
+                    <span style="cursor:pointer;flex:1;" onclick="openBatchRunner()">🎯 Red Teaming</span>
                     <span style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:400;margin-right:8px;">+ External Import</span>
                     <button class="btn-ghost" onclick="closeBatchModal()" title="Close" style="font-size:12px;padding:1px 7px;">✕</button>
                 </div>
@@ -5961,7 +5961,7 @@ Respond ONLY with valid JSON, no other text:
             if (els.lgOutLanguageSame.checked) lgOutScanners25MD.push("LanguageSame");
 
             const lines = [
-                `# Batch Threat Runner — Results`,
+                `# Red Teaming — Results`,
                 `> Generated: ${ts}`,
                 ``,
                 `## Configuration`,
@@ -6776,7 +6776,7 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
 
     </script>
 
-    <!-- Batch Threat Runner — source container (moved into drawer at DOMContentLoaded) -->
+    <!-- Red Teaming — source container (moved into drawer at DOMContentLoaded) -->
     <div id="batch-modal-backdrop" style="display:none">
         <div id="batch-modal">
             <div class="batch-tab-bar">
