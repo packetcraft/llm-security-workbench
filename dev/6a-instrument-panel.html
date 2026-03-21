@@ -4902,6 +4902,8 @@ Respond ONLY with valid JSON, no other text:
             toggleGuardrailSettings();
             toggleCanarySettings();
             toggleAIRSSettings();
+            // Pre-populate gate waterfall with empty bars on load
+            rpResetTelemetry();
 
             // Param info tooltip (body-level, avoids overflow clipping)
             const _tooltip = document.createElement("div");
