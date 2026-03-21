@@ -4129,8 +4129,12 @@ Respond ONLY with valid JSON, no other text:
             chatBox.appendChild(notice);
         }
 
-        // ── Cached DOM references (populated once at startup) ────────────
-        const els = {
+        // ── Run after the full DOM is ready so modal elements (placed after </script>) are available ──
+        let els;
+        document.addEventListener('DOMContentLoaded', () => {
+
+        // ── Cached DOM references ────────────────────────────────────────
+        els = {
             // Core UI
             chatBox:             document.getElementById("chat-box"),
             userInput:           document.getElementById("user-input"),
@@ -4236,6 +4240,8 @@ Respond ONLY with valid JSON, no other text:
             _tooltip.style.left = x + "px";
             _tooltip.style.top = y + "px";
         }
+
+        }); // DOMContentLoaded
 
         // ══════════════════════════════════════════
         // IMPORT: GARAK & JAILBREAKBENCH
