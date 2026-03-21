@@ -31,7 +31,12 @@
       "Bash(GIT_DIR=\"\" git -C /c/Users/B006/Documents/github/llm-security-workbench status 2>&1)",
       "Bash(unset GIT_DIR GIT_WORK_TREE)",
       "Bash(env)",
-      "Bash(bash -c 'git status')"
+      "Bash(bash -c 'git status')",
+      "Bash(node:*)",
+      "Bash(ls /c/Users/B006/Documents/github/llm-security-workbench/dev/*.html)",
+      "Bash(awk 'NR>=5033 && NR<=6029' dev/6b-dynamic-redteam.html)",
+      "Bash(awk:*)",
+      "WebFetch(domain:www.trydeepteam.com)"
     ]
   }
 }
