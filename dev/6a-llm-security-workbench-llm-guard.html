@@ -2882,6 +2882,83 @@ Respond ONLY with valid JSON, no other text:
                     </div>
                 </div>
 
+                <div class="rp-divider"></div>
+
+                <!-- Ollama Timing -->
+                <div>
+                    <div class="rp-section-title">Ollama Timing</div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Model load</span>
+                        <span class="rp-stat-value" id="rp-ol-load">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Prompt eval</span>
+                        <span class="rp-stat-value" id="rp-ol-prompt-eval">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Generation</span>
+                        <span class="rp-stat-value" id="rp-ol-gen">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Ollama total</span>
+                        <span class="rp-stat-value" id="rp-ol-total">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Stop reason</span>
+                        <span class="rp-stat-value" id="rp-ol-stop">—</span>
+                    </div>
+                </div>
+
+                <div class="rp-divider"></div>
+
+                <!-- Model Info -->
+                <div>
+                    <div class="rp-section-title">Model Info</div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Architecture</span>
+                        <span class="rp-stat-value" id="rp-m-arch">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Parameters</span>
+                        <span class="rp-stat-value" id="rp-m-params">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Quantization</span>
+                        <span class="rp-stat-value" id="rp-m-quant">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Context window</span>
+                        <span class="rp-stat-value" id="rp-m-ctx">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">File size</span>
+                        <span class="rp-stat-value" id="rp-m-size">—</span>
+                    </div>
+                </div>
+
+                <div class="rp-divider"></div>
+
+                <!-- Memory -->
+                <div>
+                    <div class="rp-section-title">Memory</div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Processor</span>
+                        <span class="rp-stat-value" id="rp-mem-proc">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">VRAM</span>
+                        <span class="rp-stat-value" id="rp-mem-vram">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">RAM</span>
+                        <span class="rp-stat-value" id="rp-mem-ram">—</span>
+                    </div>
+                    <div class="rp-stat-row">
+                        <span class="rp-stat-label">Unloads in</span>
+                        <span class="rp-stat-value" id="rp-mem-ttl">—</span>
+                    </div>
+                </div>
+
             </div>
         </div><!-- #right-panel -->
     </div><!-- #app-shell -->
@@ -2916,6 +2993,7 @@ Respond ONLY with valid JSON, no other text:
             const short = full.includes("/") ? full.split("/").pop() : full;
             badge.textContent = "⬡ " + short;
             badge.title = full; // Full name on hover
+            rpFetchModelInfo(els.modelSelect.value);
         }
 
         // #6 — Scroll to bottom
@@ -3076,6 +3154,87 @@ Respond ONLY with valid JSON, no other text:
                                         ? (promptTokens + completionTokens) : '—');
             set('rp-tok-speed',      tokensPerSec != null ? tokensPerSec.toFixed(1) + ' t/s' : '—');
         }
+
+        function rpUpdateOllamaTiming(loadNs, promptEvalNs, evalNs, totalNs, doneReason) {
+            const ms = ns => ns ? Math.round(ns / 1e6) + 'ms' : '—';
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('rp-ol-load',        loadNs ? (Math.round(loadNs / 1e6) === 0 ? '0ms (hot)' : ms(loadNs)) : '—');
+            set('rp-ol-prompt-eval', ms(promptEvalNs));
+            set('rp-ol-gen',         ms(evalNs));
+            set('rp-ol-total',       ms(totalNs));
+            set('rp-ol-stop',        doneReason || '—');
+        }
+
+        async function rpFetchModelInfo(modelName) {
+            if (!modelName) return;
+            try {
+                const res  = await fetch('http://localhost:11434/api/show', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: modelName })
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+
+                const details  = data.details  || {};
+                const info     = data.model_info || {};
+                const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '—'; };
+
+                set('rp-m-arch',   details.family || (Object.keys(info).find(k => k.endsWith('.architecture')) ? info[Object.keys(info).find(k => k.endsWith('.architecture'))] : null) || '—');
+                set('rp-m-params', details.parameter_size || '—');
+                set('rp-m-quant',  details.quantization_level || '—');
+
+                const ctxKey = Object.keys(info).find(k => k.includes('context_length'));
+                const ctxVal = ctxKey ? info[ctxKey] : null;
+                set('rp-m-ctx', ctxVal ? ctxVal.toLocaleString() : '—');
+
+                const bytes = data.size;
+                if (bytes) {
+                    const gb = bytes / 1e9;
+                    set('rp-m-size', gb >= 1 ? gb.toFixed(1) + ' GB' : (bytes / 1e6).toFixed(0) + ' MB');
+                }
+            } catch (_) { /* Ollama not running or CORS — silently skip */ }
+        }
+
+        function rpFormatBytes(bytes) {
+            if (!bytes || bytes === 0) return '0';
+            const gb = bytes / 1e9;
+            return gb >= 1 ? gb.toFixed(1) + ' GB' : (bytes / 1e6).toFixed(0) + ' MB';
+        }
+
+        async function rpPollOllamaPs() {
+            try {
+                const res  = await fetch('http://localhost:11434/api/ps');
+                if (!res.ok) return;
+                const data = await res.json();
+                const models = data.models || [];
+                const currentModel = (document.getElementById('model-select') || {}).value || '';
+                const entry = models.find(m => m.name === currentModel) || models[0];
+                const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '—'; };
+                if (entry) {
+                    set('rp-mem-proc', entry.details?.processor || entry.processor || '—');
+                    set('rp-mem-vram', rpFormatBytes(entry.size_vram));
+                    const ram = (entry.size || 0) - (entry.size_vram || 0);
+                    set('rp-mem-ram',  ram > 0 ? rpFormatBytes(ram) : '—');
+                    if (entry.expires_at) {
+                        const secsLeft = Math.max(0, Math.round((new Date(entry.expires_at) - Date.now()) / 1000));
+                        const mins = Math.floor(secsLeft / 60);
+                        const secs = secsLeft % 60;
+                        set('rp-mem-ttl', secsLeft > 0 ? `${mins}m ${secs}s` : 'unloading');
+                    } else {
+                        set('rp-mem-ttl', '—');
+                    }
+                } else {
+                    set('rp-mem-proc', '—');
+                    set('rp-mem-vram', '—');
+                    set('rp-mem-ram',  '—');
+                    set('rp-mem-ttl',  'not loaded');
+                }
+            } catch (_) { /* Ollama not running — silently skip */ }
+        }
+
+        setInterval(rpPollOllamaPs, 5000);
+        rpPollOllamaPs();
 
         // Nav panel toggle (5d)
         function toggleNavPanel() {
@@ -4058,6 +4217,10 @@ Respond ONLY with valid JSON, no other text:
             let _evalCount = null;
             let _promptEvalCount = null;
             let _evalDuration = null;
+            let _loadDuration = null;
+            let _promptEvalDuration = null;
+            let _totalDuration = null;
+            let _doneReason = null;
 
             try {
                 const response = await fetch("http://localhost:11434/api/chat", {
@@ -4091,9 +4254,13 @@ Respond ONLY with valid JSON, no other text:
                         }
                         // Capture token stats from the final done=true chunk
                         if (json.done) {
-                            if (json.eval_count        != null) _evalCount        = json.eval_count;
-                            if (json.prompt_eval_count != null) _promptEvalCount  = json.prompt_eval_count;
-                            if (json.eval_duration     != null) _evalDuration     = json.eval_duration;
+                            if (json.eval_count          != null) _evalCount          = json.eval_count;
+                            if (json.prompt_eval_count   != null) _promptEvalCount    = json.prompt_eval_count;
+                            if (json.eval_duration       != null) _evalDuration       = json.eval_duration;
+                            if (json.load_duration       != null) _loadDuration       = json.load_duration;
+                            if (json.prompt_eval_duration!= null) _promptEvalDuration = json.prompt_eval_duration;
+                            if (json.total_duration      != null) _totalDuration      = json.total_duration;
+                            if (json.done_reason         != null) _doneReason         = json.done_reason;
                         }
                     }
                 }
@@ -4118,6 +4285,7 @@ Respond ONLY with valid JSON, no other text:
                 if (_evalCount != null && _evalDuration != null) {
                     rpUpdateTokens(_promptEvalCount, _evalCount, _evalCount / (_evalDuration / 1e9));
                 }
+                rpUpdateOllamaTiming(_loadDuration, _promptEvalDuration, _evalDuration, _totalDuration, _doneReason);
             }
             return { fullRes, streamError };
         }
