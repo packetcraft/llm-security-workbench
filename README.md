@@ -164,6 +164,7 @@ http://localhost:3080/dev/1a    →  bare Ollama chat, no security
 |   | `5c` — `llm-security-workbench-llm-guard` | Tokyo Night accordion sidebar, mode badges | ✓ |
 |   | `5d` — `rail-sidebar` | Two-layer rail sidebar, 🐙PacketCraft branding (unrefactored) | ✓ |
 | ⭐ | `6a` — `instrument-panel` | rail sidebar + live telemetry instrument panel (right panel, open by default) | ✓ |
+| ⭐ | `6b` — `dynamic-redteam` | `6a` + 🚩 Red Teaming drawer — Static batch runner + Dynamic Probe (PAIR algorithm) | ✓ |
 
 To make a dev file the default at `http://localhost:3080`:
 
@@ -184,7 +185,7 @@ npm run stage 6a        # copies dev/6a-*.html → src/index.html
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Component diagram, traffic routing table, six-gate flow diagram, Node proxy design notes |
 | [`docs/SECURITY-GATES.md`](docs/SECURITY-GATES.md) | Per-gate deep dives — how each gate works, configuration tables, recommended models, system prompts |
 | [`docs/TESTING.md`](docs/TESTING.md) | Gate-by-gate verification tests, troubleshooting table, usage tips |
-| [`docs/DYNAMIC-PROBE.md`](docs/DYNAMIC-PROBE.md) | Dynamic Probe (PAIR) architecture — flow diagram, gate coverage, result states, limitations |
+| [`docs/DYNAMIC-PROBE.md`](docs/DYNAMIC-PROBE.md) | Dynamic Probe (PAIR) architecture — flow diagram, gate coverage, per-gate security trace, judge scoring logic, network routing, result states, limitations |
 | [`docs/PRD.md`](docs/PRD.md) | Product requirements and roadmap |
 | [`docs/notes/LLM-GUARD-DEEP-DIVE.md`](docs/notes/LLM-GUARD-DEEP-DIVE.md) | LLM-Guard internals — HuggingFace scanner mapping, lazy loading, observability commands |
 | [`docs/notes/LITTLE-CANARY-DEEP-DIVE.md`](docs/notes/LITTLE-CANARY-DEEP-DIVE.md) | Little Canary internals — two-stage detection, Ollama probe, comparison with LLM-Guard |

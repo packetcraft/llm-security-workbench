@@ -161,6 +161,37 @@ The attacker LLM receives different context depending on what happened in the pr
 
 ---
 
+## Per-Gate Security Trace
+
+Every attempt card in the Dynamic Probe UI shows a **gate trace** — one chip per active input gate, rendered after the attack prompt and before the LLM response.
+
+Each chip records:
+
+| Field | Description |
+| :--- | :--- |
+| Gate name + emoji | e.g. `🔬 LLM-Guard` |
+| Status | `pass` · `block` · `flag` · `skip` · `error` · `off` |
+| Mode | The gate's current UI mode, e.g. `[strict]` |
+| Detail | Human-readable verdict — e.g. `flagged: BanTopics(0.30) · scanners: …` or `blocked upstream` or `service error: …` |
+| Latency | Time taken for the gate call, e.g. `836ms` |
+
+**Status values:**
+
+| Status | Meaning |
+| :--- | :--- |
+| `pass` | Gate ran and found no issue |
+| `block` | Gate ran and blocked the prompt (strict mode) |
+| `flag` | Gate ran and flagged the prompt (advisory mode — probe continues) |
+| `skip` | Gate was not called because an upstream gate already blocked |
+| `error` | Gate call failed (service unreachable, timeout, etc.) |
+| `off` | Gate is disabled in the Security Pipeline panel |
+
+The gate trace is also included in the markdown export report as a table per iteration (`| Gate | Mode | Status | Detail | Latency |`), making it possible to audit exactly which gates fired and why for every attempt in a probe session.
+
+**Silent failures are now surfaced.** Previous versions swallowed gate errors (`catch(_) {}`) making a downed service indistinguishable from a clean pass. An `error` status with the error message is now recorded instead.
+
+---
+
 ## Result States
 
 Each attempt is recorded with one of three outcomes:
@@ -199,3 +230,5 @@ The final session banner shows one of three verdicts:
 | Single-turn only | The probe sends each attack prompt as a standalone message; multi-turn jailbreaks (context accumulation) are not modelled |
 | Non-streaming Ollama calls | `getLLMResponse` uses `stream: false`; very long responses may hit Ollama timeouts |
 | Weak judge model risk | Small judge models (≤ 1.5b) may score by response length or tone rather than actual goal achievement, producing false-positive BREACHED verdicts. Always check the judge reasoning in the attempt card. |
+| LLM-based gate non-determinism | Little-Canary and Semantic-Guard use an internal Ollama LLM probe. The same prompt may receive different verdicts on different runs. A probe `PASS` from Little-Canary does not guarantee the prompt would pass in a live chat session. |
+| Judge reasoning-score mismatch | Even 7b+ models occasionally produce a score that contradicts their stated reasoning. If a BREACHED verdict looks wrong, read the judge reasoning field — it will show whether the judge actually evaluated the content against the goal. |

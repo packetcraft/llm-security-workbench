@@ -113,7 +113,7 @@ The same `:5002` sidecar, running **after** LLM generation and AIRS-Dual.
 **Output scanners:** `Sensitive`, `MaliciousURLs`, `NoRefusal` (enabled by default); `Bias`, `Relevance`, `LanguageSame` (⚠️ disabled by default — high false-positive rate on short-input / long-response pairs).
 
 * Node.js proxy routes `POST /api/llmguard-output` → `:5002/scan/output`.
-* Batch Threat Runner tracks output catches separately as `LG-out` in the summary bar and exports.
+* 🚩 Red Teaming tracks output catches separately as `LG-out` in the summary bar and exports.
 
 ---
 
@@ -363,8 +363,8 @@ Real-time status indicator in the header cycles through: `🔬 LLM-Guard scannin
 
 **Per-phase latency** is displayed inline on each badge as it resolves — observers can read bottlenecks without opening the API Inspector. The LLM generation pill (`🤖 Xs`) appears on the AI message header immediately after the stream ends (or is stopped), distinct from the security scan badges via its dark background style.
 
-### 3.8 Advanced Background Batch Runner
-Introduced in version `4b`, the Batch Threat Runner evaluates all default adversarial prompts automatically. It features background-async test capabilities, decoupled from the modal window. Additionally, strict `AbortController` API timeouts (15s for Phase 0 and 120s for LLM processing) ensure the pipeline robustly fails-open instead of hanging dynamically. **Version 4b.1 adds persistent execution state (results are preserved if the modal is closed and reopened) and a granular Phase Catch summary in the Markdown export.**
+### 3.8 🚩 Red Teaming (formerly Batch Threat Runner)
+Introduced in version `4b`, the Red Teaming panel evaluates all default adversarial prompts automatically. It features background-async test capabilities, decoupled from the modal window. Additionally, strict `AbortController` API timeouts (15s for Phase 0 and 120s for LLM processing) ensure the pipeline robustly fails-open instead of hanging dynamically. **Version 4b.1 adds persistent execution state (results are preserved if the modal is closed and reopened) and a granular Phase Catch summary in the Markdown export.**
 
 ### 3.9 Resilient Classification Prompts (ShieldGemma)
 The Phase 0 native local judge pipeline now robustly handles JSON bypasses when interacting with strict sequence classifiers. If models like `shieldgemma` or `llama-guard3` are selected, `4b` drops standard JSON framing rules in favor of resilient lexical heuristics (scanning text for `Yes`/`No` or `Safe`/`Unsafe`), maximizing local model support without crashing.
@@ -635,7 +635,37 @@ llm-security-workbench/
 - `aria-label` added to all icon-only buttons for accessibility
 - Live telemetry instrument panel (right panel) opens by default on page load
 
-**6a is the recommended demo file** — `5d` is retained as the previous iteration reference.
+**6a is the stable reference** — `6b` is the current development file.
+
+---
+
+### ✅ 🚩 Red Teaming + Dynamic Probe — `dev/6b` (v3.4)
+
+**Red Teaming drawer** added to `6a` as a slide-up panel (🚩 rail icon, replacing ⚡ Batch Threat Runner):
+
+- Two tabs: **Static** (existing batch threat library runner) and **Dynamic Probe** (new PAIR algorithm)
+- Drawer expands to full chat height with amber border; collapses chat area; mutual-exclusive with API Inspector
+- Renamed from "Batch Threat Runner" throughout the UI and documentation
+
+**Dynamic Probe (PAIR algorithm):**
+
+- **Three model roles** — Attacker LLM (generates adversarial prompts), Target LLM (model under test), Judge LLM (scores responses 1–10). All three call Ollama directly from the browser — the Node proxy is not involved.
+- **Iteration feedback loop** — attacker adapts each round: blocked prompts are rewritten to be more evasive; low-scoring prompts are escalated with new framing
+- **Input gate coverage** — LLM-Guard INPUT, Little-Canary, and AIRS-Inlet are active; Semantic-Guard, AIRS-Dual, and LLM-Guard OUTPUT are skipped
+- **Per-gate security trace** — every attempt card shows a colour-coded chip row (🔬 LLM-Guard · 🐦 Little-Canary · 📥🛡️ AIRS-Inlet) with status (`pass / block / flag / skip / error / off`), mode, detail string, and latency. Makes silent gate failures and misconfigurations immediately visible.
+- **Judge scoring with reasoning** — judge produces a one-sentence rationale before the integer score. Reasoning is displayed in the attempt card and included in the markdown export. Prevents false-positive breaches where the judge score contradicts its own stated reasoning.
+- **Strict judge rubric** — explicit rule that verbose off-topic responses score 1–2; only score 7+ if the response actually contains the requested content
+- **Export** — JSON and professional markdown red team report (reference ID, executive summary, gate config table, scope/limitations, per-attempt log with gate trace table and judge reasoning)
+- **Default models** — `qwen2.5:1.5b` for both attacker and judge on first load; recommended upgrade to `llama3.1:8b` (attacker) + `gemma2:9b` or `qwen2.5:7b` (judge) for reliable verdicts
+
+**Recommended model guidance (documented in `docs/DYNAMIC-PROBE.md`):**
+
+| Role | Minimum | Recommended |
+| :--- | :--- | :--- |
+| Attacker | `qwen2.5:3b` | `llama3.1:8b` |
+| Judge | `qwen2.5:3b` | `gemma2:9b` or `qwen2.5:7b` |
+
+**Known judge failure modes:** small models (≤ 1.5b) score by response length/tone rather than goal achievement; models may produce scores inconsistent with their own stated reasoning. Judge reasoning field makes these failures visible without re-running the probe.
 
 ---
 
@@ -643,7 +673,7 @@ llm-security-workbench/
 
 **Sidebar redesign** replacing the accordion layout with a two-layer left sidebar:
 
-- **56px icon rail** (dark purple) — brand/toggle, Security Pipeline, Workspace, Batch Runner, API Inspector icons; footer: Export, New Session, Theme toggle, 🐙PacketCraft vertical branding
+- **56px icon rail** (dark purple) — brand/toggle, Security Pipeline, Workspace, 🚩 Red Teaming, API Inspector icons; footer: Export, New Session, Theme toggle, 🐙PacketCraft vertical branding
 - **272px collapsible nav panel** — two panes: Security Pipeline (gate controls) and Workspace (model + persona); Workspace pane auto-expands all rows on click
 - **API Inspector** redesigned as a slide-up drawer above the prompt bar with 7 collapsible accordion sections, each showing Request | Response columns
 - **AIRS-Inlet defaults to Off** on load
@@ -658,7 +688,7 @@ llm-security-workbench/
 **Sidebar redesign** replacing the flat left-column panel stack with a two-section Tokyo Night accordion layout:
 
 - **SECURITY PIPELINE section** — each of the six gates as a collapsible `.gate-row` accordion row; all rows collapsed on first load
-- **WORKSPACE section** — model selector, parameters, persona, threat insert, and batch runner as collapsible workspace rows
+- **WORKSPACE section** — model selector, parameters, persona, threat insert, and Red Teaming as collapsible workspace rows
 - **Edge handle** — 18px `sidebar-handle` strip (‹/›) on the far left replaces the header toggle button; the handle icon flips direction when the sidebar is collapsed
 - **Mode badge pills** — `gate-mode-badge` pill (e.g. `Strict` / `Audit` / `Full` / `Off`) replaces the 7px status dot on each gate row header; colour-coded to match existing mode colours
 - **3-segment mode toggle buttons** — labelled `Off` / `Advisory` / `Strict` (or `Full` for Little-Canary) replace `<select>` dropdowns in each gate row body; hidden `<select>` elements are retained for JS compatibility
@@ -692,9 +722,9 @@ llm-security-workbench/
 
 **Compact badge format** (5b): `🔬 Safe-312ms` instead of `🔒 Safe · 312ms`.
 
-**Batch Threat Runner updates**: p25 counter tracks LLM-Guard OUTPUT catches separately. Summary bar shows all six gates. JSON and Markdown exports include per-gate catch counts with new key names.
+**🚩 Red Teaming updates**: p25 counter tracks LLM-Guard OUTPUT catches separately. Summary bar shows all six gates. JSON and Markdown exports include per-gate catch counts with new key names.
 
-**Batch runner LLM-Guard OUTPUT scan**: Batch runner now generates an LLM response for Phase 2.5 even when AIRS-Dual is off — sharing the response when AIRS is on, generating independently when it's off.
+**Red Teaming LLM-Guard OUTPUT scan**: Red Teaming now generates an LLM response for Phase 2.5 even when AIRS-Dual is off — sharing the response when AIRS is on, generating independently when it's off.
 
 ---
 

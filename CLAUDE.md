@@ -8,8 +8,9 @@ Project context and working conventions for Claude Code. Read this before making
 
 A browser-based LLM security testing workbench. A Node.js proxy (`src/server.js`) serves the UI and routes security scans. All LLM inference runs locally via Ollama. Security scanning uses a six-gate pipeline — some gates local (LLM-Guard, Semantic-Guard, Little-Canary), some cloud (Prisma AIRS).
 
-**Active workbench files:** `dev/5d` and `dev/6a` — these are the ones users run and demo.
-- `6a` — rail sidebar + live telemetry instrument panel (right panel, open by default) — the recommended default
+**Active workbench files:** `dev/5d`, `dev/6a`, and `dev/6b` — these are the ones users run and demo.
+- `6b` — `6a` + 🚩 Red Teaming drawer (Static batch runner + Dynamic Probe / PAIR algorithm) — the current development file
+- `6a` — rail sidebar + live telemetry instrument panel (right panel, open by default) — stable reference
 - `5d` — same UI as 6a (rail sidebar, PacketCraft branding) but pre-refactor; retained as previous iteration reference
 - `5c` and earlier — archived in `dev/builds/`
 
@@ -22,7 +23,7 @@ src/
   server.js           # Node proxy :3080 — only backend file; loads .env
   index.html          # Promoted from dev/ via npm run stage
 
-dev/                  # Active iteration files (2a, 5d, 6a)
+dev/                  # Active iteration files (2a, 5d, 6a, 6b)
 dev/builds/           # Archived intermediate builds (3xx, 4xx) — do not edit
 
 scripts/
@@ -50,6 +51,7 @@ docs/                 # Project docs only at the root level
   ARCHITECTURE.md     # Component diagram, traffic routing, flow diagrams
   SECURITY-GATES.md   # Per-gate deep dives, config tables, system prompts
   TESTING.md          # Verification tests, troubleshooting, usage tips
+  DYNAMIC-PROBE.md    # Dynamic Probe (PAIR) architecture, judge scoring, network routing
   PRD.md              # Product requirements v3.2
   notes/              # Personal study notes — not project documentation
 ```
