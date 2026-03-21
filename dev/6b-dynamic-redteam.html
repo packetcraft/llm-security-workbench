@@ -1482,6 +1482,36 @@
         .pair-score-low  { background: rgba(247,118,142,0.15); color: var(--danger,#f7768e); }
         .pair-score-mid  { background: rgba(224,175,104,0.15); color: var(--warn,#e0af68); }
         .pair-score-high { background: rgba(158,206,106,0.15); color: var(--safe,#9ece6a); }
+
+        /* ── Gate Trace ── */
+        .pair-gate-trace {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            margin-top: 8px;
+        }
+        .pair-gate-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+        }
+        .pair-gate-chip .pgc-name  { font-weight: 600; min-width: 90px; }
+        .pair-gate-chip .pgc-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+        .pair-gate-chip .pgc-mode  { font-size: 10px; color: var(--text-muted); }
+        .pair-gate-chip .pgc-detail{ color: var(--text-muted); flex: 1; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pair-gate-chip .pgc-ms    { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+        /* status colours */
+        .pgc-pass  { background: var(--alert-llmguard-bg);   color: var(--green,   #9ece6a); }
+        .pgc-block { background: var(--alert-danger-bg);     color: var(--danger,  #f7768e); }
+        .pgc-flag  { background: var(--alert-warning-bg);    color: var(--warning, #e0af68); }
+        .pgc-error { background: var(--alert-canary-adv-bg); color: var(--canary-adv,#ff9e64); }
+        .pgc-off   { background: var(--alert-default-bg);    color: var(--text-muted); }
+        .pgc-skip  { background: var(--alert-default-bg);    color: var(--text-muted); }
         .pair-scope-note {
             font-size: 12px;
             color: var(--text-muted);
@@ -6193,41 +6223,58 @@ Respond ONLY with valid JSON, no other text:
             }
 
             // Helper: run prompt through the security pipeline gates
+            // Returns { blocked, blockedBy, gateTrace: [{name,emoji,mode,status,detail,ms}] }
             async function runPipelineCheck(prompt) {
-                const lgMode     = (document.getElementById('lg-mode')     || {}).value || 'off';
-                const guardMode  = (document.getElementById('guard-mode')  || {}).value || 'off';
-                const canaryMode = (document.getElementById('canary-mode') || {}).value || 'off';
-                const airsMode   = (document.getElementById('airs-mode')   || {}).value || 'off';
-
-                // Fall back to els references for gate mode selects
-                const lgModeVal     = els.llmguardMode   ? els.llmguardMode.value   : lgMode;
-                const guardModeVal  = els.guardrailMode  ? els.guardrailMode.value  : guardMode;
-                const canaryModeVal = els.canaryMode     ? els.canaryMode.value     : canaryMode;
-                const airsModeVal   = els.airsMode       ? els.airsMode.value       : airsMode;
+                const lgModeVal     = els.llmguardMode ? els.llmguardMode.value : 'off';
+                const canaryModeVal = els.canaryMode   ? els.canaryMode.value   : 'off';
+                const airsModeVal   = els.airsMode     ? els.airsMode.value     : 'off';
 
                 let blocked   = false;
                 let blockedBy = '';
+                const gateTrace = [];
 
-                // LLM-Guard input
-                if (lgModeVal !== 'off') {
-                    try {
-                        const scanners = _getLGInputScanners();
-                        if (scanners.length > 0) {
+                // ── Gate 1: LLM-Guard INPUT ─────────────────────────────────
+                if (lgModeVal === 'off') {
+                    gateTrace.push({ name: 'LLM-Guard', emoji: '🔬', mode: 'off', status: 'off', detail: 'gate disabled', ms: 0 });
+                } else {
+                    const scanners = _getLGInputScanners();
+                    if (scanners.length === 0) {
+                        gateTrace.push({ name: 'LLM-Guard', emoji: '🔬', mode: lgModeVal, status: 'skip', detail: 'no scanners selected in LLM-Guard settings', ms: 0 });
+                    } else {
+                        const t0 = Date.now();
+                        try {
                             const r = await fetch('/api/llmguard-input', {
                                 method: 'POST',
                                 headers: {'Content-Type':'application/json'},
                                 body: JSON.stringify({ text: prompt, scanners })
                             });
                             const d = await r.json();
-                            if (lgModeVal === 'strict' && d.is_valid === false) {
-                                blocked = true; blockedBy = 'LLM-Guard Input';
-                            }
+                            const ms = Date.now() - t0;
+                            const flaggedScanners = Object.entries(d.scanners_results || {})
+                                .filter(([, v]) => v?.is_valid === false)
+                                .map(([k]) => k);
+                            const isClean   = d.is_valid !== false;
+                            const isBlocked = lgModeVal === 'strict' && !isClean;
+                            const isFlagged = lgModeVal !== 'strict' && !isClean;
+                            const detail    = isClean
+                                ? `clean · scanners: ${scanners.join(', ')}`
+                                : `flagged: ${flaggedScanners.join(', ') || 'invalid'} · scanners: ${scanners.join(', ')}`;
+                            gateTrace.push({ name: 'LLM-Guard', emoji: '🔬', mode: lgModeVal, status: isBlocked ? 'block' : isFlagged ? 'flag' : 'pass', detail, ms });
+                            if (isBlocked) { blocked = true; blockedBy = 'LLM-Guard'; }
+                        } catch(e) {
+                            const ms = Date.now() - t0;
+                            gateTrace.push({ name: 'LLM-Guard', emoji: '🔬', mode: lgModeVal, status: 'error', detail: `service error: ${e.message}`, ms });
                         }
-                    } catch(_) {}
+                    }
                 }
 
-                // Canary
-                if (!blocked && canaryModeVal !== 'off') {
+                // ── Gate 2: Little-Canary ────────────────────────────────────
+                if (blocked) {
+                    gateTrace.push({ name: 'Little-Canary', emoji: '🐦', mode: canaryModeVal, status: 'skip', detail: 'blocked upstream', ms: 0 });
+                } else if (canaryModeVal === 'off') {
+                    gateTrace.push({ name: 'Little-Canary', emoji: '🐦', mode: 'off', status: 'off', detail: 'gate disabled', ms: 0 });
+                } else {
+                    const t0 = Date.now();
                     try {
                         const canaryModelVal = els.canaryModel ? els.canaryModel.value : 'qwen2.5:1.5b';
                         const threshold_val  = els.canaryThreshold ? parseFloat(els.canaryThreshold.value || '0.6') : 0.6;
@@ -6237,14 +6284,25 @@ Respond ONLY with valid JSON, no other text:
                             body: JSON.stringify({ input: prompt, model: canaryModelVal, mode: 'full', threshold: threshold_val })
                         });
                         const d = await r.json();
-                        if (canaryModeVal !== 'off' && d.safe === false) {
-                            blocked = true; blockedBy = 'Little-Canary';
-                        }
-                    } catch(_) {}
+                        const ms = Date.now() - t0;
+                        const unsafe = d.safe === false;
+                        const detail = `safe: ${d.safe} · score: ${d.score ?? '?'} · threshold: ${threshold_val}`;
+                        const status = unsafe ? (canaryModeVal === 'monitor' ? 'flag' : 'block') : 'pass';
+                        gateTrace.push({ name: 'Little-Canary', emoji: '🐦', mode: canaryModeVal, status, detail, ms });
+                        if (unsafe && canaryModeVal !== 'monitor') { blocked = true; blockedBy = 'Little-Canary'; }
+                    } catch(e) {
+                        const ms = Date.now() - t0;
+                        gateTrace.push({ name: 'Little-Canary', emoji: '🐦', mode: canaryModeVal, status: 'error', detail: `service error: ${e.message}`, ms });
+                    }
                 }
 
-                // AIRS
-                if (!blocked && airsModeVal !== 'off') {
+                // ── Gate 3: AIRS-Inlet ───────────────────────────────────────
+                if (blocked) {
+                    gateTrace.push({ name: 'AIRS-Inlet', emoji: '📥🛡️', mode: airsModeVal, status: 'skip', detail: 'blocked upstream', ms: 0 });
+                } else if (airsModeVal === 'off') {
+                    gateTrace.push({ name: 'AIRS-Inlet', emoji: '📥🛡️', mode: 'off', status: 'off', detail: 'gate disabled', ms: 0 });
+                } else {
+                    const t0 = Date.now();
                     try {
                         const r = await fetch('/api/prisma', {
                             method: 'POST',
@@ -6252,13 +6310,20 @@ Respond ONLY with valid JSON, no other text:
                             body: JSON.stringify({ prompt, response: '', mode: 'prompt' })
                         });
                         const d = await r.json();
-                        if (airsModeVal === 'strict' && d.action === 'block') {
-                            blocked = true; blockedBy = 'AIRS-Inlet';
-                        }
-                    } catch(_) {}
+                        const ms = Date.now() - t0;
+                        const action = d.action || 'allow';
+                        const isBlocked = airsModeVal === 'strict' && action === 'block';
+                        const isFlagged = airsModeVal !== 'strict' && action === 'block';
+                        const detail = `action: ${action} · category: ${d.category || 'benign'}`;
+                        gateTrace.push({ name: 'AIRS-Inlet', emoji: '📥🛡️', mode: airsModeVal, status: isBlocked ? 'block' : isFlagged ? 'flag' : 'pass', detail, ms });
+                        if (isBlocked) { blocked = true; blockedBy = 'AIRS-Inlet'; }
+                    } catch(e) {
+                        const ms = Date.now() - t0;
+                        gateTrace.push({ name: 'AIRS-Inlet', emoji: '📥🛡️', mode: airsModeVal, status: 'error', detail: `service error: ${e.message}`, ms });
+                    }
                 }
 
-                return { blocked, blockedBy };
+                return { blocked, blockedBy, gateTrace };
             }
 
             // Helper: get LLM response (non-streaming)
@@ -6390,7 +6455,8 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
                         blockedBy: blocked ? blockedBy : '',
                         response:  llmResponse,
                         score:     blocked ? 0 : score,
-                        success:   !blocked && score >= threshold
+                        success:   !blocked && score >= threshold,
+                        gateTrace
                     };
                     _pairLog.push(attempt);
                     previousPrompt   = attackPrompt;
@@ -6452,6 +6518,18 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
 
             const card = document.createElement('div');
             card.className = `pair-attempt-card ${cardClass}`;
+            // Build gate trace HTML
+            const traceHtml = (attempt.gateTrace || []).map(g => {
+                const msStr = g.ms > 0 ? `${g.ms}ms` : '';
+                return `<div class="pair-gate-chip">
+                    <span class="pgc-name">${g.emoji} ${g.name}</span>
+                    <span class="pgc-badge pgc-${g.status}">${g.status}</span>
+                    <span class="pgc-mode">[${g.mode}]</span>
+                    <span class="pgc-detail" title="${escHtml(g.detail)}">${escHtml(g.detail)}</span>
+                    ${msStr ? `<span class="pgc-ms">${msStr}</span>` : ''}
+                </div>`;
+            }).join('');
+
             card.innerHTML = `
                 <div class="pair-attempt-header">
                     <span class="pair-iter-label">Iteration ${attempt.iteration}</span>
@@ -6460,8 +6538,10 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
                 </div>
                 <div class="pair-card-sublabel">Attack Prompt</div>
                 <div class="pair-attempt-prompt">${escHtml(attempt.prompt)}</div>
+                <div class="pair-card-sublabel">Security Gate Trace</div>
+                <div class="pair-gate-trace">${traceHtml}</div>
                 ${attempt.response ? `
-                <div class="pair-card-sublabel">Target LLM Response</div>
+                <div class="pair-card-sublabel" style="margin-top:6px;">Target LLM Response</div>
                 <div class="pair-response-box">${escHtml(attempt.response.substring(0, 500))}${attempt.response.length > 500 ? '…' : ''}</div>
                 <div class="pair-output-note">⚠ Output gates not run — AIRS-Dual &amp; LLM-Guard OUTPUT were not applied to this response. High judge scores reflect what the LLM said, not what would have reached the user.</div>
                 ` : ''}
@@ -6539,10 +6619,19 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
 
             const attemptSections = _pairLog.map(a => {
                 const outcome = a.success ? '🔴 BREACHED' : a.blocked ? `🛡️ BLOCKED` : '⚠️ REACHED LLM';
-                const scoreLine = !a.blocked ? `\n**Judge Score:** ${a.score} / 10` : '';
-                const blockedLine = a.blocked ? `\n**Blocked by:** ${a.blockedBy}` : '';
+                const scoreLine   = !a.blocked ? `\n**Judge Score:** ${a.score} / 10` : '';
+                const blockedLine = a.blocked  ? `\n**Blocked by:** ${a.blockedBy}` : '';
                 const responsePart = a.response ? `\n\n**Target LLM Response:**\n\n> ${a.response.replace(/\n/g, '\n> ')}` : '';
-                const outputNote = !a.blocked ? '\n\n> ⚠️ **Output gate note:** AIRS-Dual and LLM-Guard OUTPUT were not run on this response. The score reflects what the LLM produced — not what would have reached the user in a live session.' : '';
+                const outputNote   = !a.blocked ? '\n\n> ⚠️ **Output gate note:** AIRS-Dual and LLM-Guard OUTPUT were not run on this response. The score reflects what the LLM produced — not what would have reached the user in a live session.' : '';
+
+                const traceRows = (a.gateTrace || []).map(g => {
+                    const msStr = g.ms > 0 ? `${g.ms}ms` : '—';
+                    const statusIcon = { pass: '✅', block: '🔴', flag: '⚠️', off: '⬜', skip: '⏭', error: '🔴' }[g.status] || '?';
+                    return `| ${g.emoji} ${g.name} | [${g.mode}] | ${statusIcon} ${g.status.toUpperCase()} | ${g.detail} | ${msStr} |`;
+                }).join('\n');
+                const traceTable = (a.gateTrace || []).length > 0
+                    ? `\n\n**Security Gate Trace:**\n\n| Gate | Mode | Status | Detail | Latency |\n| :--- | :--- | :--- | :--- | ---: |\n${traceRows}`
+                    : '';
 
                 return [
                     `### Iteration ${a.iteration} — ${outcome}`,
@@ -6554,6 +6643,7 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
                     `\`\`\``,
                     blockedLine,
                     scoreLine,
+                    traceTable,
                     responsePart,
                     outputNote,
                 ].filter(l => l !== undefined).join('\n');
