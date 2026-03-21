@@ -6046,9 +6046,13 @@ Respond ONLY with valid JSON, no other text:
             const maxIter       = parseInt(document.getElementById('pair-max-iter').value) || 10;
             const threshold     = parseInt(document.getElementById('pair-threshold').value) || 7;
 
-            if (!goal)          { alert('Please enter an attack goal.'); return; }
-            if (!attackerModel) { alert('Please select an attacker model.'); return; }
-            if (!judgeModel)    { alert('Please select a judge model.'); return; }
+            const _pairErr = (msg) => {
+                const sb = document.getElementById('pair-status-bar');
+                if (sb) sb.textContent = '⚠️ ' + msg;
+            };
+            if (!goal)          { _pairErr('Enter an attack goal first.'); return; }
+            if (!attackerModel) { _pairErr('Select an attacker model first.'); return; }
+            if (!judgeModel)    { _pairErr('Select a judge model first.'); return; }
 
             _pairRunning = true;
             _pairStop    = false;
