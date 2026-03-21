@@ -183,3 +183,5 @@ npm run stage 5c        # copies dev/5c-*.html → src/index.html
 | [`docs/SECURITY-GATES.md`](docs/SECURITY-GATES.md) | Per-gate deep dives — how each gate works, configuration tables, recommended models, system prompts |
 | [`docs/TESTING.md`](docs/TESTING.md) | Gate-by-gate verification tests, troubleshooting table, usage tips |
 | [`docs/PRD.md`](docs/PRD.md) | Product requirements and roadmap |
+| [`docs/notes/LLM-GUARD-DEEP-DIVE.md`](docs/notes/LLM-GUARD-DEEP-DIVE.md) | LLM-Guard internals — HuggingFace scanner mapping, lazy loading, observability commands |
+| [`docs/notes/LITTLE-CANARY-DEEP-DIVE.md`](docs/notes/LITTLE-CANARY-DEEP-DIVE.md) | Little Canary internals — two-stage detection, Ollama probe, comparison with LLM-Guard |

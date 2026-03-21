@@ -26,8 +26,17 @@
             --purple: #5a3e8e;
             --canary-adv: #b15c00;
             --canary-blk: #7a3500;
-            --llmguard: #9ece6a;
+            --llmguard: #587539;
             --debug: #2c2d3a;
+            /* alert backgrounds — light mode (low opacity tints) */
+            --alert-llmguard-bg: rgba(88,117,57,0.08);
+            --alert-warning-bg:  rgba(150,80,39,0.08);
+            --alert-semantic-bg: rgba(90,62,142,0.08);
+            --alert-canary-blk-bg: rgba(122,53,0,0.08);
+            --alert-canary-adv-bg: rgba(177,92,0,0.08);
+            --alert-danger-bg:   rgba(140,67,81,0.08);
+            --alert-default-bg:  rgba(100,100,100,0.06);
+            --verdict-bg: rgba(52,59,88,0.06);
             /* LLM time pill */
             --llm-pill-bg: #0f4b6e;
             --llm-pill-text: #c0d6e8;
@@ -61,6 +70,15 @@
             --canary-blk: #e0804a;
             --llmguard: #9ece6a;
             --debug: #16161e;
+            /* alert backgrounds — dark mode */
+            --alert-llmguard-bg: rgba(158,206,106,0.07);
+            --alert-warning-bg:  rgba(224,175,104,0.07);
+            --alert-semantic-bg: rgba(187,154,247,0.07);
+            --alert-canary-blk-bg: rgba(224,128,74,0.07);
+            --alert-canary-adv-bg: rgba(255,158,100,0.07);
+            --alert-danger-bg:   rgba(247,118,142,0.07);
+            --alert-default-bg:  rgba(100,100,100,0.07);
+            --verdict-bg: rgba(26,27,38,0.85);
             /* LLM time pill */
             --llm-pill-bg: #292e42;
             --llm-pill-text: #7aa2f7;
@@ -79,7 +97,9 @@
         }
 
         body {
-            font-family: -apple-system, system-ui, sans-serif;
+            font-family: "Segoe UI", -apple-system, system-ui, sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
             max-width: 1500px;
             margin: 20px auto;
             background-color: var(--bg);
@@ -126,8 +146,8 @@
 
         .panel {
             background: var(--panel);
-            padding: 20px;
-            border-radius: 12px;
+            padding: 14px 16px;
+            border-radius: 10px;
             border: 1px solid var(--border);
         }
 
@@ -135,10 +155,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 18px;
+            padding: 7px 14px;
             background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 8px;
             margin-bottom: 15px;
             gap: 8px;
         }
@@ -197,28 +217,31 @@
         .btn-ghost {
             background: transparent;
             border: 1px solid var(--border);
-            color: var(--text);
-            font-size: 13px;
-            padding: 7px 14px;
-            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 11px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            letter-spacing: 0.01em;
         }
 
         .btn-ghost:hover {
             background: var(--sidebar-btn-bg);
             border-color: var(--primary);
+            color: var(--text);
         }
 
         #chat-box {
             height: calc(100vh - 260px);
             min-height: 300px;
-            border-radius: 12px;
+            border-radius: 10px;
             border: 1px solid var(--border);
             background: var(--panel);
             overflow-y: auto;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 18px 22px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             /* #8 — Styled scrollbar */
             scrollbar-width: thin;
             scrollbar-color: var(--border) transparent;
@@ -257,21 +280,23 @@
 
         label {
             font-size: 10px;
-            font-weight: bold;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.6;
+            letter-spacing: 0.07em;
+            color: var(--text-muted);
+            opacity: 0.85;
         }
 
         textarea,
         select,
         input {
-            padding: 12px;
-            border-radius: 8px;
+            padding: 7px 10px;
+            border-radius: 6px;
             border: 1px solid var(--border);
-            background: var(--panel);
+            background: var(--bg);
             color: var(--text);
-            font-size: 14px;
+            font-size: 13px;
+            font-family: inherit;
         }
 
         /* Prisma Security Controls */
@@ -296,39 +321,45 @@
 
         .input-container {
             background: var(--panel);
-            padding: 20px;
-            border-radius: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
             /* #7 — Sticky prompt bar */
             position: sticky;
             bottom: 16px;
             z-index: 10;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.12);
         }
 
         #user-input {
-            min-height: 80px;
-            max-height: 250px;
+            min-height: 68px;
+            max-height: 220px;
             font-family: inherit;
+            font-size: 13px;
+            resize: none;
         }
 
         button {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
+            padding: 6px 15px;
+            border-radius: 6px;
+            border: 1px solid transparent;
             background: var(--primary);
-            color: white;
+            color: #ffffff;
             cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: inherit;
+            transition: 0.15s;
+            letter-spacing: 0.01em;
         }
 
         .btn-secondary {
             background: var(--sidebar-btn-bg);
             color: var(--sidebar-btn-color);
+            border-color: var(--border);
         }
 
         .btn-danger {
@@ -342,23 +373,24 @@
 
         /* DEBUG VIEW — full-width panel below layout */
         .debug-panel {
-            border: 1px solid #444;
+            border: 1px solid var(--border);
             border-radius: 8px;
             background: var(--debug);
-            color: #00ff41;
-            font-family: "Fira Code", monospace;
+            color: var(--green);
+            font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
             font-size: 11px;
             overflow: hidden;
             margin-top: 20px;
         }
 
         .debug-header {
-            padding: 10px 15px;
-            background: #1e2030;
+            padding: 8px 14px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
-            color: #a9b1d6;
+            color: var(--text-muted);
         }
 
         .debug-content {
@@ -400,10 +432,15 @@
 
         /* Messaging UI */
         .message {
-            margin-bottom: 30px;
-            line-height: 1.7;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
+            margin-bottom: 14px;
+            line-height: 1.6;
+            border-top: 1px solid var(--border);
+            padding-top: 14px;
+        }
+
+        .message:first-child {
+            border-top: none;
+            padding-top: 0;
         }
 
         .user-label {
@@ -436,13 +473,30 @@
 
         .security-alert {
             color: var(--danger);
-            font-weight: bold;
-            padding: 10px;
-            border-left: 4px solid var(--danger);
-            background: rgba(220, 53, 69, 0.1);
-            margin-top: 10px;
-            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-left: 3px solid var(--danger);
+            background: var(--alert-danger-bg);
+            margin-top: 3px;
+            border-radius: 3px;
+            line-height: 1.5;
         }
+
+        /* When a security alert is a .message, override the heavy message spacing */
+        .message.security-alert {
+            margin-bottom: 16px;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        /* Alert colour variants — replaces per-element inline styles */
+        .security-alert.alert-llmguard   { color: var(--llmguard);   border-color: var(--llmguard);   background: var(--alert-llmguard-bg); }
+        .security-alert.alert-warning    { color: var(--warning);     border-color: var(--warning);    background: var(--alert-warning-bg); }
+        .security-alert.alert-semantic   { color: var(--purple);      border-color: var(--purple);     background: var(--alert-semantic-bg); }
+        .security-alert.alert-canary-blk { color: var(--canary-blk); border-color: var(--canary-blk); background: var(--alert-canary-blk-bg); }
+        .security-alert.alert-canary-adv { color: var(--canary-adv); border-color: var(--canary-adv); background: var(--alert-canary-adv-bg); }
+        .security-alert.alert-default    { color: var(--text-muted);  border-color: var(--border);     background: var(--alert-default-bg); }
 
         pre {
             background: var(--debug);
@@ -705,13 +759,12 @@
 
         .kbd-hint kbd {
             font-family: inherit;
-            background: var(--border);
-            border: 1px solid var(--text);
-            color: var(--text);
+            background: var(--sidebar-btn-bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
             border-radius: 3px;
             padding: 1px 5px;
             font-size: 10px;
-            opacity: 0.7;
         }
 
         /* #10 — Collapsible sidebar */
@@ -769,19 +822,19 @@
         }
 
         .scan-badge.allowed {
-            background: rgba(40, 167, 69, 0.15);
+            background: var(--alert-llmguard-bg);
             color: var(--green);
             border: 1px solid var(--green);
         }
 
         .scan-badge.flagged {
-            background: rgba(255, 193, 7, 0.15);
+            background: var(--alert-warning-bg);
             color: var(--warning);
             border: 1px solid var(--warning);
         }
 
         .scan-badge.blocked {
-            background: rgba(220, 53, 69, 0.15);
+            background: var(--alert-danger-bg);
             color: var(--danger);
             border: 1px solid var(--danger);
         }
@@ -804,7 +857,7 @@
             border: none;
             cursor: pointer;
             font-size: 11px;
-            color: var(--muted);
+            color: var(--text-muted);
             padding: 0 3px;
             margin-left: 4px;
             opacity: 0.6;
@@ -819,14 +872,14 @@
 
         /* Verdict detail expansion panel */
         .verdict-detail {
-            margin: 6px 0 4px 0;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-family: monospace;
-            line-height: 1.8;
+            margin: 4px 0 2px 0;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+            line-height: 1.6;
             border: 1px solid var(--border);
-            background: rgba(26, 27, 38, 0.8);
+            background: var(--verdict-bg);
             color: var(--text-muted);
         }
 
@@ -855,7 +908,7 @@
         }
 
         .verdict-detail td:first-child {
-            color: var(--muted);
+            color: var(--text-muted);
             white-space: nowrap;
         }
 
@@ -1436,10 +1489,10 @@
     <div class="header">
         <!-- Zone 1: Title -->
         <div style="display:flex; align-items:center; gap:0; flex-shrink:0;">
-            <h2 style="margin:0; font-size:17px; white-space:nowrap;">
+            <h2 style="margin:0; font-size:14px; font-weight:600; white-space:nowrap; letter-spacing:-0.01em;">
                 LLM Security Workbench ⚡ 🛡️
             </h2>
-            <span style="font-size:11px; color:var(--text-muted); margin-left:8px; white-space:nowrap;">v3.1 + LLM-Guard</span>
+            <span style="font-size:10px; color:var(--text-muted); margin-left:8px; white-space:nowrap; opacity:0.7;">v3.1 + LLM-Guard</span>
         </div>
 
         <div class="header-sep"></div>
@@ -2753,8 +2806,7 @@ Waiting for LLM...</pre>
                         llmguardBadge.style.cssText = "border-color:var(--warning);color:var(--warning)";
                         llmguardBadge.textContent = `🔬 Error${_lgShrt}`;
                         const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert";
-                        warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
+                        warnDiv.className = "message security-alert alert-warning";
                         warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD — ERROR ${_lgLat}</strong><br>Scan failed, proceeding without LLM-Guard. <small>${lg.message}</small>`;
                         chatBox.appendChild(warnDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
@@ -2764,8 +2816,7 @@ Waiting for LLM...</pre>
                         llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
                         llmguardBadge.textContent = `🔬 Blocked${_lgShrt}`;
                         const blockDiv = document.createElement("div");
-                        blockDiv.className = "message security-alert";
-                        blockDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1)";
+                        blockDiv.className = "message security-alert alert-llmguard";
                         blockDiv.innerHTML = `<strong>🔬 LLM-GUARD — BLOCKED ${_lgLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Semantic-Guard, Little-Canary, AIRS-Inlet and LLM not reached.`;
                         chatBox.appendChild(blockDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
@@ -2778,8 +2829,7 @@ Waiting for LLM...</pre>
                         llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
                         llmguardBadge.textContent = `🔬 Flagged${_lgShrt}`;
                         const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert";
-                        warnDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1)";
+                        warnDiv.className = "message security-alert alert-llmguard";
                         warnDiv.innerHTML = `<strong>🔬 LLM-GUARD — FLAGGED ${_lgLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Proceeding to Semantic-Guard.`;
                         chatBox.appendChild(warnDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
@@ -2828,8 +2878,7 @@ Waiting for LLM...</pre>
                 if (gResult.error) {
                     // Guardrail call failed — fail open, show warning in chat
                     const warnDiv = document.createElement("div");
-                    warnDiv.className = "message security-alert";
-                    warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
+                    warnDiv.className = "message security-alert alert-warning";
                     warnDiv.innerHTML = `<strong>⚠️ SEMANTIC-GUARD — ERROR</strong><br>Scan failed, proceeding without Semantic-Guard. <small>${gResult.reason}</small>`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
@@ -2838,8 +2887,7 @@ Waiting for LLM...</pre>
                         guardBadge.className = "scan-badge guardrail-block";
                         guardBadge.textContent = `🧩 Blocked${_gShrt}`;
                         const blockDiv = document.createElement("div");
-                        blockDiv.className = "message security-alert";
-                        blockDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
+                        blockDiv.className = "message security-alert alert-semantic";
                         blockDiv.innerHTML = `<strong>🧩 SEMANTIC-GUARD — BLOCKED ${_gLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Little-Canary, AIRS-Inlet and LLM not reached.`;
                         chatBox.appendChild(blockDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
@@ -2851,8 +2899,7 @@ Waiting for LLM...</pre>
                         guardBadge.className = "scan-badge guardrail-block";
                         guardBadge.textContent = `🧩 Flagged${_gShrt}`;
                         const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert";
-                        warnDiv.style.cssText = "color:#9b59b6;border-color:#9b59b6;background:rgba(111,66,193,0.1)";
+                        warnDiv.className = "message security-alert alert-semantic";
                         warnDiv.innerHTML = `<strong>🧩 SEMANTIC-GUARD — FLAGGED ${_gLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Proceeding to Little-Canary.`;
                         chatBox.appendChild(warnDiv);
                         chatBox.scrollTop = chatBox.scrollHeight;
@@ -2887,8 +2934,7 @@ Waiting for LLM...</pre>
 
                 if (cResult.error) {
                     const warnDiv = document.createElement("div");
-                    warnDiv.className = "message security-alert";
-                    warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
+                    warnDiv.className = "message security-alert alert-warning";
                     warnDiv.innerHTML = `<strong>⚠️ LITTLE-CANARY — ERROR</strong><br>Scan failed, proceeding without Little-Canary. <small>${cResult.message}</small>`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
@@ -2898,8 +2944,7 @@ Waiting for LLM...</pre>
                     canaryBadge.className = "scan-badge canary-block";
                     canaryBadge.textContent = `🐦 Blocked${_cShrt}`;
                     const blockDiv = document.createElement("div");
-                    blockDiv.className = "message security-alert";
-                    blockDiv.style.cssText = "color:var(--canary-blk);border-color:var(--canary-blk);background:rgba(122,53,0,0.1)";
+                    blockDiv.className = "message security-alert alert-canary-blk";
                     blockDiv.innerHTML = `<strong>🐦 LITTLE-CANARY — BLOCKED ${_cLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; AIRS-Inlet and LLM not reached.`;
                     chatBox.appendChild(blockDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
@@ -2913,8 +2958,7 @@ Waiting for LLM...</pre>
                     canaryBadge.className = "scan-badge canary-advisory";
                     canaryBadge.textContent = `🐦 Flagged${_cShrt}`;
                     const warnDiv = document.createElement("div");
-                    warnDiv.className = "message security-alert";
-                    warnDiv.style.cssText = "color:var(--canary-adv);border-color:var(--canary-adv);background:rgba(177,92,0,0.1)";
+                    warnDiv.className = "message security-alert alert-canary-adv";
                     warnDiv.innerHTML = `<strong>🐦 LITTLE-CANARY — FLAGGED ${_cLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; Warning injected into system prompt.`;
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
@@ -2965,7 +3009,7 @@ Waiting for LLM...</pre>
                     airsBadge.className = "scan-badge";
                     airsBadge.textContent = `📥🛡️ Error${_aShrt}`;
                     const errDiv = document.createElement("div");
-                    errDiv.className = "message security-alert";
+                    errDiv.className = "message security-alert alert-warning";
                     errDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — ERROR ${_aLat}</strong><br>${promptScan.message} &nbsp;|&nbsp; Prompt aborted. <small>Ensure server.js is running on :3080.</small>`;
                     chatBox.appendChild(errDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
@@ -2987,7 +3031,7 @@ Waiting for LLM...</pre>
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
                     const blockDiv = document.createElement("div");
-                    blockDiv.className = "message security-alert";
+                    blockDiv.className = "message security-alert alert-danger";
                     blockDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — BLOCKED ${_aLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`;
                     chatBox.appendChild(blockDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
@@ -3009,9 +3053,7 @@ Waiting for LLM...</pre>
                         ? promptScan.detected.join(", ")
                         : promptScan.category;
                     const warnDiv = document.createElement("div");
-                    warnDiv.className = "message security-alert";
-                    warnDiv.style.cssText =
-                        "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1)";
+                    warnDiv.className = "message security-alert alert-warning";
                     warnDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — FLAGGED ${_aLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Proceeding to LLM.`;
                     chatBox.appendChild(warnDiv);
                 } else {
@@ -3200,12 +3242,12 @@ Waiting for LLM...</pre>
                     if (airsMode === "strict") {
                         // Replace LLM response entirely
                         botDiv.querySelector(".content").innerHTML = `
-                                <div class="security-alert">
+                                <div class="security-alert alert-danger">
                                     <strong>🔀🛡️ AIRS-DUAL — BLOCKED ${_rLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response withheld.
                                 </div>`;
                     } else {
                         // Audit: warn + show masked version if available, else keep response
-                        const warnHtml = `<div class="security-alert" style="color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-bottom:10px;">
+                        const warnHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
                                 <strong>🔀🛡️ AIRS-DUAL — FLAGGED ${_rLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response shown with warning.</div>`;
                         if (responseScan.maskedData) {
                             botDiv.querySelector(".content").innerHTML =
@@ -3235,7 +3277,7 @@ Waiting for LLM...</pre>
                         resBadge.title = "Click to expand";
                         resBadge.style.cursor = "pointer";
                     }
-                    const maskHtml = `<div class="security-alert" style="color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-bottom:10px;">
+                    const maskHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
                             <strong>🔀🛡️ AIRS-DUAL — DLP MASKED ${_rLat}</strong><br>Sensitive data detected and redacted from response.</div>`;
                     botDiv.querySelector(".content").innerHTML =
                         maskHtml +
@@ -3272,8 +3314,7 @@ Waiting for LLM...</pre>
                     const resBadge = document.getElementById(botMsgId + "-badge");
                     if (lgOut.error) {
                         const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert";
-                        warnDiv.style.cssText = "color:var(--warning);border-color:var(--warning);background:rgba(255,193,7,0.1);margin-top:6px;";
+                        warnDiv.className = "message security-alert alert-warning";
                         warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD OUTPUT — ERROR ${_lg25lat}</strong><br>Scan failed, output shown unverified. <small>${lgOut.message}</small>`;
                         botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
                     } else if (lgOut.blocked) {
@@ -3283,8 +3324,7 @@ Waiting for LLM...</pre>
                             resBadge.textContent = `🔬 LG-OUT BLOCKED ${_lg25lat}`;
                         }
                         const blockDiv = document.createElement("div");
-                        blockDiv.className = "message security-alert";
-                        blockDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1);margin-top:6px;";
+                        blockDiv.className = "message security-alert alert-llmguard";
                         blockDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${_lg25lat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`;
                         botDiv.querySelector(".content").insertAdjacentElement("afterbegin", blockDiv);
                         document.getElementById("debug-status").innerText = "Blocked (LLM-Guard OUTPUT)";
@@ -3295,8 +3335,7 @@ Waiting for LLM...</pre>
                             resBadge.textContent = `🔬 LG-OUT FLAGGED ${_lg25lat}`;
                         }
                         const warnDiv = document.createElement("div");
-                        warnDiv.className = "message security-alert";
-                        warnDiv.style.cssText = "color:var(--llmguard);border-color:var(--llmguard);background:rgba(158,206,106,0.1);margin-top:6px;";
+                        warnDiv.className = "message security-alert alert-llmguard";
                         warnDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — FLAGGED ${_lg25lat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response shown with warning.`;
                         botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
                         document.getElementById("debug-status").innerText = "Done (LLM-Guard OUTPUT flagged)";

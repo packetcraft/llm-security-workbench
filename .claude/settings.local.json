@@ -18,7 +18,20 @@
       "WebFetch(domain:kai-greshake.de)",
       "WebFetch(domain:www.microsoft.com)",
       "WebFetch(domain:labs.withsecure.com)",
-      "WebFetch(domain:twitter.com)"
+      "WebFetch(domain:twitter.com)",
+      "Bash(python3:*)",
+      "Bash(ls -lh /c/Users/B006/Documents/github/Prisma-AIRS-with-ollama/*.md)",
+      "Bash(tail -c 500 \"C:\\\\Users\\\\B006\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-B006-Documents-github-Prisma-AIRS-with-ollama\\\\8e8808d2-aec4-4767-857d-d7b5f720b337\\\\tasks\\\\a92477e0338b799cd.output\")",
+      "Bash(node -e \"const d = require\\(''./test/sample_threats.json''\\); console.log\\(''Categories:'', d.length\\); d.forEach\\(c => { const hasId = c.threats.every\\(t => t.id\\); const hasSev = c.threats.every\\(t => t.severity\\); const hasEv = c.threats.every\\(t => t.expectedVerdict\\); console.log\\(c.categoryId + '' \\('' + c.threats.length + '' threats\\) id:'' + hasId + '' sev:'' + hasSev + '' ev:'' + hasEv\\); }\\); const total = d.reduce\\(\\(a,c\\) => a+c.threats.length, 0\\); console.log\\(''Total threats:'', total\\);\")",
+      "Bash(node -e \":*)",
+      "WebFetch(domain:llm-guard.com)",
+      "Bash(git mv:*)",
+      "Bash(cp:*)",
+      "Bash(git:*)",
+      "Bash(GIT_DIR=\"\" git -C /c/Users/B006/Documents/github/llm-security-workbench status 2>&1)",
+      "Bash(unset GIT_DIR GIT_WORK_TREE)",
+      "Bash(env)",
+      "Bash(bash -c 'git status')"
     ]
   }
 }
