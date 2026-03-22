@@ -136,6 +136,16 @@ pip install flask little-canary
 pip install flask pan-aisecurity
 ```
 
+**On a new machine — pre-download all LLM-Guard models:**
+
+LLM-Guard scanner models (~2–3 GB) are downloaded from HuggingFace on first use. To download them all up-front with progress output before running the workbench:
+
+```bash
+npm run llmguard:warmup
+```
+
+This loads all 13 scanners (7 input + 6 output) one by one and prints progress. The server stays up after warmup and is immediately ready — no cold-start delays on the first scan.
+
 **To start the guard server:**
 
 ```bash
