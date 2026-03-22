@@ -109,6 +109,9 @@ The key stays server-side and never reaches the browser. See `docs/5-SETUP-GUIDE
 
 **macOS / Linux:**
 ```bash
+brew install python@3.12
+python3.12 --version
+
 python3.12 -m venv services/llm-guard/.venv
 source services/llm-guard/.venv/bin/activate
 pip install -r services/llm-guard/requirements.txt
