@@ -45,38 +45,56 @@ Each gate runs independently in **Off / Advisory / Strict** mode. Local gates (L
 | :--- | :--- |
 | [Node.js](https://nodejs.org/) 18+ | Runs the proxy server |
 | [Ollama](https://ollama.com/) | Local LLM runtime |
-| Python 3.12 | Required for LLM-Guard sidecar (`dev/5d`, `dev/6a`) — install from [python.org](https://www.python.org/downloads/) (use the installer, not the Microsoft Store version on Windows) |
-| Prisma AIRS API key | Optional — required for AIRS-Inlet and AIRS-Dual gates only |
+| Python 3.12 | Required for LLM-Guard sidecar — macOS: `brew install python@3.12`; Windows: [python.org](https://www.python.org/downloads/) installer (not Microsoft Store) |
+| Prisma AIRS API key | Optional — only needed for AIRS-Inlet and AIRS-Dual gates |
 
 ---
 
 ## Quick Start
 
-### 1 — Install Ollama and set origins
+### 1 — Install Ollama
 
-**macOS / Linux:**
+**macOS:**
+Download the Ollama app from [ollama.com/download](https://ollama.com/download) and move it to `/Applications`. Launch it — it runs as a menu bar app.
+
+Alternatively, install via Homebrew:
+```bash
+brew install ollama
+```
+
+**Linux:**
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
 **Windows:**
-Download and run the installer from https://ollama.com/download.
+Download and run the installer from [ollama.com/download](https://ollama.com/download).
 
-**Set `OLLAMA_ORIGINS`** — required so the browser workbench can reach Ollama:
+---
 
-**macOS:**
+### 2 — Set `OLLAMA_ORIGINS`
+
+Required so the browser workbench can reach the Ollama API.
+
+**macOS (permanent — add to `~/.zshrc` or `~/.bash_profile`):**
 ```bash
-launchctl setenv OLLAMA_ORIGINS "*"
+echo 'export OLLAMA_ORIGINS="*"' >> ~/.zshrc
+source ~/.zshrc
 ```
-Then relaunch Ollama from the menu bar.
+Then quit and relaunch Ollama from the menu bar so it picks up the new env var.
+
+> If using `brew install ollama`, set the variable in your shell profile and run `ollama serve` from the terminal instead.
 
 **Windows:**
 1. Quit Ollama (system tray → Quit).
-2. Open **Edit the system environment variables** → **User variables** → **New...**
+2. Open **Edit the system environment variables** → **User variables** → **New…**
    - Variable: `OLLAMA_ORIGINS` — Value: `*`
 3. Relaunch Ollama.
 
-**Pull models:**
+---
+
+### 3 — Pull Ollama models
+
 ```bash
 ollama pull goekdenizguelmez/JOSIEFIED-Qwen3:4b   # main chat + Semantic-Guard
 ollama pull qwen2.5:1.5b                           # Little-Canary probe (small/fast)
@@ -84,7 +102,9 @@ ollama pull qwen2.5-coder:7b                       # coding-focused chat model
 ollama pull llama2-uncensored:latest               # red-team / adversarial testing
 ```
 
-### 2 — Install
+---
+
+### 4 — Clone and install
 
 ```bash
 git clone https://github.com/packetcraft/llm-security-workbench.git
@@ -92,7 +112,50 @@ cd llm-security-workbench
 npm install
 ```
 
-### 3 — (Optional) Store credentials
+---
+
+### 5 — Set up Python sidecars
+
+The workbench has three optional Python sidecars. Set up only the ones you need.
+
+#### LLM-Guard sidecar (Python 3.12 required — gates 🔬 input & output)
+
+**macOS / Linux:**
+```bash
+brew install python@3.12          # macOS only — skip if already installed
+python3.12 -m venv services/llm-guard/.venv
+source services/llm-guard/.venv/bin/activate
+pip install -r services/llm-guard/requirements.txt
+```
+
+**Windows:**
+```bash
+py -3.12 -m venv services/llm-guard/.venv
+services\llm-guard\.venv\Scripts\activate
+pip install -r services/llm-guard/requirements.txt
+```
+
+**First time on a new machine — pre-download all HuggingFace models (~2–3 GB):**
+```bash
+npm run llmguard:warmup
+```
+This loads all 13 scanners one by one with progress output. The server stays up after warmup, ready to handle requests immediately.
+
+#### Little-Canary sidecar (Python 3.9+ — gate 🐦)
+
+```bash
+pip install flask little-canary
+```
+
+#### AIRS Python SDK sidecar (Python 3.9+ — required for `dev/7a` only)
+
+```bash
+pip install flask pan-aisecurity
+```
+
+---
+
+### 6 — (Optional) Store AIRS credentials
 
 ```bash
 cp .env.example .env
@@ -103,60 +166,26 @@ cp .env.example .env
 
 The key stays server-side and never reaches the browser. See `docs/5-SETUP-GUIDE.md` for details.
 
-### 4 — Run
+---
 
-### **Environment Setup (Required for 5d / 6a)**
+### 7 — Run
 
-**LLM Guard sidecar** (Python 3.12 required):
-
-**macOS / Linux:**
-```bash
-brew install python@3.12
-python3.12 --version
-
-python3.12 -m venv services/llm-guard/.venv
-source services/llm-guard/.venv/bin/activate
-pip install -r services/llm-guard/requirements.txt
-```
-
-**Windows:**
-```bash
-py -3.12 -m venv services/llm-guard/.venv
-services/llm-guard/.venv/Scripts/activate
-pip install -r services/llm-guard/requirements.txt
-```
-
-**Little-Canary sidecar** (Python 3.9+ works):
-```bash
-pip install flask little-canary
-```
-
-**AIRS Python SDK sidecar** (Python 3.9+, required for `dev/7a` only):
-```bash
-pip install flask pan-aisecurity
-```
-
-**On a new machine — pre-download all LLM-Guard models:**
-
-LLM-Guard scanner models (~2–3 GB) are downloaded from HuggingFace on first use. To download them all up-front with progress output before running the workbench:
-
-```bash
-npm run llmguard:warmup
-```
-
-This loads all 13 scanners (7 input + 6 output) one by one and prints progress. The server stays up after warmup and is immediately ready — no cold-start delays on the first scan.
-
-**To start the guard server:**
+Open separate terminal tabs for each process:
 
 ```bash
 npm start                 # Node proxy on :3080 (required)
 npm run canary            # Little-Canary sidecar on :5001 (optional)
-npm run llmguard          # LLM Guard sidecar on :5002 (optional, 5d/6a only)
+npm run llmguard          # LLM-Guard sidecar on :5002 (optional)
 npm run airs-sdk          # AIRS Python SDK sidecar on :5003 (optional, 7a only)
-# To see a list of scripts, npm run
 ```
 
-Open **`http://localhost:3080/dev/6a`** — or see the dev file table below.
+Open **`http://localhost:3080`** — or navigate to a specific dev file:
+
+```
+http://localhost:3080/dev/7c    →  full workbench + debug inspector (recommended)
+http://localhost:3080/dev/6a    →  full workbench, no debug inspector
+http://localhost:3080/dev/1a    →  bare Ollama chat, no security
+```
 
 ---
 
