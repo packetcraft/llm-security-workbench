@@ -76,10 +76,12 @@ Then relaunch Ollama from the menu bar.
    - Variable: `OLLAMA_ORIGINS` — Value: `*`
 3. Relaunch Ollama.
 
-**Pull a model:**
+**Pull models:**
 ```bash
 ollama pull goekdenizguelmez/JOSIEFIED-Qwen3:4b   # main chat + Semantic-Guard
 ollama pull qwen2.5:1.5b                           # Little-Canary probe (small/fast)
+ollama pull qwen2.5-coder:7b                       # coding-focused chat model
+ollama pull llama2-uncensored:latest               # red-team / adversarial testing
 ```
 
 ### 2 — Install
