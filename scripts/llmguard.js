@@ -19,7 +19,10 @@ const server = path.join(root, "services", "llm-guard", "llmguard_server.py");
 
 if (!fs.existsSync(python)) {
   console.error(`Python not found at: ${python}`);
-  console.error("Run: py -3.12 -m venv services/llm-guard/.venv && pip install -r services/llm-guard/requirements.txt");
+  const venvCmd = isWindows
+    ? "py -3.12 -m venv services/llm-guard/.venv"
+    : "python3.12 -m venv services/llm-guard/.venv";
+  console.error(`Run: ${venvCmd} && pip install -r services/llm-guard/requirements.txt`);
   process.exit(1);
 }
 
