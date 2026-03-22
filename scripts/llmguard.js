@@ -26,5 +26,6 @@ if (!fs.existsSync(python)) {
   process.exit(1);
 }
 
-const proc = spawn(python, [server], { stdio: "inherit", cwd: root });
+const args = [server, ...process.argv.slice(2)];
+const proc = spawn(python, args, { stdio: "inherit", cwd: root });
 proc.on("exit", (code) => process.exit(code ?? 0));

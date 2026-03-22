@@ -150,10 +150,36 @@ def scan_output():
     return jsonify({"valid": is_valid, "results": results})
 
 
+# ── Warmup — eager-load all scanner models ────────────────────────────────────
+def warmup_all():
+    """Download and cache every scanner model. Safe to call at startup."""
+    total = len(INPUT_SCANNER_MAP) + len(OUTPUT_SCANNER_MAP)
+    done  = 0
+    print(f"⬇️  Warming up {total} scanner models from HuggingFace …")
+    for name in INPUT_SCANNER_MAP:
+        print(f"  [{done+1}/{total}] input  · {name} …", flush=True)
+        _get_input_scanner(name)
+        done += 1
+    for name in OUTPUT_SCANNER_MAP:
+        print(f"  [{done+1}/{total}] output · {name} …", flush=True)
+        _get_output_scanner(name)
+        done += 1
+    print("✅  All models loaded and ready.")
+
+
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
+    import sys
+    warmup = "--warmup" in sys.argv
+
     print("🛡️  LLM Guard sidecar starting on http://localhost:5002")
     print("    Input  scanners available:", list(INPUT_SCANNER_MAP.keys()))
     print("    Output scanners available:", list(OUTPUT_SCANNER_MAP.keys()))
-    print("    Models download from HuggingFace on first use.")
+
+    if warmup:
+        warmup_all()
+    else:
+        print("    Models download from HuggingFace on first use.")
+        print("    Tip: run with --warmup to pre-download all models now.")
+
     app.run(host="127.0.0.1", port=5002, debug=False)
