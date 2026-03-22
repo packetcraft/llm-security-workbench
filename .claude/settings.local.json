@@ -50,7 +50,9 @@
       "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"from deepteam.red_teamer.risk_assessment import RiskAssessment; import inspect; print\\([f for f in RiskAssessment.model_fields]\\)\" 2>&1)",
       "WebFetch(domain:pypi.org)",
       "WebSearch",
-      "Bash(grep -v \"^\\\\s*//\")"
+      "Bash(grep -v \"^\\\\s*//\")",
+      "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\B006\\\\Documents\\\\github\\\\llm-security-workbench\\\\dev\\\\7b-airs-sdk.html' -Pattern 'Collapse chat area' -SimpleMatch | Select-Object LineNumber, Line\")",
+      "Bash(npm run:*)"
     ]
   }
 }
