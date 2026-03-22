@@ -1,5 +1,5 @@
 <!--
-  SCOPE: This guide covers dev/5d and dev/6a only.
+  SCOPE: This guide covers dev/5d, dev/6a, dev/6b, and dev/7a.
   These are the full six-gate LLM security workbench files including the LLM Guard sidecar.
   For the entry-level files (dev/1a, dev/1b, dev/2a), see docs/1-SETUP-GUIDE.md.
   Files dev/3xx and dev/4xx are intermediate builds not covered by any standalone guide.
@@ -7,22 +7,22 @@
 -->
 
 # LLM Security Workbench — Six-Gate Setup Guide
-### `dev/5d` · `dev/6a`
+### `dev/5d` · `dev/6a` · `dev/6b` · `dev/7a`
 
 This guide walks through a full from-scratch setup of the six-gate LLM security workbench. No prior installation is assumed.
 
 ---
 
-## 5d vs 6a
+## Dev file comparison
 
-Both files implement the same six-gate pipeline with the same two-layer rail sidebar UI. The difference is code quality:
-
-| File | UI / Notes |
+| File | Description |
 |:---|:---|
+| `dev/7a-airs-sdk.html` | **Current development file.** `6b` + 🐍 AIRS Python SDK evaluation — batch pre-scan (5 parallel) via `pan-aisecurity` sidecar on `:5003` |
+| `dev/6b-dynamic-redteam.html` | `6a` + 🚩 Red Teaming drawer — Static batch runner + Dynamic Probe (PAIR algorithm) |
+| `dev/6a-instrument-panel.html` | Rail sidebar + live telemetry instrument panel (right panel, open by default) — stable reference |
 | `dev/5d-rail-sidebar.html` | Two-layer rail sidebar, 🐙PacketCraft branding — unrefactored; retained as previous iteration reference |
-| `dev/6a-instrument-panel.html` | Rail sidebar + live telemetry instrument panel (right panel, open by default); structural improvements: split `sendMessage()`, shared helpers, DOM cache, CSS custom properties, aria-labels — recommended default |
 
-Use `6a` for demos and new work. `5d` is retained as the previous iteration reference. `5a`–`5c` (earlier sidebar iterations) are archived in `dev/builds/`.
+Use `7a` for current development and demos. `6b` and `6a` are stable references. `5a`–`5c` are archived in `dev/builds/`.
 
 ---
 
@@ -76,11 +76,12 @@ Each active gate appends a compact badge to the user message header as it comple
 |:---|:---|:---|
 | Node.js | 18+ | Runs the proxy server |
 | npm | 9+ | Bundled with Node.js |
-| Python | 3.12 | **Must be 3.12** — llm-guard does not support 3.13/3.14 |
+| Python | 3.12 | **Must be 3.12** for LLM-Guard — does not support 3.13/3.14 |
+| Python | 3.9+ | For Little-Canary and AIRS SDK sidecars (any modern Python works) |
 | Ollama | Latest | Local LLM runtime |
 | Git | Any | To clone the repo |
 
-> **Windows note:** If you have multiple Python versions installed, use `py -3.12` explicitly throughout this guide.
+> **Windows note:** If you have multiple Python versions installed, use `py -3.12` explicitly for the LLM-Guard venv.
 
 ---
 
@@ -226,9 +227,23 @@ pip install little-canary flask
 
 ---
 
+## Step 5b — Set Up the AIRS Python SDK Sidecar (🐍 dev/7a only)
+
+The AIRS SDK sidecar exposes a local batch-scan endpoint used by `dev/7a` to pre-scan all batch threats 5-at-a-time via the `pan-aisecurity` Python SDK, before the main batch loop runs. This evaluates the SDK against the existing direct REST path.
+
+It runs on port 5003 and works with Python 3.9+.
+
+```bash
+pip install flask pan-aisecurity
+```
+
+> A Prisma AIRS API key (`AIRS_API_KEY` in `.env`) is still required — the SDK wraps the same cloud API.
+
+---
+
 ## Step 6 — Start Everything
 
-You need **four terminal windows** for the full six-gate pipeline.
+You need **four terminal windows** for the full six-gate pipeline (five if running `dev/7a`).
 
 ### Terminal 1 — Ollama (if not running as a background service)
 ```bash
@@ -268,13 +283,28 @@ Expected output:
 🐦 Little Canary server starting on http://localhost:5001
 ```
 
+### Terminal 5 — AIRS SDK sidecar (🐍 dev/7a only)
+```bash
+cd llm-security-workbench
+npm run airs-sdk
+```
+Expected output:
+```
+🐍 AIRS SDK sidecar starting on :5003
+   SDK available: True
+```
+
+If `SDK available: False` is shown, run `pip install pan-aisecurity` and restart.
+
 ---
 
 ## Step 7 — Open the Workbench
 
 | URL | File |
 |:---|:---|
-| http://localhost:3080/dev/6a | `6a` — rail sidebar + live telemetry instrument panel (right panel, open by default) ⭐ recommended |
+| http://localhost:3080/dev/7a | `7a` — `6b` + AIRS Python SDK batch pre-scan ⭐ current |
+| http://localhost:3080/dev/6b | `6b` — `6a` + Red Teaming drawer (Static batch + Dynamic Probe) |
+| http://localhost:3080/dev/6a | `6a` — rail sidebar + live telemetry instrument panel |
 | http://localhost:3080/dev/5d | `5d` — same UI as 6a, pre-refactor (previous iteration reference) |
 | http://localhost:3080/dev/5c | `5c` — Tokyo Night accordion sidebar (archived) |
 
@@ -283,7 +313,8 @@ On first load, the workbench automatically:
 - Sets all gates to **Strict** mode by default
 - Loads the threat library from `test/sample_threats.json`
 - Checks `.env` for a pre-loaded AIRS key
-- Opens the live telemetry instrument panel (right panel) by default — `6a` only
+- Opens the live telemetry instrument panel (right panel) by default — `6a`/`6b`/`7a`
+- Checks all sidecar health endpoints and updates the status dots in the Security Pipeline sidebar — `7a` only
 
 ---
 
@@ -327,7 +358,10 @@ After the first prompt, `loaded_input_scanners` and `loaded_output_scanners` sho
 | `npm start` | Start the Node.js proxy on :3080 |
 | `npm run llmguard` | Start the LLM Guard sidecar on :5002 |
 | `npm run canary` | Start the Little-Canary sidecar on :5001 |
-| `npm run stage 6a` | Copy `dev/6a-*.html` → `src/index.html` (makes it the default at `/`) |
+| `npm run airs-sdk` | Start the AIRS Python SDK sidecar on :5003 (7a only) |
+| `npm run stage 7a` | Copy `dev/7a-*.html` → `src/index.html` (makes it the default at `/`) |
+| `npm run stage 6b` | Copy `dev/6b-*.html` → `src/index.html` |
+| `npm run stage 6a` | Copy `dev/6a-*.html` → `src/index.html` |
 | `npm run stage 5d` | Copy `dev/5d-*.html` → `src/index.html` |
 
 ---
@@ -361,7 +395,7 @@ Bias, Relevance, LanguageSame
 
 ## Batch Threat Runner
 
-The Batch Threat Runner is available inside both `5d` and `6a`. It runs all selected threats from the 68-threat adversarial library through the full pipeline automatically.
+The Batch Threat Runner is available in `5d`, `6a`, `6b`, and `7a`. It runs all selected threats from the 68-threat adversarial library through the full pipeline automatically.
 
 The bottom summary bar shows catches per gate:
 ```
@@ -369,6 +403,10 @@ The bottom summary bar shows catches per gate:
 ```
 
 Export options: **JSON** (full result set with per-threat detail) and **Markdown** (summary report with phase catch breakdown).
+
+### AIRS SDK batch pre-scan (dev/7a only)
+
+When the AIRS SDK sidecar is running (`npm run airs-sdk`), `dev/7a` pre-scans all selected threats through AIRS **before** the main loop begins, using 5 parallel `sync_scan()` calls via the `pan-aisecurity` SDK. Results are cached by prompt text; the batch loop reads from cache instead of making individual REST calls for AIRS-Inlet, eliminating per-threat AIRS latency during the run. If the sidecar is offline, the runner falls back to the existing per-threat REST path silently.
 
 ---
 
@@ -402,6 +440,14 @@ Export options: **JSON** (full result set with per-threat detail) and **Markdown
 - Restart `npm start` after editing `.env`
 - The UI shows `🔒 .env` next to the key field when loaded correctly
 
+**AIRS SDK sidecar — `SDK available: False`**
+- Run `pip install pan-aisecurity` and restart `npm run airs-sdk`
+- Check http://localhost:5003/health — `sdk_error` field shows the Python import error
+
+**AIRS SDK sidecar — dot shows grey / offline after page load**
+- Ensure `npm run airs-sdk` is running in a separate terminal
+- Hover the grey dot in the Security Pipeline sidebar for the exact error message
+
 **Batch Run button not responding**
 - Open browser DevTools (F12) → Console tab for JS errors
 
@@ -413,17 +459,22 @@ Export options: **JSON** (full result set with per-threat detail) and **Markdown
 llm-security-workbench/
 ├── dev/
 │   ├── 5d-rail-sidebar.html                         ← workbench UI (pre-refactor, previous iteration)
-│   └── 6a-instrument-panel.html                     ← workbench UI (instrument panel, recommended)
+│   ├── 6a-instrument-panel.html                     ← workbench UI (instrument panel)
+│   ├── 6b-dynamic-redteam.html                      ← 6a + Red Teaming drawer
+│   └── 7a-airs-sdk.html                             ← 6b + AIRS Python SDK evaluation (current)
 ├── services/
 │   ├── llm-guard/
 │   │   ├── .venv/                                   ← Python 3.12 venv (gitignored)
 │   │   ├── llmguard_server.py                       ← Flask sidecar :5002
 │   │   └── requirements.txt
-│   └── canary/
-│       ├── canary_server.py                         ← Little-Canary sidecar :5001
+│   ├── canary/
+│   │   ├── canary_server.py                         ← Little-Canary sidecar :5001
+│   │   └── requirements.txt
+│   └── airs-sdk/
+│       ├── airs_sdk_server.py                       ← AIRS Python SDK sidecar :5003 (7a only)
 │       └── requirements.txt
 ├── src/
-│   ├── index.html                                   ← promoted via npm run stage 6a
+│   ├── index.html                                   ← promoted via npm run stage 7a
 │   └── server.js                                    ← Node proxy :3080
 ├── test/
 │   └── sample_threats.json                          ← 68-threat adversarial library

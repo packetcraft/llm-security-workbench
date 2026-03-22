@@ -36,7 +36,21 @@
       "Bash(ls /c/Users/B006/Documents/github/llm-security-workbench/dev/*.html)",
       "Bash(awk 'NR>=5033 && NR<=6029' dev/6b-dynamic-redteam.html)",
       "Bash(awk:*)",
-      "WebFetch(domain:www.trydeepteam.com)"
+      "WebFetch(domain:www.trydeepteam.com)",
+      "Bash(python -c \"import deepteam; print\\(dir\\(deepteam\\)\\)\")",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"import deepteam; print\\(dir\\(deepteam\\)\\)\")",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"import deepteam.red_teamer; print\\(dir\\(deepteam.red_teamer\\)\\)\")",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"import deepteam.vulnerabilities; print\\(dir\\(deepteam.vulnerabilities\\)\\)\")",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"from deepteam.red_teamer import RedTeamer; print\\([m for m in dir\\(RedTeamer\\) if not m.startswith\\('_'\\)]\\)\")",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"from deepteam.red_teamer import RedTeamer; import inspect; print\\(inspect.signature\\(RedTeamer.red_team\\)\\)\")",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"from deepteam.red_teamer import RedTeamer; import inspect; print\\(inspect.signature\\(RedTeamer.__init__\\)\\)\")",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"from deepteam.red_teamer import RedTeamer; import inspect; print\\(inspect.getsource\\(RedTeamer.red_team\\)\\)\")",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"from deepteam.red_teamer import risk_assessment; print\\(dir\\(risk_assessment\\)\\)\" 2>&1)",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"from deepteam.red_teamer.risk_assessment import RTTestCase; import inspect; print\\(inspect.getsource\\(RTTestCase\\)\\)\" 2>&1)",
+      "Bash(\"C:/Users/B006/Documents/github/llm-security-workbench/services/llm-guard/.venv/Scripts/python\" -c \"from deepteam.red_teamer.risk_assessment import RiskAssessment; import inspect; print\\([f for f in RiskAssessment.model_fields]\\)\" 2>&1)",
+      "WebFetch(domain:pypi.org)",
+      "WebSearch",
+      "Bash(grep -v \"^\\\\s*//\")"
     ]
   }
 }

@@ -19,8 +19,10 @@
     "stage:5d": "node scripts/stage.js 5d",
     "stage:6a": "node scripts/stage.js 6a",
     "stage:6b": "node scripts/stage.js 6b",
+    "stage:7a": "node scripts/stage.js 7a",
     "canary": "python services/canary/canary_server.py",
-    "llmguard": "node scripts/llmguard.js"
+    "llmguard": "node scripts/llmguard.js",
+    "airs-sdk": "python services/airs-sdk/airs_sdk_server.py"
   },
   "keywords": [],
   "author": "",

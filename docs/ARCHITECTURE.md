@@ -99,7 +99,7 @@ graph LR
         direction TB
 
         subgraph BROWSER ["Browser (workbench UI)"]
-            UI["LLM Security Workbench\ndev/6a · src/index.html"]
+            UI["LLM Security Workbench\ndev/7a · src/index.html"]
         end
 
         subgraph NODE ["Node.js · npm start · :3080"]
@@ -118,6 +118,12 @@ graph LR
             FLASK --> LC
         end
 
+        subgraph SDKFLASK ["Python · npm run airs-sdk · :5003  (dev/7a only)"]
+            SDKSERV["Flask microservice\nservices/airs-sdk/airs_sdk_server.py"]
+            PANSDK["pan-aisecurity SDK\nsync_scan · ThreadPoolExecutor"]
+            SDKSERV --> PANSDK
+        end
+
         subgraph OLLAMA ["Ollama · ollama serve · :11434"]
             OLL["LLM inference\n/api/chat  /api/tags"]
         end
@@ -128,7 +134,7 @@ graph LR
     end
 
     %% Browser → Node proxy
-    UI -- "GET /  /api/config\nPOST /api/prisma\nPOST /api/canary\nPOST /api/llmguard-input\nPOST /api/llmguard-output" --> PROXY
+    UI -- "GET /  /api/config\nPOST /api/prisma\nPOST /api/canary\nPOST /api/llmguard-input\nPOST /api/llmguard-output\nGET /api/*/health\nPOST /api/airs-sdk/batch" --> PROXY
 
     %% Browser → Ollama direct (streaming + non-streaming)
     UI -- "POST /api/chat  streaming\nGET /api/tags\nSemantic-Guard judge + chat LLM\nDynamic Probe: attacker · target · judge" --> OLL
@@ -137,10 +143,16 @@ graph LR
     PROXY -- "POST /v1/scan/sync/request\nAIRS-Inlet prompt scan\nAIRS-Dual response scan" --> AIRS
 
     %% Node → LLM Guard Flask
-    PROXY -- "POST /scan/input\nPOST /scan/output" --> LGSERV
+    PROXY -- "GET /health\nPOST /scan/input\nPOST /scan/output" --> LGSERV
 
     %% Node → Little-Canary Flask
-    PROXY -- "POST /check\nLittle-Canary scan" --> FLASK
+    PROXY -- "GET /health\nPOST /check\nLittle-Canary scan" --> FLASK
+
+    %% Node → AIRS SDK Flask
+    PROXY -- "GET /health\nPOST /scan/sync\nPOST /scan/batch" --> SDKSERV
+
+    %% SDK → Prisma AIRS (cloud)
+    PANSDK -- "pan-aisecurity SDK\nsync_scan() × 5 parallel" --> AIRS
 
     %% Flask → Ollama (canary probe)
     LC -- "POST /api/chat\ncanary LLM probe" --> OLL
@@ -152,10 +164,14 @@ graph LR
 
 | Traffic | Route |
 | :--- | :--- |
-| AIRS-Inlet / AIRS-Dual scans | Browser → Node Proxy `:3080/api/prisma` → Prisma AIRS API (cloud) |
+| AIRS-Inlet / AIRS-Dual scans (chat) | Browser → Node Proxy `:3080/api/prisma` → Prisma AIRS API (cloud) |
+| AIRS SDK batch pre-scan (7a batch runner) | Browser → Node Proxy `:3080/api/airs-sdk/batch` → Flask sidecar `:5003/scan/batch` → Prisma AIRS API (cloud, 5 parallel) |
+| AIRS SDK single scan | Browser → Node Proxy `:3080/api/airs-sdk/sync` → Flask sidecar `:5003/scan/sync` → Prisma AIRS API (cloud) |
 | LLM-Guard input scan | Browser → Node Proxy `:3080/api/llmguard-input` → Flask sidecar `:5002/scan/input` |
 | LLM-Guard output scan | Browser → Node Proxy `:3080/api/llmguard-output` → Flask sidecar `:5002/scan/output` |
 | Little-Canary scan | Browser → Node Proxy `:3080/api/canary` → Flask sidecar `:5001/check` → Ollama |
+| Sidecar health checks (status dots) | Browser → Node Proxy `:3080/api/llmguard/health`, `/api/canary/health`, `/api/airs-sdk/health` → respective sidecars |
+| Ollama health check (Semantic-Guard dot) | Browser → Local Ollama `:11434/api/tags` (direct) |
 | LLM inference (chat) | Browser → Local Ollama API `:11434` (direct, streaming) |
 | Dynamic Probe — attacker LLM | Browser → Local Ollama API `:11434` (direct, non-streaming) |
 | Dynamic Probe — target LLM | Browser → Local Ollama API `:11434` (direct, non-streaming) |
@@ -173,7 +189,7 @@ The Node.js proxy (`src/server.js`) exists for two reasons:
 
 2. **Credential isolation** — `AIRS_API_KEY` is loaded from `.env` at startup and attached to outbound requests by the proxy. The browser never receives the key — only a boolean `hasApiKey` flag from `/api/config`.
 
-**Key design point:** The browser talks **directly** to Ollama for all LLM inference (Semantic-Guard judge calls, chat streaming, and all three Dynamic Probe roles) but routes through the Node proxy for AIRS, LLM Guard, and Little-Canary. Direct Ollama access avoids double-buffering the streaming response; the proxy exists only to bypass CORS for cloud API calls and to keep the AIRS API key off the client.
+**Key design point:** The browser talks **directly** to Ollama for all LLM inference (Semantic-Guard judge calls, chat streaming, and all three Dynamic Probe roles) but routes through the Node proxy for AIRS, LLM Guard, Little-Canary, and the AIRS SDK sidecar. Direct Ollama access avoids double-buffering the streaming response; the proxy exists only to bypass CORS for cloud API calls and to keep the AIRS API key off the client.
 
 **Dynamic Probe — all three model roles call Ollama directly.** The attacker LLM, the target LLM, and the judge LLM all call `http://localhost:11434/api/chat` from the browser with `stream: false`. None of these calls pass through the Node proxy. The only probe traffic that uses the proxy is the security gate checks (`/api/llmguard-input`, `/api/canary`, `/api/prisma`) — identical to the chat pipeline. This means:
 - Attacker and judge traffic is not logged server-side
@@ -185,7 +201,7 @@ Ollama requires `OLLAMA_ORIGINS=*` to accept requests from the browser. See the 
 
 ---
 
-## UI Layout (dev/6a-instrument-panel)
+## UI Layout (dev/7a-airs-sdk)
 
 The workbench uses a full-viewport horizontal flex shell (`#app-shell`) with five named regions:
 
@@ -194,7 +210,7 @@ The workbench uses a full-viewport horizontal flex shell (`#app-shell`) with fiv
 │ Icon     │ Left Nav Panel    │                      │ Right Telemetry      │
 │ Rail     │ (#nav-panel)      │   Main Content       │ Panel                │
 │          │                   │   (#main-content)    │ (#right-panel)       │
-│ 56px     │ 200px (collapsed: │                      │ 220px (collapsed: 0) │
+│ 56px     │ 225px (collapsed: │                      │ 220px (collapsed: 0) │
 │ fixed    │ 0, rail stays)    │   flex: 1            │                      │
 └──────────┴───────────────────┴──────────────────────┴──────────────────────┘
 ```
@@ -204,7 +220,7 @@ The workbench uses a full-viewport horizontal flex shell (`#app-shell`) with fiv
 | Panel | HTML ID / class | Default width | Collapsed width | Toggled by |
 | :--- | :--- | :--- | :--- | :--- |
 | Icon rail | `#icon-rail` | `56px` (fixed, never collapses) | — | — |
-| Left nav panel | `#nav-panel` | `200px` | `0` (class `nav-collapsed`) | 🛡️ brand button or `toggleNavPanel()` |
+| Left nav panel | `#nav-panel` | `225px` | `0` (class `nav-collapsed`) | 🛡️ brand button or `toggleNavPanel()` |
 | Main content | `#main-content` | `flex: 1` (fills remaining space) | — | — |
 | Right telemetry panel | `#right-panel` | `220px` | `0` (class `collapsed`) | 📊 rail icon or `toggleRightPanel()` |
 
@@ -223,8 +239,19 @@ The left nav panel hosts two switchable panes, selected via the icon rail:
 
 | Pane | HTML ID | Rail icon | Contents |
 | :--- | :--- | :--- | :--- |
-| Security Pipeline | `#pane-security` | 🔬 | Gate controls (mode badges, settings) for all 6 gates |
+| Security Pipeline | `#pane-security` | 🔬 | Gate controls (mode badges, settings) for all 6 gates + sidecar status dots |
 | Workspace | `#pane-workspace` | ⬡ | Model selector, persona selector |
+
+### Sidecar status dots (dev/7a)
+
+Each gate that depends on a sidecar shows a small coloured dot (`●`) in its header row in the Security Pipeline pane. Dots are checked at page load via `checkSidecarHealth()` and update dynamically during the batch pre-scan. Hover for the exact status message.
+
+| Gate | Dot ID | Health endpoint | What the dot checks |
+| :--- | :--- | :--- | :--- |
+| 🔬 LLM-Guard | `sc-llmguard` | `GET /api/llmguard/health` → `:5002/health` | LLM Guard Flask sidecar |
+| 🧩 Semantic-Guard | `sc-semantic` | `GET :11434/api/tags` (direct) | Ollama runtime + pulled models |
+| 🐦 Little-Canary | `sc-canary` | `GET /api/canary/health` → `:5001/health` | Little-Canary Flask sidecar |
+| 🔀 AIRS (In/Out) | `sc-airs` | `GET /api/airs-sdk/health` → `:5003/health` | AIRS Python SDK sidecar + SDK install |
 
 ### CSS custom properties for layout dimensions
 
@@ -232,7 +259,7 @@ Defined in `:root` — change these to resize panels globally:
 
 ```css
 --rail-width:                56px;
---nav-panel-width:          200px;
+--nav-panel-width:          225px;
 --debug-drawer-max-height:  360px;
 ```
 

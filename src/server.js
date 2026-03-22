@@ -143,8 +143,83 @@ app.post("/api/prisma", async (req, res) => {
   }
 });
 
+
+// 6a. Sidecar health checks — used by the Security Pipeline status dots in the UI
+app.get("/api/canary/health", async (req, res) => {
+  try {
+    const response = await fetch("http://localhost:5001/health");
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ status: "offline", error: "Little-Canary unavailable — is services/canary/canary_server.py running? " + err.message });
+  }
+});
+
+app.get("/api/llmguard/health", async (req, res) => {
+  try {
+    const response = await fetch("http://localhost:5002/health");
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ status: "offline", error: "LLM-Guard unavailable — is services/llm-guard/llmguard_server.py running? " + err.message });
+  }
+});
+
+// 6b. AIRS SDK proxy — forwards to Python sidecar on :5003
+app.get("/api/airs-sdk/health", async (req, res) => {
+  try {
+    const response = await fetch("http://localhost:5003/health");
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ sdk_available: false, error: "AIRS SDK sidecar unavailable — is services/airs-sdk/airs_sdk_server.py running? " + err.message });
+  }
+});
+
+app.post("/api/airs-sdk/sync", async (req, res) => {
+  const apiKey = process.env.AIRS_API_KEY || req.headers["x-pan-token"];
+  if (!apiKey) {
+    return res.status(401).json({ error: "Missing API key — set AIRS_API_KEY in .env" });
+  }
+  try {
+    const body = { ...req.body, api_key: apiKey };
+    const response = await fetch("http://localhost:5003/scan/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json(data);
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: "AIRS SDK sidecar unavailable — is services/airs-sdk/airs_sdk_server.py running? " + err.message });
+  }
+});
+
+app.post("/api/airs-sdk/batch", async (req, res) => {
+  const apiKey = process.env.AIRS_API_KEY || req.headers["x-pan-token"];
+  if (!apiKey) {
+    return res.status(401).json({ error: "Missing API key — set AIRS_API_KEY in .env" });
+  }
+  try {
+    const body = { ...req.body, api_key: apiKey };
+    const response = await fetch("http://localhost:5003/scan/batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json(data);
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: "AIRS SDK sidecar unavailable — is services/airs-sdk/airs_sdk_server.py running? " + err.message });
+  }
+});
+
+
 const PORT = 3080;
 app.listen(PORT, () => {
   console.log(`🚀 Workbench running at http://localhost:${PORT}`);
   console.log(`🛡️ Prisma AIRS Proxy active on /api/prisma`);
+  console.log(`🐍 AIRS SDK Proxy active on /api/airs-sdk/*`);
 });

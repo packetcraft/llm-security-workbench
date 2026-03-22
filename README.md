@@ -126,13 +126,19 @@ pip install -r services/llm-guard/requirements.txt
 pip install flask little-canary
 ```
 
+**AIRS Python SDK sidecar** (Python 3.9+, required for `dev/7a` only):
+```bash
+pip install flask pan-aisecurity
+```
+
 **To start the guard server:**
 
 ```bash
 npm start                 # Node proxy on :3080 (required)
 npm run canary            # Little-Canary sidecar on :5001 (optional)
 npm run llmguard          # LLM Guard sidecar on :5002 (optional, 5d/6a only)
-# To see a list of scripts, npm run 
+npm run airs-sdk          # AIRS Python SDK sidecar on :5003 (optional, 7a only)
+# To see a list of scripts, npm run
 ```
 
 Open **`http://localhost:3080/dev/6a`** — or see the dev file table below.
@@ -165,6 +171,7 @@ http://localhost:3080/dev/1a    →  bare Ollama chat, no security
 |   | `5d` — `rail-sidebar` | Two-layer rail sidebar, 🐙PacketCraft branding (unrefactored) | ✓ |
 | ⭐ | `6a` — `instrument-panel` | rail sidebar + live telemetry instrument panel (right panel, open by default) | ✓ |
 | ⭐ | `6b` — `dynamic-redteam` | `6a` + 🚩 Red Teaming drawer — Static batch runner + Dynamic Probe (PAIR algorithm) | ✓ |
+|   | `7a` — `airs-sdk` | `6b` + 🐍 Prisma AIRS Python SDK — batch pre-scan (5-parallel) via `pan-aisecurity` sidecar | ✓ |
 
 To make a dev file the default at `http://localhost:3080`:
 
@@ -186,6 +193,7 @@ npm run stage 6a        # copies dev/6a-*.html → src/index.html
 | [`docs/SECURITY-GATES.md`](docs/SECURITY-GATES.md) | Per-gate deep dives — how each gate works, configuration tables, recommended models, system prompts |
 | [`docs/TESTING.md`](docs/TESTING.md) | Gate-by-gate verification tests, troubleshooting table, usage tips |
 | [`docs/DYNAMIC-PROBE.md`](docs/DYNAMIC-PROBE.md) | Dynamic Probe (PAIR) architecture — flow diagram, gate coverage, per-gate security trace, judge scoring logic, network routing, result states, limitations |
+| [`docs/7A-AIRS-SDK.md`](docs/7A-AIRS-SDK.md) | `dev/7a` technical reference — AIRS Python SDK integration, sidecar design, batch pre-scan cache, sidecar status dots, design decisions, optimisation opportunities |
 | [`docs/PRD.md`](docs/PRD.md) | Product requirements and roadmap |
 | [`docs/notes/LLM-GUARD-DEEP-DIVE.md`](docs/notes/LLM-GUARD-DEEP-DIVE.md) | LLM-Guard internals — HuggingFace scanner mapping, lazy loading, observability commands |
 | [`docs/notes/LITTLE-CANARY-DEEP-DIVE.md`](docs/notes/LITTLE-CANARY-DEEP-DIVE.md) | Little Canary internals — two-stage detection, Ollama probe, comparison with LLM-Guard |

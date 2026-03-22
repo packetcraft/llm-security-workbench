@@ -8,8 +8,9 @@ Project context and working conventions for Claude Code. Read this before making
 
 A browser-based LLM security testing workbench. A Node.js proxy (`src/server.js`) serves the UI and routes security scans. All LLM inference runs locally via Ollama. Security scanning uses a six-gate pipeline — some gates local (LLM-Guard, Semantic-Guard, Little-Canary), some cloud (Prisma AIRS).
 
-**Active workbench files:** `dev/5d`, `dev/6a`, and `dev/6b` — these are the ones users run and demo.
-- `6b` — `6a` + 🚩 Red Teaming drawer (Static batch runner + Dynamic Probe / PAIR algorithm) — the current development file
+**Active workbench files:** `dev/5d`, `dev/6a`, `dev/6b`, and `dev/7a` — these are the ones users run and demo.
+- `7a` — `6b` + 🐍 AIRS Python SDK evaluation — batch pre-scan via `pan-aisecurity` sidecar (:5003) — current development file
+- `6b` — `6a` + 🚩 Red Teaming drawer (Static batch runner + Dynamic Probe / PAIR algorithm) — stable reference
 - `6a` — rail sidebar + live telemetry instrument panel (right panel, open by default) — stable reference
 - `5d` — same UI as 6a (rail sidebar, PacketCraft branding) but pre-refactor; retained as previous iteration reference
 - `5c` and earlier — archived in `dev/builds/`
@@ -38,6 +39,9 @@ services/
   canary/
     canary_server.py    # Flask microservice :5001 (Little-Canary)
     requirements.txt
+  airs-sdk/
+    airs_sdk_server.py  # Flask sidecar :5003 (pan-aisecurity SDK, Python 3.9+)
+    requirements.txt
 
 tools/
   garak_to_threats.py # Converts garak hitlog JSONL → threats JSON
@@ -47,7 +51,8 @@ test/
 
 docs/                 # Project docs only at the root level
   1-SETUP-GUIDE.md    # Setup for dev/1a, 1b, 2a
-  5-SETUP-GUIDE.md    # Setup for dev/5d, 6a (full six-gate)
+  5-SETUP-GUIDE.md    # Setup for dev/5d, 6a, 6b, 7a (full six-gate)
+  7A-AIRS-SDK.md      # 7a technical reference — SDK design, function map, optimisation guide
   ARCHITECTURE.md     # Component diagram, traffic routing, flow diagrams
   SECURITY-GATES.md   # Per-gate deep dives, config tables, system prompts
   TESTING.md          # Verification tests, troubleshooting, usage tips
@@ -68,6 +73,8 @@ docs/                 # Project docs only at the root level
 | `npm run stage:6a` | Named shortcut (also: 1a, 1b, 2a, 3a–3c, 4a, 4c, 5a, 5d) |
 | `npm run canary` | Start Little-Canary Flask sidecar on :5001 |
 | `npm run llmguard` | Start LLM Guard Flask sidecar on :5002 |
+| `npm run airs-sdk` | Start AIRS Python SDK sidecar on :5003 (7a only) |
+| `npm run stage:7a` | Named shortcut for `npm run stage 7a` |
 
 The `stage` script searches `dev/` first, then `dev/builds/` as fallback — prefix matching works for archived files too (e.g. `npm run stage 3c` still works).
 
