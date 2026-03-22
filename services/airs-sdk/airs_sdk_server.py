@@ -10,6 +10,7 @@ The Node proxy (/api/airs-sdk/*) injects the API key from .env before forwarding
 """
 
 import os
+import time
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from flask import Flask, request, jsonify
@@ -100,8 +101,16 @@ def scan_batch():
         scanner = Scanner()  # Each thread gets its own Scanner instance
         ai_profile = AiProfile(profile_name=profile)
         content = Content(prompt=prompt_text)
-        result = scanner.sync_scan(ai_profile=ai_profile, content=content)
-        return idx, response_to_dict(result)
+        last_exc = None
+        for attempt in range(3):
+            try:
+                result = scanner.sync_scan(ai_profile=ai_profile, content=content)
+                return idx, response_to_dict(result)
+            except Exception as e:
+                last_exc = e
+                if attempt < 2:
+                    time.sleep(0.5 * (2 ** attempt))  # 0.5s, then 1.0s
+        raise last_exc
 
     BATCH_WORKERS = 5
     with ThreadPoolExecutor(max_workers=BATCH_WORKERS) as executor:
