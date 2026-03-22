@@ -172,6 +172,7 @@ http://localhost:3080/dev/1a    →  bare Ollama chat, no security
 | ⭐ | `6a` — `instrument-panel` | rail sidebar + live telemetry instrument panel (right panel, open by default) | ✓ |
 | ⭐ | `6b` — `dynamic-redteam` | `6a` + 🚩 Red Teaming drawer — Static batch runner + Dynamic Probe (PAIR algorithm) | ✓ |
 |   | `7a` — `airs-sdk` | `6b` + 🐍 Prisma AIRS Python SDK — batch pre-scan (5-parallel) via `pan-aisecurity` sidecar | ✓ |
+| ⭐ | `7c` — `debug-inspector` | `7a` + 🔍 full-featured API Inspector debug drawer — score, HTTP status, latency, trigger, config snapshot, gate modal popout | ✓ |
 
 To make a dev file the default at `http://localhost:3080`:
 

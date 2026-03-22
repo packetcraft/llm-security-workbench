@@ -21,3 +21,6 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# deepeval config dir (auto-created by pip install deepeval)
+.deepeval/

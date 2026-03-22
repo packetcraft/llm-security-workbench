@@ -8,8 +8,9 @@ Project context and working conventions for Claude Code. Read this before making
 
 A browser-based LLM security testing workbench. A Node.js proxy (`src/server.js`) serves the UI and routes security scans. All LLM inference runs locally via Ollama. Security scanning uses a six-gate pipeline — some gates local (LLM-Guard, Semantic-Guard, Little-Canary), some cloud (Prisma AIRS).
 
-**Active workbench files:** `dev/5d`, `dev/6a`, `dev/6b`, and `dev/7a` — these are the ones users run and demo.
-- `7a` — `6b` + 🐍 AIRS Python SDK evaluation — batch pre-scan via `pan-aisecurity` sidecar (:5003) — current development file
+**Active workbench files:** `dev/5d`, `dev/6a`, `dev/6b`, `dev/7a`, and `dev/7c` — these are the ones users run and demo.
+- `7c` — `7a` + 🔍 full-featured API Inspector debug drawer — per-gate score, HTTP status, latency, trigger, config snapshot, modal popout — current development file
+- `7a` — `6b` + 🐍 AIRS Python SDK evaluation — batch pre-scan via `pan-aisecurity` sidecar (:5003) — stable reference
 - `6b` — `6a` + 🚩 Red Teaming drawer (Static batch runner + Dynamic Probe / PAIR algorithm) — stable reference
 - `6a` — rail sidebar + live telemetry instrument panel (right panel, open by default) — stable reference
 - `5d` — same UI as 6a (rail sidebar, PacketCraft branding) but pre-refactor; retained as previous iteration reference
@@ -24,7 +25,7 @@ src/
   server.js           # Node proxy :3080 — only backend file; loads .env
   index.html          # Promoted from dev/ via npm run stage
 
-dev/                  # Active iteration files (2a, 5d, 6a, 6b)
+dev/                  # Active iteration files (5d, 6a, 6b, 7a, 7c)
 dev/builds/           # Archived intermediate builds (3xx, 4xx) — do not edit
 
 scripts/

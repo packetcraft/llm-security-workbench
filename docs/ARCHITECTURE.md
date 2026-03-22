@@ -201,7 +201,37 @@ Ollama requires `OLLAMA_ORIGINS=*` to accept requests from the browser. See the 
 
 ---
 
-## UI Layout (dev/7a-airs-sdk)
+## Pipeline Design Decisions
+
+### Output gate ordering: AIRS-Dual before LLM-Guard Output
+
+The output side of the pipeline runs in this order:
+
+```
+🤖 LLM  →  🔀🛡️ AIRS-Dual  →  🔬 LLM-Guard Output
+```
+
+An alternative ordering — LLM-Guard Output first, AIRS-Dual second — was evaluated and rejected. The rationale:
+
+**Performance.** AIRS-Dual is a fast cloud API call (~1–2s). LLM-Guard Output runs local transformer inference (~10–12s). Running the fast gate first means a block by AIRS-Dual saves the full LLM-Guard Output scan. In the reversed order, a LLM-Guard Output block saves only the AIRS API call — a much smaller saving.
+
+**DLP masking coherence.** AIRS-Dual can return a DLP-masked version of the response (sensitive fields redacted). In the current order, LLM-Guard Output scans the final masked content — the same version the user would see. In the reversed order, LLM-Guard Output would scan the raw pre-mask response, creating a mismatch between what was audited and what was shown.
+
+**Symmetry is less relevant on the output side.** The input side runs all local gates (LLM-Guard, Semantic-Guard, Little-Canary) before the cloud gate (AIRS-Inlet), which avoids sending potentially malicious prompts to the cloud. On the output side, the LLM response is already generated and no longer "in flight" — the privacy argument for local-first is weaker, and the performance argument for fast-first is stronger.
+
+The local-first reversed order would be preferable only in an air-gapped deployment where the response must never reach the cloud. That is not this project's target environment.
+
+### AIRS-Dual short-circuit (strict mode)
+
+When AIRS-Dual blocks a response in **strict mode**, LLM-Guard Output is skipped entirely. The response content has been withheld from the user — there is nothing left to scan.
+
+In **advisory/audit mode**, AIRS-Dual flags but still shows the response (with a warning). LLM-Guard Output continues in that case, providing a second layer of local audit on the visible content.
+
+This short-circuit is implemented by `runAIRSDualGate()` returning `true` on a strict block, and the Phase 2.5 call site gating on that value (`airsDualHardBlocked`). Without this guard, LLM-Guard Output would scan the response even after it had been replaced by a block notice — a wasted 10+ second transformer call on a string the user never sees.
+
+---
+
+## UI Layout (dev/7c-debug-inspector)
 
 The workbench uses a full-viewport horizontal flex shell (`#app-shell`) with five named regions:
 
@@ -264,3 +294,5 @@ Defined in `:root` — change these to resize panels globally:
 ```
 
 The right panel width (`220px`) is set directly on `#right-panel` and not yet a custom property.
+
+---
