@@ -269,5 +269,6 @@ npm run stage 6a        # copies dev/6a-*.html → src/index.html
 | [`docs/DYNAMIC-PROBE.md`](docs/DYNAMIC-PROBE.md) | Dynamic Probe (PAIR) architecture — flow diagram, gate coverage, per-gate security trace, judge scoring logic, network routing, result states, limitations |
 | [`docs/7A-AIRS-SDK.md`](docs/7A-AIRS-SDK.md) | `dev/7a` technical reference — AIRS Python SDK integration, sidecar design, batch pre-scan cache, sidecar status dots, design decisions, optimisation opportunities |
 | [`docs/PRD.md`](docs/PRD.md) | Product requirements and roadmap |
+| [`docs/UX-IMPROVEMENTS.md`](docs/UX-IMPROVEMENTS.md) | Chat column UX backlog — Demo Mode toggle, user bubble, alert→Inspector link, shield badge consolidation |
 | [`docs/notes/LLM-GUARD-DEEP-DIVE.md`](docs/notes/LLM-GUARD-DEEP-DIVE.md) | LLM-Guard internals — HuggingFace scanner mapping, lazy loading, observability commands |
 | [`docs/notes/LITTLE-CANARY-DEEP-DIVE.md`](docs/notes/LITTLE-CANARY-DEEP-DIVE.md) | Little Canary internals — two-stage detection, Ollama probe, comparison with LLM-Guard |
