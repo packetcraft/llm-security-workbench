@@ -211,19 +211,34 @@ Expected: `Version: 0.3.16`
 
 ## Step 5 — Set Up the Little Canary Sidecar (🐦 Little-Canary)
 
-Little-Canary runs as a separate Flask microservice on port 5001. It works with Python 3.9+ and installs into your system Python (no dedicated venv needed).
+Little-Canary runs as a separate Flask microservice on port 5001. It requires a dedicated virtual environment — installing into the system Python or the LLM-Guard venv will cause import errors when `npm run canary` starts.
 
 **macOS / Linux:**
 ```bash
-pip3 install little-canary flask
+python3 -m venv services/canary/.venv
+source services/canary/.venv/bin/activate
+pip install -r services/canary/requirements.txt
 ```
 
 **Windows:**
 ```bash
-pip install little-canary flask
+py -3 -m venv services/canary/.venv
+services\canary\.venv\Scripts\activate
+pip install -r services/canary/requirements.txt
 ```
 
-> If you have multiple Python versions, use `py -3.12 -m pip install little-canary flask` to be explicit.
+> If you have multiple Python versions and want to be explicit, replace `py -3` with `py -3.12` (or whichever version you prefer — 3.9+ works).
+
+**Starting the sidecar:**
+
+Run `npm run canary` from a terminal where the venv is already activated. On Windows, if `python3` is not on PATH, run the server directly instead:
+
+```bash
+# Windows — direct invocation (no activation needed)
+services\canary\.venv\Scripts\python services\canary\canary_server.py
+```
+
+**Verify:** http://localhost:5001/health should return `{"status":"ok","service":"little-canary"}`.
 
 ---
 
@@ -431,9 +446,11 @@ When the AIRS SDK sidecar is running (`npm run airs-sdk`), `dev/7a` pre-scans al
 - Language and Gibberish scanners are unreliable on very short inputs — leave them unchecked (default)
 - Bias and LanguageSame output scanners can false-positive on short-prompt / long-response pairs — leave them unchecked (default)
 
-**Little-Canary "service unavailable" error**
-- Ensure `npm run canary` is running
-- Check http://localhost:5001/health
+**Little-Canary "service unavailable" or `ModuleNotFoundError: No module named 'flask'`**
+- The canary sidecar needs its own venv — see Step 5
+- Activate the venv before running `npm run canary`: `source services/canary/.venv/bin/activate` (macOS/Linux) or `services\canary\.venv\Scripts\activate` (Windows)
+- On Windows, if `python3` is not recognised, run directly: `services\canary\.venv\Scripts\python services\canary\canary_server.py`
+- Verify: http://localhost:5001/health should return `{"status":"ok"}`
 
 **AIRS key not being picked up**
 - Ensure `.env` is in the project root (same folder as `package.json`)

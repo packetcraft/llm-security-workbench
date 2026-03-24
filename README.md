@@ -143,8 +143,26 @@ This loads all 13 scanners one by one with progress output. The server stays up 
 
 #### Little-Canary sidecar (Python 3.9+ — gate 🐦)
 
+Create a dedicated virtual environment and install dependencies:
+
+**macOS / Linux:**
 ```bash
-pip install flask little-canary
+python3 -m venv services/canary/.venv
+source services/canary/.venv/bin/activate
+pip install -r services/canary/requirements.txt
+```
+
+**Windows:**
+```bash
+py -3 -m venv services/canary/.venv
+services/canary/.venv/Scripts/activate
+pip install -r services/canary/requirements.txt
+```
+
+Then run `npm run canary` from the same activated terminal, or on Windows run the server directly if `python3` isn't on PATH:
+```bash
+# Windows (if npm run canary fails)
+services/canary/.venv/Scripts/python services/canary/canary_server.py
 ```
 
 #### AIRS Python SDK sidecar (Python 3.9+ — required for `dev/7a` only)
