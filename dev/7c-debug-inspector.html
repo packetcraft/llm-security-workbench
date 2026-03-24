@@ -479,9 +479,36 @@
 
         /* When a security alert is a .message, override the heavy message spacing */
         .message.security-alert {
-            margin-bottom: 16px;
+            margin-bottom: 4px;
             padding-top: 0;
             border-top: none;
+        }
+
+        /* Collapsible security alerts */
+        .security-alert .sa-summary {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .security-alert .sa-chevron {
+            font-size: 9px;
+            transition: transform 0.15s;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        .security-alert.sa-collapsed .sa-detail { display: none; }
+        .security-alert.sa-collapsed .sa-chevron { transform: rotate(0deg); }
+        .security-alert.sa-expanded .sa-chevron { transform: rotate(90deg); }
+
+        .security-alert .sa-detail {
+            margin-top: 3px;
+            font-weight: normal;
+            opacity: 0.9;
+            padding-left: 14px;
         }
 
         /* Alert colour variants — replaces per-element inline styles */
@@ -4261,6 +4288,25 @@ Respond ONLY with valid JSON, no other text:
             document.getElementById(id).classList.toggle("open");
         }
 
+        // Creates a security alert element. collapsed=true → single-line header until clicked.
+        function makeAlertEl(alertClass, innerHTML, collapsed = true) {
+            const el = document.createElement('div');
+            el.className = `message security-alert ${alertClass} ${collapsed ? 'sa-collapsed' : 'sa-expanded'}`;
+            const brIdx = innerHTML.indexOf('<br>');
+            if (brIdx > -1) {
+                const title = innerHTML.slice(0, brIdx);
+                const detail = innerHTML.slice(brIdx + 4);
+                el.innerHTML = `<div class="sa-summary"><span class="sa-chevron">▸</span>${title}</div><div class="sa-detail">${detail}</div>`;
+            } else {
+                el.innerHTML = `<div class="sa-summary"><span class="sa-chevron">▸</span>${innerHTML}</div>`;
+            }
+            el.querySelector('.sa-summary').addEventListener('click', () => {
+                el.classList.toggle('sa-collapsed');
+                el.classList.toggle('sa-expanded');
+            });
+            return el;
+        }
+
         function setGateMode(gate, mode) {
             const selMap = { llmguard: "llmguard-mode", semantic: "guardrail-mode", canary: "canary-mode", airs: "airs-mode" };
             const btnMap = {
@@ -4955,9 +5001,7 @@ Respond ONLY with valid JSON, no other text:
                 llmguardBadge.className = "scan-badge";
                 llmguardBadge.style.cssText = "border-color:var(--warning);color:var(--warning)";
                 llmguardBadge.textContent = `🔬 Error${lgInputShort}`;
-                const warnDiv = document.createElement("div");
-                warnDiv.className = "message security-alert alert-warning";
-                warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD — ERROR ${lgInputLat}</strong><br>Scan failed, proceeding without LLM-Guard. <small>${lg.message}</small>`;
+                const warnDiv = makeAlertEl("alert-warning", `<strong>⚠️ LLM-GUARD — ERROR ${lgInputLat}</strong><br>Scan failed, proceeding without LLM-Guard. <small>${lg.message}</small>`);
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 rpUpdateGate('lg-input', 'error', lgInputMs);
@@ -4967,9 +5011,7 @@ Respond ONLY with valid JSON, no other text:
                 llmguardBadge.className = "scan-badge blocked";
                 llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
                 llmguardBadge.textContent = `🔬 Blocked${lgInputShort}`;
-                const blockDiv = document.createElement("div");
-                blockDiv.className = "message security-alert alert-llmguard";
-                blockDiv.innerHTML = `<strong>🔬 LLM-GUARD — BLOCKED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Semantic-Guard, Little-Canary, AIRS-Inlet and LLM not reached.`;
+                const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD — BLOCKED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Semantic-Guard, Little-Canary, AIRS-Inlet and LLM not reached.`, false);
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (LLM-Guard)";
@@ -4981,9 +5023,7 @@ Respond ONLY with valid JSON, no other text:
                 llmguardBadge.className = "scan-badge flagged";
                 llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
                 llmguardBadge.textContent = `🔬 Flagged${lgInputShort}`;
-                const warnDiv = document.createElement("div");
-                warnDiv.className = "message security-alert alert-llmguard";
-                warnDiv.innerHTML = `<strong>🔬 LLM-GUARD — FLAGGED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Proceeding to Semantic-Guard.`;
+                const warnDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD — FLAGGED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Proceeding to Semantic-Guard.`);
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 rpUpdateGate('lg-input', 'alert', lgInputMs);
@@ -5034,9 +5074,7 @@ Respond ONLY with valid JSON, no other text:
             const guardShort = guardMs < 1000 ? `-${guardMs}ms` : `-${(guardMs / 1000).toFixed(1)}s`;
 
             if (gResult.error) {
-                const warnDiv = document.createElement("div");
-                warnDiv.className = "message security-alert alert-warning";
-                warnDiv.innerHTML = `<strong>⚠️ SEMANTIC-GUARD — ERROR</strong><br>Scan failed, proceeding without Semantic-Guard. <small>${gResult.reason}</small>`;
+                const warnDiv = makeAlertEl("alert-warning", `<strong>⚠️ SEMANTIC-GUARD — ERROR</strong><br>Scan failed, proceeding without Semantic-Guard. <small>${gResult.reason}</small>`);
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 rpUpdateGate('semantic', 'error', guardMs);
@@ -5045,9 +5083,7 @@ Respond ONLY with valid JSON, no other text:
                 if (guardEnforcement === "strict") {
                     guardBadge.className = "scan-badge guardrail-block";
                     guardBadge.textContent = `🧩 Blocked${guardShort}`;
-                    const blockDiv = document.createElement("div");
-                    blockDiv.className = "message security-alert alert-semantic";
-                    blockDiv.innerHTML = `<strong>🧩 SEMANTIC-GUARD — BLOCKED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Little-Canary, AIRS-Inlet and LLM not reached.`;
+                    const blockDiv = makeAlertEl("alert-semantic", `<strong>🧩 SEMANTIC-GUARD — BLOCKED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Little-Canary, AIRS-Inlet and LLM not reached.`, false);
                     chatBox.appendChild(blockDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                     els.debugStatus.innerText = "Blocked (Semantic-Guard)";
@@ -5057,9 +5093,7 @@ Respond ONLY with valid JSON, no other text:
                 } else {
                     guardBadge.className = "scan-badge guardrail-block";
                     guardBadge.textContent = `🧩 Flagged${guardShort}`;
-                    const warnDiv = document.createElement("div");
-                    warnDiv.className = "message security-alert alert-semantic";
-                    warnDiv.innerHTML = `<strong>🧩 SEMANTIC-GUARD — FLAGGED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Proceeding to Little-Canary.`;
+                    const warnDiv = makeAlertEl("alert-semantic", `<strong>🧩 SEMANTIC-GUARD — FLAGGED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Proceeding to Little-Canary.`);
                     chatBox.appendChild(warnDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                     rpUpdateGate('semantic', 'alert', guardMs);
@@ -5104,20 +5138,17 @@ Respond ONLY with valid JSON, no other text:
             const canaryShort = canaryMs < 1000 ? `-${canaryMs}ms` : `-${(canaryMs / 1000).toFixed(1)}s`;
 
             if (cResult.error) {
-                const warnDiv = document.createElement("div");
-                warnDiv.className = "message security-alert alert-warning";
-                warnDiv.innerHTML = `<strong>⚠️ LITTLE-CANARY — ERROR</strong><br>Scan failed, proceeding without Little-Canary. <small>${cResult.message}</small>`;
+                const warnDiv = makeAlertEl("alert-warning", `<strong>⚠️ LITTLE-CANARY — ERROR</strong><br>Scan failed, proceeding without Little-Canary. <small>${cResult.message}</small>`);
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 rpUpdateGate('canary', 'error', canaryMs);
                 setDbgBadge('canary', 'ERR');
-            } else if (canaryMode === "full" && (!cResult.safe || cResult.advisory?.flagged)) {
+            } else if (canaryMode === "full" && cResult.safe === false) {
+                // Full mode hard-block: only when sidecar explicitly marks safe: false
                 canaryBadge.style.display = "inline";
                 canaryBadge.className = "scan-badge canary-block";
                 canaryBadge.textContent = `🐤 Blocked${canaryShort}`;
-                const blockDiv = document.createElement("div");
-                blockDiv.className = "message security-alert alert-canary-blk";
-                blockDiv.innerHTML = `<strong>🐤 LITTLE-CANARY — BLOCKED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; AIRS-Inlet and LLM not reached.`;
+                const blockDiv = makeAlertEl("alert-canary-blk", `<strong>🐤 LITTLE-CANARY — BLOCKED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; AIRS-Inlet and LLM not reached.`, false);
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (Little-Canary)";
@@ -5125,12 +5156,11 @@ Respond ONLY with valid JSON, no other text:
                 setDbgBadge('canary', 'BLOCK');
                 return { blocked: true, advisoryPrefix: "" };
             } else if (cResult.advisory?.flagged) {
+                // Advisory flag (safe: true) — inject warning prefix and continue in both Advisory and Full modes
                 canaryBadge.style.display = "inline";
                 canaryBadge.className = "scan-badge canary-advisory";
                 canaryBadge.textContent = `🐤 Flagged${canaryShort}`;
-                const warnDiv = document.createElement("div");
-                warnDiv.className = "message security-alert alert-canary-adv";
-                warnDiv.innerHTML = `<strong>🐤 LITTLE-CANARY — FLAGGED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; Warning injected into system prompt.`;
+                const warnDiv = makeAlertEl("alert-canary-adv", `<strong>🐤 LITTLE-CANARY — FLAGGED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; Warning injected into system prompt.`);
                 chatBox.appendChild(warnDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 rpUpdateGate('canary', 'alert', canaryMs);
@@ -5183,9 +5213,7 @@ Respond ONLY with valid JSON, no other text:
                 airsBadge.style.display = "inline";
                 airsBadge.className = "scan-badge";
                 airsBadge.textContent = `☁️ Error${airsInletShort}`;
-                const errDiv = document.createElement("div");
-                errDiv.className = "message security-alert alert-warning";
-                errDiv.innerHTML = `<strong>☁️ AIRS-INLET — ERROR ${airsInletLat}</strong><br>${promptScan.message} &nbsp;|&nbsp; Prompt aborted. <small>Ensure server.js is running on :3080.</small>`;
+                const errDiv = makeAlertEl("alert-warning", `<strong>☁️ AIRS-INLET — ERROR ${airsInletLat}</strong><br>${promptScan.message} &nbsp;|&nbsp; Prompt aborted. <small>Ensure server.js is running on :3080.</small>`);
                 chatBox.appendChild(errDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Error";
@@ -5202,9 +5230,7 @@ Respond ONLY with valid JSON, no other text:
                 airsBadge.title = "Click to expand";
                 airsBadge.style.cursor = "pointer";
                 const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
-                const blockDiv = document.createElement("div");
-                blockDiv.className = "message security-alert alert-danger";
-                blockDiv.innerHTML = `<strong>☁️ AIRS-INLET — BLOCKED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`;
+                const blockDiv = makeAlertEl("alert-danger", `<strong>☁️ AIRS-INLET — BLOCKED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`, false);
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (AIRS-Inlet)";
@@ -5221,9 +5247,7 @@ Respond ONLY with valid JSON, no other text:
                 airsBadge.title = "Click to expand";
                 airsBadge.style.cursor = "pointer";
                 const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
-                const warnDiv = document.createElement("div");
-                warnDiv.className = "message security-alert alert-warning";
-                warnDiv.innerHTML = `<strong>☁️ AIRS-INLET — FLAGGED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Proceeding to LLM.`;
+                const warnDiv = makeAlertEl("alert-warning", `<strong>☁️ AIRS-INLET — FLAGGED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Proceeding to LLM.`);
                 chatBox.appendChild(warnDiv);
                 rpUpdateGate('airs-in', 'alert', airsInletMs);
                 setDbgBadge('airsIn', 'ALERT');
@@ -5468,9 +5492,7 @@ Respond ONLY with valid JSON, no other text:
 
             const resBadge = document.getElementById(botMsgId + "-badge");
             if (lgOut.error) {
-                const warnDiv = document.createElement("div");
-                warnDiv.className = "message security-alert alert-warning";
-                warnDiv.innerHTML = `<strong>⚠️ LLM-GUARD OUTPUT — ERROR ${lgOutputLat}</strong><br>Scan failed, output shown unverified. <small>${lgOut.message}</small>`;
+                const warnDiv = makeAlertEl("alert-warning", `<strong>⚠️ LLM-GUARD OUTPUT — ERROR ${lgOutputLat}</strong><br>Scan failed, output shown unverified. <small>${lgOut.message}</small>`);
                 botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
                 rpUpdateGate('lg-output', 'error', lgOutputMs);
                 setDbgBadge('lgOutput', 'ERR');
@@ -5480,9 +5502,7 @@ Respond ONLY with valid JSON, no other text:
                     resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
                     resBadge.textContent = `🔬 LG-OUT BLOCKED ${lgOutputLat}`;
                 }
-                const blockDiv = document.createElement("div");
-                blockDiv.className = "message security-alert alert-llmguard";
-                blockDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`;
+                const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`, false);
                 botDiv.querySelector(".content").insertAdjacentElement("afterbegin", blockDiv);
                 els.debugStatus.innerText = "Blocked (LLM-Guard OUTPUT)";
                 rpUpdateGate('lg-output', 'block', lgOutputMs);
@@ -5493,9 +5513,7 @@ Respond ONLY with valid JSON, no other text:
                     resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
                     resBadge.textContent = `🔬 LG-OUT FLAGGED ${lgOutputLat}`;
                 }
-                const warnDiv = document.createElement("div");
-                warnDiv.className = "message security-alert alert-llmguard";
-                warnDiv.innerHTML = `<strong>🔬 LLM-GUARD OUTPUT — FLAGGED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response shown with warning.`;
+                const warnDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD OUTPUT — FLAGGED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response shown with warning.`);
                 botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnDiv);
                 els.debugStatus.innerText = "Done (LLM-Guard OUTPUT flagged)";
                 rpUpdateGate('lg-output', 'alert', lgOutputMs);
@@ -6616,7 +6634,7 @@ Respond ONLY with valid JSON, no other text:
             if (phase05Active && finalStatus !== "block") {
                 const c = await runLittleCanary(threat.example, canaryModel, canaryMode, canaryThreshold);
                 if (!c.error) {
-                    const hardBlock = canaryMode === "full" && (!c.safe || c.advisory?.flagged);
+                    const hardBlock = canaryMode === "full" && c.safe === false;
                     const softFlag = c.advisory?.flagged;
                     if (hardBlock || softFlag) {
                         if (firstCaught === "—") firstCaught = "🐤 Little-Canary";
