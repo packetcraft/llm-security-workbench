@@ -1,6 +1,6 @@
 # Chat Column UX Improvements
 
-Backlog of UX tasks for `dev/7c-debug-inspector.html`, derived from the chat column audit (March 2026). Execute sequentially — each item is scoped to be a self-contained change.
+Backlog of UX tasks for `dev/8a-ux-improvements.html`, derived from the chat column audit (March 2026). Execute sequentially — each item is scoped to be a self-contained change.
 
 ---
 
@@ -11,14 +11,17 @@ Backlog of UX tasks for `dev/7c-debug-inspector.html`, derived from the chat col
 
 ---
 
-## Quick Wins (already done)
+## Quick Wins (done in 8a)
 
-- [x] **All security alerts collapsed by default** — removed `false` overrides from 5 BLOCK `makeAlertEl()` calls so all alerts start collapsed.
-- [x] **Security alerts right-aligned** — `.message.security-alert` gets `margin-left:auto`, `max-width:88%`, `border-right` replaces `border-left`, summary row reversed.
+- [x] **All security alerts collapsed by default** — removed `false` overrides from all BLOCK `makeAlertEl()` calls across every gate.
+- [x] **AIRS-Dual alert consistency** — converted AIRS-Dual BLOCKED/FLAGGED/DLP-MASKED from raw `innerHTML` to `makeAlertEl()`, matching every other gate.
+- [ ] **Security alerts right-aligned** — was done in 7c then reverted; not yet applied to 8a.
 
 ---
 
-## Task 1 — Demo / Audit Mode Toggle
+## Task 1 — Demo / Audit Mode Toggle ✅
+
+**Status: Done in 8a**
 
 **Priority:** High — highest ROI, hides alert noise in one click
 
@@ -42,7 +45,9 @@ Backlog of UX tasks for `dev/7c-debug-inspector.html`, derived from the chat col
 
 ---
 
-## Task 2 — User Message Bubble
+## Task 2 — User Message Bubble ✅
+
+**Status: Done in 8a**
 
 **Priority:** Medium — visual separation between user prompt, LLM response, and security events
 
@@ -118,6 +123,6 @@ Example final state pill: `🛡 All Clear · 1.2s` or `🛡 3 Flagged · 824ms`
 
 ## Notes
 
-- All tasks target `dev/7c-debug-inspector.html` only.
+- All tasks target `dev/8a-ux-improvements.html`. `7c` is kept as the stable reference.
 - After completing each task, test with a BLOCK prompt (e.g. a jailbreak) and an Advisory prompt (e.g. credit card number) to verify alert rendering.
 - Tasks 1 and 2 are CSS-heavy and safe to do in any order. Tasks 3 and 4 depend on understanding the existing JS pipeline.
