@@ -17,11 +17,16 @@ const python = isWindows
 const server = path.join(root, "services", "airs-sdk", "airs_sdk_server.py");
 
 if (!fs.existsSync(python)) {
-  console.error(`Python not found at: ${python}`);
-  const venvCmd = isWindows
-    ? "python -m venv services/airs-sdk/.venv"
-    : "python3 -m venv services/airs-sdk/.venv";
-  console.error(`Run: ${venvCmd} && pip install -r services/airs-sdk/requirements.txt`);
+  console.error(`\nAIRS SDK sidecar: Python venv not found at: ${python}`);
+  console.error(`\nSet it up with:\n`);
+  if (isWindows) {
+    console.error(`  python -m venv services/airs-sdk/.venv`);
+    console.error(`  services\\airs-sdk\\.venv\\Scripts\\pip install -r services/airs-sdk/requirements.txt`);
+  } else {
+    console.error(`  python3 -m venv services/airs-sdk/.venv`);
+    console.error(`  services/airs-sdk/.venv/bin/pip install -r services/airs-sdk/requirements.txt`);
+  }
+  console.error(``);
   process.exit(1);
 }
 

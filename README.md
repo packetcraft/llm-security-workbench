@@ -166,16 +166,20 @@ services/canary/.venv/Scripts/activate
 pip install -r services/canary/requirements.txt
 ```
 
-Then run `npm run canary` from the same activated terminal, or on Windows run the server directly if `python3` isn't on PATH:
-```bash
-# Windows (if npm run canary fails)
-services/canary/.venv/Scripts/python services/canary/canary_server.py
-```
+Then run `npm run canary` — the launcher resolves the venv Python automatically on both macOS and Windows.
 
 #### AIRS Python SDK sidecar (Python 3.9+ — required for `dev/7a` only)
 
+**macOS / Linux:**
 ```bash
-pip install flask pan-aisecurity
+python3 -m venv services/airs-sdk/.venv
+services/airs-sdk/.venv/bin/pip install -r services/airs-sdk/requirements.txt
+```
+
+**Windows:**
+```bash
+python -m venv services/airs-sdk/.venv
+services\airs-sdk\.venv\Scripts\pip install -r services/airs-sdk/requirements.txt
 ```
 
 ---

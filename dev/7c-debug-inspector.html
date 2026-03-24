@@ -2749,7 +2749,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 12px 8px;
+            padding: 6px 10px 5px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
         }
@@ -2781,30 +2781,35 @@
         .rp-body {
             flex: 1;
             overflow-y: auto;
-            padding: 10px 12px;
+            padding: 5px 8px 8px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 5px;
+        }
+
+        .rp-section {
+            background: rgba(255, 255, 255, 0.028);
+            border-radius: 6px;
+            padding: 6px 7px 5px;
         }
 
         .rp-section-title {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.09em;
             text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-            padding-left: 8px;
-            border-left: 3px solid currentColor;
-            opacity: 0.85;
+            color: currentColor;
+            margin-bottom: 5px;
+            padding-left: 7px;
+            border-left: 2px solid currentColor;
         }
 
         /* Gate waterfall */
         .wf-gate {
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            margin-bottom: 6px;
+            gap: 2px;
+            margin-bottom: 2px;
         }
 
         .wf-gate-label {
@@ -2827,7 +2832,7 @@
         }
 
         .wf-bar-track {
-            height: 5px;
+            height: 4px;
             background: var(--border);
             border-radius: 3px;
             overflow: hidden;
@@ -2887,7 +2892,7 @@
             align-items: baseline;
             font-size: 11px;
             color: var(--text-muted);
-            padding: 2px 0;
+            padding: 1px 0;
         }
 
         .rp-stat-label {
@@ -2911,7 +2916,7 @@
 
         /* Token split bar */
         .rp-split-bar-track {
-            height: 6px;
+            height: 4px;
             border-radius: 3px;
             overflow: hidden;
             display: flex;
@@ -2934,7 +2939,7 @@
         .rp-split-legend {
             font-size: 9px;
             color: var(--text-muted);
-            margin-top: 4px;
+            margin-top: 2px;
             opacity: 0.7;
         }
 
@@ -3695,15 +3700,13 @@ Respond ONLY with valid JSON, no other text:
             <div class="rp-body">
 
                 <!-- Gate Latency Waterfall -->
-                <div style="color:var(--primary)">
+                <div class="rp-section" style="color:var(--primary)">
                     <div class="rp-section-title">Gate Latency</div>
                     <div id="wf-gates"></div>
                 </div>
 
-                <div class="rp-divider"></div>
-
                 <!-- Pipeline summary -->
-                <div style="color:var(--guard, #7aa2f7)">
+                <div class="rp-section" style="color:var(--guard, #7aa2f7)">
                     <div class="rp-section-title">Pipeline</div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">Total time</span>
@@ -3719,10 +3722,8 @@ Respond ONLY with valid JSON, no other text:
                     </div>
                 </div>
 
-                <div class="rp-divider"></div>
-
                 <!-- Token stats -->
-                <div style="color:var(--safe, #9ece6a)">
+                <div class="rp-section" style="color:var(--safe, #9ece6a)">
                     <div class="rp-section-title">Tokens</div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">Prompt</span>
@@ -3740,7 +3741,7 @@ Respond ONLY with valid JSON, no other text:
                         <span class="rp-stat-label">Speed</span>
                         <span class="rp-stat-value" id="rp-tok-speed">—</span>
                     </div>
-                    <div class="rp-split-bar-wrap" style="margin-top:6px;">
+                    <div class="rp-split-bar-wrap" style="margin-top:3px;">
                         <div class="rp-split-bar-track">
                             <div class="rp-split-seg seg-prompt" id="rp-tok-bar-prompt" style="width:50%"></div>
                             <div class="rp-split-seg seg-completion" id="rp-tok-bar-completion" style="width:50%"></div>
@@ -3752,10 +3753,8 @@ Respond ONLY with valid JSON, no other text:
                     </div>
                 </div>
 
-                <div class="rp-divider"></div>
-
                 <!-- Ollama Timing -->
-                <div style="color:var(--warn, #e0af68)">
+                <div class="rp-section" style="color:var(--warn, #e0af68)">
                     <div class="rp-section-title">Ollama Timing</div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">Model load</span>
@@ -3777,8 +3776,8 @@ Respond ONLY with valid JSON, no other text:
                         <span class="rp-stat-label">Stop reason</span>
                         <span class="rp-stat-value" id="rp-ol-stop">—</span>
                     </div>
-                    <div style="margin-top:8px;">
-                        <div class="rp-split-bar-track" style="height:8px;">
+                    <div style="margin-top:4px;">
+                        <div class="rp-split-bar-track" style="height:4px;">
                             <div class="rp-split-seg" id="rp-ol-bar-load"
                                 style="width:0%; background:var(--warn,#e0af68);"></div>
                             <div class="rp-split-seg" id="rp-ol-bar-prompt"
@@ -3786,7 +3785,7 @@ Respond ONLY with valid JSON, no other text:
                             <div class="rp-split-seg" id="rp-ol-bar-gen"
                                 style="width:0%; background:var(--safe,#9ece6a);"></div>
                         </div>
-                        <div class="rp-split-legend" style="margin-top:4px;">
+                        <div class="rp-split-legend" style="margin-top:2px;">
                             <span style="color:var(--warn,#e0af68)">■</span> Load &nbsp;
                             <span style="color:var(--primary,#7aa2f7)">■</span> Eval &nbsp;
                             <span style="color:var(--safe,#9ece6a)">■</span> Gen
@@ -3794,14 +3793,12 @@ Respond ONLY with valid JSON, no other text:
                     </div>
                 </div>
 
-                <div class="rp-divider"></div>
-
                 <!-- Model Info -->
-                <div style="color:var(--purple, #9d7cd8)">
+                <div class="rp-section" style="color:var(--purple, #9d7cd8)">
                     <div class="rp-section-title">Model Info</div>
-                    <div id="rp-m-badges" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;"></div>
-                    <div style="margin-bottom:6px;">
-                        <div class="wf-gate-label" style="margin-bottom:3px;">
+                    <div id="rp-m-badges" style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px;"></div>
+                    <div style="margin-bottom:3px;">
+                        <div class="wf-gate-label" style="margin-bottom:2px;">
                             <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">Context
                                 window</span>
                             <span class="wf-gate-ms" id="rp-m-ctx">—</span>
@@ -3819,17 +3816,15 @@ Respond ONLY with valid JSON, no other text:
                     </div>
                 </div>
 
-                <div class="rp-divider"></div>
-
                 <!-- Memory -->
-                <div style="color:var(--canary, #ff9e64)">
+                <div class="rp-section" style="color:var(--canary, #ff9e64)">
                     <div class="rp-section-title">Memory</div>
                     <div class="rp-stat-row">
                         <span class="rp-stat-label">Processor</span>
                         <span class="rp-stat-value" id="rp-mem-proc">—</span>
                     </div>
-                    <div style="margin-bottom:6px;">
-                        <div class="wf-gate-label" style="margin-bottom:3px;">
+                    <div style="margin-bottom:3px;">
+                        <div class="wf-gate-label" style="margin-bottom:2px;">
                             <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">VRAM</span>
                             <span class="wf-gate-ms" id="rp-mem-vram">—</span>
                         </div>
@@ -3838,8 +3833,8 @@ Respond ONLY with valid JSON, no other text:
                                 style="background:var(--canary,#ff9e64);width:0%;transition:width 0.4s ease;"></div>
                         </div>
                     </div>
-                    <div style="margin-bottom:6px;">
-                        <div class="wf-gate-label" style="margin-bottom:3px;">
+                    <div style="margin-bottom:3px;">
+                        <div class="wf-gate-label" style="margin-bottom:2px;">
                             <span class="wf-gate-name" style="font-size:10px;color:var(--text-muted)">RAM</span>
                             <span class="wf-gate-ms" id="rp-mem-ram">—</span>
                         </div>
@@ -4032,6 +4027,7 @@ Respond ONLY with valid JSON, no other text:
             set('rp-total-ms', '—');
             set('rp-gates-run', '—');
             set('rp-blocked-by', '—');
+            ['rp-total-ms', 'rp-blocked-by'].forEach(id => { const el = document.getElementById(id); if (el) el.style.color = ''; });
             set('rp-tok-prompt', '—');
             set('rp-tok-completion', '—');
             set('rp-tok-total', '—');
@@ -4080,8 +4076,13 @@ Respond ONLY with valid JSON, no other text:
             const totalMs = Math.round(performance.now() - _rpPipelineStart);
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
             set('rp-total-ms', totalMs + 'ms');
+            const totalEl = document.getElementById('rp-total-ms');
+            if (totalEl) totalEl.style.color = totalMs > 15000 ? 'var(--danger,#f7768e)' : totalMs > 7000 ? 'var(--warn,#e0af68)' : '';
             set('rp-gates-run', Object.keys(_wfData).length + ' / ' + WF_GATES.length);
-            if (status === 'block') set('rp-blocked-by', gateId);
+            if (status === 'block') {
+                const blockedEl = document.getElementById('rp-blocked-by');
+                if (blockedEl) { blockedEl.textContent = gateId; blockedEl.style.color = 'var(--danger,#f7768e)'; }
+            }
         }
 
         function rpUpdateTokens(promptTokens, completionTokens, tokensPerSec) {

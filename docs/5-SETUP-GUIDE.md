@@ -231,12 +231,11 @@ pip install -r services/canary/requirements.txt
 
 **Starting the sidecar:**
 
-Run `npm run canary` from a terminal where the venv is already activated. On Windows, if `python3` is not on PATH, run the server directly instead:
-
 ```bash
-# Windows — direct invocation (no activation needed)
-services\canary\.venv\Scripts\python services\canary\canary_server.py
+npm run canary
 ```
+
+The launcher (`scripts/canary.js`) resolves the venv Python automatically on both macOS and Windows — no manual activation needed.
 
 **Verify:** http://localhost:5001/health should return `{"status":"ok","service":"little-canary"}`.
 
@@ -248,8 +247,16 @@ The AIRS SDK sidecar exposes a local batch-scan endpoint used by `dev/7a` to pre
 
 It runs on port 5003 and works with Python 3.9+.
 
+**macOS / Linux:**
 ```bash
-pip install flask pan-aisecurity
+python3 -m venv services/airs-sdk/.venv
+services/airs-sdk/.venv/bin/pip install -r services/airs-sdk/requirements.txt
+```
+
+**Windows:**
+```bash
+python -m venv services/airs-sdk/.venv
+services\airs-sdk\.venv\Scripts\pip install -r services/airs-sdk/requirements.txt
 ```
 
 > A AIRS API key (`AIRS_API_KEY` in `.env`) is still required — the SDK wraps the same cloud API.
@@ -472,8 +479,9 @@ When the AIRS SDK sidecar is running (`npm run airs-sdk`), `dev/7a` pre-scans al
 
 **Little-Canary "service unavailable" or `ModuleNotFoundError: No module named 'flask'`**
 - The canary sidecar needs its own venv — see Step 5
-- Activate the venv before running `npm run canary`: `source services/canary/.venv/bin/activate` (macOS/Linux) or `services\canary\.venv\Scripts\activate` (Windows)
-- On Windows, if `python3` is not recognised, run directly: `services\canary\.venv\Scripts\python services\canary\canary_server.py`
+- macOS/Linux: `services/canary/.venv/bin/pip install -r services/canary/requirements.txt`
+- Windows: `services\canary\.venv\Scripts\pip install -r services\canary\requirements.txt`
+- `npm run canary` resolves the venv Python automatically — no manual activation needed
 - Verify: http://localhost:5001/health should return `{"status":"ok"}`
 
 **AIRS key not being picked up**
@@ -481,8 +489,13 @@ When the AIRS SDK sidecar is running (`npm run airs-sdk`), `dev/7a` pre-scans al
 - Restart `npm start` after editing `.env`
 - The UI shows `🔒 .env` next to the key field when loaded correctly
 
+**AIRS SDK sidecar — `ModuleNotFoundError: No module named 'flask'`**
+- The sidecar needs its own venv — see Step 5b
+- macOS/Linux: `services/airs-sdk/.venv/bin/pip install -r services/airs-sdk/requirements.txt`
+- Windows: `services\airs-sdk\.venv\Scripts\pip install -r services\airs-sdk\requirements.txt`
+
 **AIRS SDK sidecar — `SDK available: False`**
-- Run `pip install pan-aisecurity` and restart `npm run airs-sdk`
+- Run the venv pip install above, then restart `npm run airs-sdk`
 - Check http://localhost:5003/health — `sdk_error` field shows the Python import error
 
 **AIRS SDK sidecar — dot shows grey / offline after page load**

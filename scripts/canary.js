@@ -17,11 +17,16 @@ const python = isWindows
 const server = path.join(root, "services", "canary", "canary_server.py");
 
 if (!fs.existsSync(python)) {
-  console.error(`Python not found at: ${python}`);
-  const venvCmd = isWindows
-    ? "python -m venv services/canary/.venv"
-    : "python3 -m venv services/canary/.venv";
-  console.error(`Run: ${venvCmd} && pip install -r services/canary/requirements.txt`);
+  console.error(`\nLittle-Canary sidecar: Python venv not found at: ${python}`);
+  console.error(`\nSet it up with:\n`);
+  if (isWindows) {
+    console.error(`  python -m venv services/canary/.venv`);
+    console.error(`  services\\canary\\.venv\\Scripts\\pip install -r services/canary/requirements.txt`);
+  } else {
+    console.error(`  python3 -m venv services/canary/.venv`);
+    console.error(`  services/canary/.venv/bin/pip install -r services/canary/requirements.txt`);
+  }
+  console.error(``);
   process.exit(1);
 }
 
