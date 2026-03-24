@@ -4600,8 +4600,10 @@ Respond ONLY with valid JSON, no other text:
                 }
 
                 const failing = Object.entries(data.results || {})
-                    .filter(([, r]) => r.valid === false)
-                    .map(([name, r]) => `${name}(${typeof r.risk_score === "number" ? r.risk_score.toFixed(2) : "?"})`);
+                    .filter(([, r]) => r.valid === false || r.error)
+                    .map(([name, r]) => r.error
+                        ? `${name}(error)`
+                        : `${name}(${typeof r.risk_score === "number" ? r.risk_score.toFixed(2) : "?"})`);
 
                 const blocked = mode === "strict" && !data.valid;
                 const flagged = !data.valid;
@@ -4647,8 +4649,10 @@ Respond ONLY with valid JSON, no other text:
                 }
 
                 const failing = Object.entries(data.results || {})
-                    .filter(([, r]) => r.valid === false)
-                    .map(([name, r]) => `${name}(${typeof r.risk_score === "number" ? r.risk_score.toFixed(2) : "?"})`);
+                    .filter(([, r]) => r.valid === false || r.error)
+                    .map(([name, r]) => r.error
+                        ? `${name}(error)`
+                        : `${name}(${typeof r.risk_score === "number" ? r.risk_score.toFixed(2) : "?"})`);
 
                 const blocked = mode === "strict" && !data.valid;
                 const flagged = !data.valid;

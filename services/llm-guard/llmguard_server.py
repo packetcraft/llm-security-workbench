@@ -111,6 +111,7 @@ def scan_input():
                 is_valid = False
         except Exception as exc:
             results[name] = {"error": str(exc)}
+            is_valid = False  # fail-closed: scanner error treated as block
 
     return jsonify({"valid": is_valid, "results": results})
 
@@ -146,6 +147,7 @@ def scan_output():
                 is_valid = False
         except Exception as exc:
             results[name] = {"error": str(exc)}
+            is_valid = False  # fail-closed: scanner error treated as block
 
     return jsonify({"valid": is_valid, "results": results})
 
