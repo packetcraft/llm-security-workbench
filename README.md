@@ -46,7 +46,7 @@ Each gate runs independently in **Off / Advisory / Strict** mode. Local gates (L
 | [Node.js](https://nodejs.org/) 18+ | Runs the proxy server |
 | [Ollama](https://ollama.com/) | Local LLM runtime |
 | Python 3.12 | Required for LLM-Guard sidecar — macOS: `brew install python@3.12`; Windows: [python.org](https://www.python.org/downloads/) installer (not Microsoft Store) |
-| AIRS API key | Optional — only needed for AIRS-Inlet and AIRS-Dual gates |
+| Prisma AIRS API key | Optional — only needed for AIRS-Inlet and AIRS-Dual gates https://pan.dev/airs/ |
 
 ---
 
