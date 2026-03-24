@@ -14,35 +14,19 @@ Findings from March 2026 review. Execute sequentially — each item is scoped to
 
 ## Pass 1 — Trivial Sweep (bugs + dead code)
 
-### [ ] 1. Missing `.mg-active-advisory` CSS class
-**Type:** Bug
-**Location:** Line ~4407 (JS), CSS ~1825–1843
-**Issue:** `setGateMode('canary', 'advisory')` adds class `mg-active-advisory` to the active button, but the CSS only defines `.mg-active-off`, `.mg-active-audit`, `.mg-active-strict`, `.mg-active-full`. The Canary advisory button renders unstyled when active.
-**Fix:** Add a `.mode-group button.mg-active-advisory { }` rule using the same styling as `mg-active-full`.
+> ⚠️ All four items verified against source — all were false positives from the automated review. Pass 1 has no actionable work.
 
----
+### [⏭] 1. Missing `.mg-active-advisory` CSS class
+**Verdict: Not an issue.** Line 4407 maps `advisory` → `mg-active-full` via the ternary fallback. No missing CSS class.
 
-### [ ] 2. Duplicate CSS accordion block
-**Type:** Cleanup
-**Location:** Lines ~2702–2750
-**Issue:** The entire `.dbg-section` / `.dbg-section-header` / `.dbg-section.open` ruleset is defined twice. The first definition (~2300–2365) is the authoritative one; the second block at ~2702–2750 is a duplicate.
-**Fix:** Delete lines ~2702–2750 entirely.
+### [⏭] 2. Duplicate CSS accordion block (~2702–2750)
+**Verdict: Not a duplicate.** Lines 2702–2750 add the stepper pipeline decoration (vertical gradient line + dot `::before` nodes) on top of the base accordion styles defined earlier. The two blocks are complementary layers, not duplicates.
 
----
+### [⏭] 3. Unused `_gmTitles` object
+**Verdict: In use.** Referenced at line 6417 — `_gmTitles[id] || id` — inside the gate modal title renderer.
 
-### [ ] 3. Unused `_gmTitles` object
-**Type:** Dead code
-**Location:** Line ~6383
-**Issue:** Object defined but never referenced anywhere in the file.
-**Fix:** Delete the object.
-
----
-
-### [ ] 4. Unused `let controller` variable
-**Type:** Dead code
-**Location:** Line ~3941
-**Issue:** Declared at module level, never assigned or read.
-**Fix:** Delete the declaration (or wire up to `AbortController` if it was intended for LLM stream cancellation).
+### [⏭] 4. Unused `let controller` variable
+**Verdict: In use.** Assigned at line 5362 (`controller = new AbortController()`) and aborted at line 4688 (`controller.abort()`). Active abort controller for the LLM stream.
 
 ---
 
