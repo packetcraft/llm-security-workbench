@@ -99,7 +99,9 @@ Backlog of UX tasks for `dev/8a-ux-improvements.html`, derived from the chat col
 
 ---
 
-## Task 4 — Single Shield Badge Consolidation (Post-Scan Collapse)
+## Task 4 — Single Shield Badge Consolidation (Post-Scan Collapse) ⏭ Skipped
+
+**Status: Deferred — not worth the complexity at this stage**
 
 **Priority:** Low — polish, complex to implement correctly
 
