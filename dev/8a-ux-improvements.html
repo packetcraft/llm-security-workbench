@@ -37,6 +37,8 @@
             --alert-danger-bg: rgba(140, 67, 81, 0.08);
             --alert-default-bg: rgba(100, 100, 100, 0.06);
             --verdict-bg: rgba(52, 59, 88, 0.06);
+            --user-bubble-bg: rgba(41, 89, 170, 0.07);
+            --user-bubble-border: #2959aa;
             /* LLM time pill */
             --llm-pill-bg: #0f4b6e;
             --llm-pill-text: #c0d6e8;
@@ -95,6 +97,8 @@
             --alert-danger-bg: rgba(247, 118, 142, 0.07);
             --alert-default-bg: rgba(100, 100, 100, 0.07);
             --verdict-bg: rgba(26, 27, 38, 0.85);
+            --user-bubble-bg: rgba(122, 162, 247, 0.07);
+            --user-bubble-border: #7aa2f7;
             /* LLM time pill */
             --llm-pill-bg: #292e42;
             --llm-pill-text: #7aa2f7;
@@ -2141,6 +2145,43 @@
             flex-shrink: 0;
         }
 
+        /* ── Demo / Audit Mode ── */
+        body.demo-mode .scan-badge          { display: none !important; }
+        body.demo-mode .message.security-alert { display: none !important; }
+
+        #demo-toggle {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+            flex-shrink: 0;
+        }
+        #demo-toggle:hover { background: rgba(128,128,128,0.08); }
+        body.demo-mode #demo-toggle {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(88, 117, 57, 0.10);
+        }
+        body.dark.demo-mode #demo-toggle {
+            background: rgba(158, 206, 106, 0.10);
+        }
+
+        /* ── User message bubble ── */
+        .message.user-bubble {
+            background: var(--user-bubble-bg);
+            border-left: 3px solid var(--user-bubble-border);
+            border-radius: 0 4px 4px 0;
+            padding: 7px 12px 7px 10px;
+            margin-right: 12%;
+        }
+
         /* ── Chat scroll wrapper — takes all remaining vertical space ── */
         #chat-scroll-area {
             flex: 1;
@@ -3413,6 +3454,8 @@ Respond ONLY with valid JSON, no other text:
                 <span class="model-badge" id="header-persona-badge"
                     style="border-color:var(--purple);color:var(--purple);background:rgba(90,62,142,0.10);">👤 Persona:
                     Default</span>
+
+                <button id="demo-toggle" onclick="toggleDemoMode()" title="Toggle Demo / Audit mode">Audit Mode</button>
 
             </div>
 
@@ -5591,7 +5634,7 @@ Respond ONLY with valid JSON, no other text:
             // User message with prompt scan badge placeholders
             const msgId = "msg-" + Date.now();
             const userDiv = document.createElement("div");
-            userDiv.className = "message";
+            userDiv.className = "message user-bubble";
             userDiv.id = msgId;
             userDiv.dataset.prompt = userPrompt;
             userDiv.innerHTML = `<span class="user-label">USER <span class="msg-timestamp">${getTimestamp()}</span><span class="scan-badge off" id="${msgId}-badge-llmguard" style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-guard"    style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-canary"  style="display:none"></span><span class="scan-badge off" id="${msgId}-badge-airs"     style="display:none"></span><button class="replay-btn" title="Re-inject this prompt">↩</button></span>${userPrompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
@@ -5727,6 +5770,13 @@ Respond ONLY with valid JSON, no other text:
                 "text-align:center; font-size:12px; opacity:0.5; padding:10px;";
             notice.textContent = "🔄 New session started";
             chatBox.appendChild(notice);
+        }
+
+        // ── Demo / Audit Mode toggle ────────────────────────────────────────────
+        function toggleDemoMode() {
+            const on = document.body.classList.toggle('demo-mode');
+            document.getElementById('demo-toggle').textContent = on ? 'Demo Mode' : 'Audit Mode';
+            sessionStorage.setItem('demoMode', on ? '1' : '');
         }
 
         // ── Run after the full DOM is ready so modal elements defined later in the HTML are available ──
@@ -5897,6 +5947,12 @@ Respond ONLY with valid JSON, no other text:
         ['llmguard-mode', 'guardrail-mode', 'canary-mode', 'airs-mode'].forEach(id => {
             document.getElementById(id)?.addEventListener('change', applyInspectorModeDimming);
         });
+
+        // Restore demo mode from previous session
+        if (sessionStorage.getItem('demoMode') === '1') {
+            document.body.classList.add('demo-mode');
+            document.getElementById('demo-toggle').textContent = 'Demo Mode';
+        }
 
         }); // DOMContentLoaded
 
