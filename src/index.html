@@ -3138,7 +3138,7 @@ Respond ONLY with valid JSON, no other text:
                         <!-- AIRS -->
                         <div class="gate-row" id="gate-airs">
                             <div class="gate-row-header" onclick="toggleGate('gate-airs')">
-                                <span class="gate-name">🔀 AIRS (In/Out)</span>
+                                <span class="gate-name">☁︎ AIRS (In/Out)</span>
                                 <span class="sidecar-dot" id="sc-airs" title="AIRS SDK sidecar: checking…"></span>
                                 <span class="gate-mode-badge mode-off" id="dot-airs">Off</span>
                                 <span class="gate-chevron">›</span>
@@ -3929,9 +3929,9 @@ Respond ONLY with valid JSON, no other text:
             { id: 'lg-input', label: '🔬 LG Input' },
             { id: 'semantic', label: '🧩 Semantic' },
             { id: 'canary', label: '🐦 Canary' },
-            { id: 'airs-in', label: '📥 AIRS In' },
+            { id: 'airs-in', label: '☁︎ AIRS In' },
             { id: 'ollama', label: '🤖 LLM' },
-            { id: 'airs-dual', label: '🔀 AIRS Dual' },
+            { id: 'airs-dual', label: '☁︎ AIRS Dual' },
             { id: 'lg-output', label: '🔬 LG Output' },
         ];
 
@@ -7621,12 +7621,12 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
                 const active   = [
                     lgOn     && '🔬 LLM-Guard',
                     canaryOn && '🐦 Little-Canary',
-                    airsOn   && '📥 AIRS-Inlet',
+                    airsOn   && '☁︎ AIRS-Inlet',
                 ].filter(Boolean).join(', ') || 'none';
                 coverageNote.textContent =
                     `Input gates evaluated: ${active}. `
                     + `🧩 Semantic-Guard skipped (latency tradeoff). `
-                    + `Output gates not evaluated (🔀 AIRS-Dual, 🔬 LLM-Guard Output) — `
+                    + `Output gates not evaluated (☁︎ AIRS-Dual, 🔬 LLM-Guard Output) — `
                     + `a BREACHED response may still be caught in a full live pipeline.`;
                 coverageNote.style.display = '';
             }
@@ -8074,7 +8074,7 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
 
                 <!-- Scope note -->
                 <div class="pair-scope-note">
-                    ⚠ This probe tests <strong>input defences only</strong>. Active input gates run before the model — 🧩 Semantic-Guard is skipped (latency tradeoff). Responses are <strong>never scanned</strong> by output gates (🔀 AIRS-Dual, 🔬 LLM-Guard Output). A <em>BREACHED</em> result means the model produced the content; it does not confirm the response would have reached a real user in a fully guarded deployment.
+                    ⚠ This probe tests <strong>input defences only</strong>. Active input gates run before the model — 🧩 Semantic-Guard is skipped (latency tradeoff). Responses are <strong>never scanned</strong> by output gates (☁︎ AIRS-Dual, 🔬 LLM-Guard Output). A <em>BREACHED</em> result means the model produced the content; it does not confirm the response would have reached a real user in a fully guarded deployment.
                 </div>
 
                 <!-- Status bar -->
