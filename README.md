@@ -141,6 +141,13 @@ npm run llmguard:warmup
 ```
 This loads all 13 scanners one by one with progress output. The server stays up after warmup, ready to handle requests immediately.
 
+> **VPN / corporate proxy users:** Models are downloaded from `huggingface.co:443`. If your proxy intercepts TLS, temporarily disable it for the warmup, then enable offline mode in `.env` so the sidecar never contacts HuggingFace again during normal use:
+> ```
+> HF_HUB_OFFLINE=1
+> TRANSFORMERS_OFFLINE=1
+> ```
+> See `docs/5-SETUP-GUIDE.md` → Step 8 for full details.
+
 #### Little-Canary sidecar (Python 3.9+ — gate 🐦)
 
 Create a dedicated virtual environment and install dependencies:

@@ -337,6 +337,8 @@ On first load, the workbench automatically:
 
 On the first scan through LLM-Guard, HuggingFace models download for each scanner. This is a one-time download (~2–3 GB total, cached at `~/.cache/huggingface/`).
 
+> **VPN / corporate proxy users:** All models are downloaded from `huggingface.co:443`. If your VPN or proxy intercepts TLS traffic, downloads will fail with an SSL certificate error. Temporarily disable the VPN to run the warmup, then enable offline mode (see below) so `huggingface.co` is never contacted again during normal use.
+
 **Pre-download to avoid waiting during a demo:**
 ```bash
 # Activate the venv first
@@ -363,6 +365,18 @@ huggingface-cli download cross-encoder/ms-marco-MiniLM-L-6-v2
 http://localhost:5002/health
 ```
 After the first prompt, `loaded_input_scanners` and `loaded_output_scanners` should list all active scanners.
+
+**Run fully offline after warmup (recommended for VPN environments):**
+
+Once all models are cached, enable offline mode in `.env` to prevent LLM-Guard from ever contacting `huggingface.co`:
+
+```bash
+# .env
+HF_HUB_OFFLINE=1
+TRANSFORMERS_OFFLINE=1
+```
+
+`scripts/llmguard.js` reads `.env` and forwards these vars to the Python process automatically — no shell changes needed. With offline mode on, the sidecar loads all models from `~/.cache/huggingface/` and makes no outbound network calls.
 
 ---
 
@@ -436,6 +450,16 @@ When the AIRS SDK sidecar is running (`npm run airs-sdk`), `dev/7a` pre-scans al
 - Ensure `npm run llmguard` is running in a separate terminal
 - Check http://localhost:5002/health returns `{"status":"ok"}`
 - Run from the **project root**, not the `services/llm-guard/` subfolder
+
+**LLM-Guard blocks every prompt with "Flagged by: Toxicity(error)" or similar scanner error**
+- A scanner failed to download its model from `huggingface.co:443` — typically caused by a VPN or corporate proxy intercepting TLS
+- Fix: temporarily disable the VPN and run `npm run llmguard:warmup` to pre-download all models
+- After warmup, enable offline mode in `.env` so the sidecar never contacts HuggingFace again:
+  ```
+  HF_HUB_OFFLINE=1
+  TRANSFORMERS_OFFLINE=1
+  ```
+- Alternatively, point Python at your organisation's CA bundle: `REQUESTS_CA_BUNDLE=/path/to/corp-ca.crt npm run llmguard` (macOS/Linux) or set `REQUESTS_CA_BUNDLE=C:\path\to\corp-ca.crt` in your environment (Windows)
 
 **LLM Guard install fails (Python version error)**
 - `llm-guard>=0.3.14` requires Python 3.9–3.12
