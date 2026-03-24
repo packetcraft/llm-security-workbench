@@ -4102,15 +4102,14 @@ Respond ONLY with valid JSON, no other text:
             `).join('');
 
             // Reset summary stats
-            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-            set('rp-total-ms', '—');
-            set('rp-gates-run', '—');
-            set('rp-blocked-by', '—');
+            setEl('rp-total-ms', '—');
+            setEl('rp-gates-run', '—');
+            setEl('rp-blocked-by', '—');
             ['rp-total-ms', 'rp-blocked-by'].forEach(id => { const el = document.getElementById(id); if (el) el.style.color = ''; });
-            set('rp-tok-prompt', '—');
-            set('rp-tok-completion', '—');
-            set('rp-tok-total', '—');
-            set('rp-tok-speed', '—');
+            setEl('rp-tok-prompt', '—');
+            setEl('rp-tok-completion', '—');
+            setEl('rp-tok-total', '—');
+            setEl('rp-tok-speed', '—');
         }
 
         const _rpToDbgId = {
@@ -4153,11 +4152,10 @@ Respond ONLY with valid JSON, no other text:
 
             // Update pipeline summary
             const totalMs = Math.round(performance.now() - _rpPipelineStart);
-            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-            set('rp-total-ms', totalMs + 'ms');
+            setEl('rp-total-ms', totalMs + 'ms');
             const totalEl = document.getElementById('rp-total-ms');
             if (totalEl) totalEl.style.color = totalMs > 15000 ? 'var(--danger,#f7768e)' : totalMs > 7000 ? 'var(--warn,#e0af68)' : '';
-            set('rp-gates-run', Object.keys(_wfData).length + ' / ' + WF_GATES.length);
+            setEl('rp-gates-run', Object.keys(_wfData).length + ' / ' + WF_GATES.length);
             if (status === 'block') {
                 const blockedEl = document.getElementById('rp-blocked-by');
                 if (blockedEl) { blockedEl.textContent = gateId; blockedEl.style.color = 'var(--danger,#f7768e)'; }
@@ -4165,12 +4163,11 @@ Respond ONLY with valid JSON, no other text:
         }
 
         function rpUpdateTokens(promptTokens, completionTokens, tokensPerSec) {
-            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-            set('rp-tok-prompt', promptTokens ?? '—');
-            set('rp-tok-completion', completionTokens ?? '—');
-            set('rp-tok-total', (promptTokens != null && completionTokens != null)
+            setEl('rp-tok-prompt', promptTokens ?? '—');
+            setEl('rp-tok-completion', completionTokens ?? '—');
+            setEl('rp-tok-total', (promptTokens != null && completionTokens != null)
                 ? (promptTokens + completionTokens) : '—');
-            set('rp-tok-speed', tokensPerSec != null ? tokensPerSec.toFixed(1) + ' t/s' : '—');
+            setEl('rp-tok-speed', tokensPerSec != null ? tokensPerSec.toFixed(1) + ' t/s' : '—');
             const total = (promptTokens || 0) + (completionTokens || 0);
             if (total > 0) {
                 const pp = document.getElementById('rp-tok-bar-prompt');
@@ -4190,7 +4187,6 @@ Respond ONLY with valid JSON, no other text:
 
         function rpUpdateOllamaTiming(loadNs, promptEvalNs, evalNs, totalNs, doneReason) {
             const ms = ns => ns ? Math.round(ns / 1e6) + 'ms' : '—';
-            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
             const loadEl = document.getElementById('rp-ol-load');
             if (loadEl) {
                 const loadMsVal = loadNs ? Math.round(loadNs / 1e6) : 0;
@@ -4201,10 +4197,10 @@ Respond ONLY with valid JSON, no other text:
                     loadEl.style.color = loadMsVal > 500 ? 'var(--warn,#e0af68)' : '';
                 }
             }
-            set('rp-ol-prompt-eval', ms(promptEvalNs));
-            set('rp-ol-gen', ms(evalNs));
-            set('rp-ol-total', ms(totalNs));
-            set('rp-ol-stop', doneReason || '—');
+            setEl('rp-ol-prompt-eval', ms(promptEvalNs));
+            setEl('rp-ol-gen', ms(evalNs));
+            setEl('rp-ol-total', ms(totalNs));
+            setEl('rp-ol-stop', doneReason || '—');
             const loadMs = loadNs ? Math.round(loadNs / 1e6) : 0;
             const promptMs = promptEvalNs ? Math.round(promptEvalNs / 1e6) : 0;
             const genMs = evalNs ? Math.round(evalNs / 1e6) : 0;
@@ -4230,8 +4226,6 @@ Respond ONLY with valid JSON, no other text:
 
                 const details = data.details || {};
                 const info = data.model_info || {};
-                const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '—'; };
-
                 const badgesEl = document.getElementById('rp-m-badges');
                 if (badgesEl) {
                     const arch = details.family || '';
@@ -4246,13 +4240,13 @@ Respond ONLY with valid JSON, no other text:
 
                 const ctxKey = Object.keys(info).find(k => k.includes('context_length'));
                 const ctxVal = ctxKey ? info[ctxKey] : null;
-                set('rp-m-ctx', ctxVal ? ctxVal.toLocaleString() : '—');
+                setEl('rp-m-ctx', ctxVal ? ctxVal.toLocaleString() : '—');
                 _rpCtxWindow = ctxVal || 0;
 
                 const bytes = data.size;
                 if (bytes) {
                     const gb = bytes / 1e9;
-                    set('rp-m-size', gb >= 1 ? gb.toFixed(1) + ' GB' : (bytes / 1e6).toFixed(0) + ' MB');
+                    setEl('rp-m-size', gb >= 1 ? gb.toFixed(1) + ' GB' : (bytes / 1e6).toFixed(0) + ' MB');
                 }
             } catch (_) { /* Ollama not running or CORS — silently skip */ }
         }
@@ -4380,15 +4374,20 @@ Respond ONLY with valid JSON, no other text:
             return el;
         }
 
+        // Static gate → DOM ID maps — defined once at module level
+        const GATE_SEL_MAP = { llmguard: "llmguard-mode", semantic: "guardrail-mode", canary: "canary-mode", airs: "airs-mode" };
+        const GATE_BTN_MAP = {
+            llmguard: { off: "lg-btn-off", advisory: "lg-btn-advisory", strict: "lg-btn-strict" },
+            semantic: { off: "sg-btn-off", audit: "sg-btn-audit", strict: "sg-btn-strict" },
+            canary: { off: "ca-btn-off", advisory: "ca-btn-advisory", full: "ca-btn-full" },
+            airs: { off: "airs-btn-off", audit: "airs-btn-audit", strict: "airs-btn-strict" }
+        };
+        const GATE_DOT_MAP = { llmguard: "dot-llmguard", semantic: "dot-semantic", canary: "dot-canary", airs: "dot-airs" };
+
         function setGateMode(gate, mode) {
-            const selMap = { llmguard: "llmguard-mode", semantic: "guardrail-mode", canary: "canary-mode", airs: "airs-mode" };
-            const btnMap = {
-                llmguard: { off: "lg-btn-off", advisory: "lg-btn-advisory", strict: "lg-btn-strict" },
-                semantic: { off: "sg-btn-off", audit: "sg-btn-audit", strict: "sg-btn-strict" },
-                canary: { off: "ca-btn-off", advisory: "ca-btn-advisory", full: "ca-btn-full" },
-                airs: { off: "airs-btn-off", audit: "airs-btn-audit", strict: "airs-btn-strict" }
-            };
-            const dotMap = { llmguard: "dot-llmguard", semantic: "dot-semantic", canary: "dot-canary", airs: "dot-airs" };
+            const selMap = GATE_SEL_MAP;
+            const btnMap = GATE_BTN_MAP;
+            const dotMap = GATE_DOT_MAP;
 
             // Sync hidden select and fire its onchange handler
             const sel = document.getElementById(selMap[gate]);
@@ -4398,7 +4397,7 @@ Respond ONLY with valid JSON, no other text:
             const btns = btnMap[gate];
             Object.values(btns).forEach(id => {
                 const el = document.getElementById(id);
-                if (el) el.className = el.className.replace(/\bmg-active-\w+/g, "").trim();
+                if (el) [...el.classList].filter(c => c.startsWith('mg-active-')).forEach(c => el.classList.remove(c));
             });
             const activeId = btns[mode];
             if (activeId) {
@@ -5799,6 +5798,9 @@ Respond ONLY with valid JSON, no other text:
             notice.textContent = "🔄 New session started";
             chatBox.appendChild(notice);
         }
+
+        // ── Shared DOM text setter — avoids repeating getElementById + null check ──
+        function setEl(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
 
         // ── Demo / Audit Mode toggle ────────────────────────────────────────────
         function toggleDemoMode() {
