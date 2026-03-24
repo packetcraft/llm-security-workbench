@@ -220,6 +220,6 @@ app.post("/api/airs-sdk/batch", async (req, res) => {
 const PORT = 3080;
 app.listen(PORT, () => {
   console.log(`🚀 Workbench running at http://localhost:${PORT}`);
-  console.log(`☁︎ AIRS Proxy active on /api/prisma`);
+  console.log(`☁️ AIRS Proxy active on /api/prisma`);
   console.log(`🐍 AIRS SDK Proxy active on /api/airs-sdk/*`);
 });
