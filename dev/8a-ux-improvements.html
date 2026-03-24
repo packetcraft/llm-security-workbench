@@ -5054,7 +5054,7 @@ Respond ONLY with valid JSON, no other text:
                 llmguardBadge.className = "scan-badge blocked";
                 llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
                 llmguardBadge.textContent = `🔬 Blocked${lgInputShort}`;
-                const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD — BLOCKED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Semantic-Guard, Little-Canary, AIRS-Inlet and LLM not reached.`, false);
+                const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD — BLOCKED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Semantic-Guard, Little-Canary, AIRS-Inlet and LLM not reached.`);
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (LLM-Guard)";
@@ -5126,7 +5126,7 @@ Respond ONLY with valid JSON, no other text:
                 if (guardEnforcement === "strict") {
                     guardBadge.className = "scan-badge guardrail-block";
                     guardBadge.textContent = `🧩 Blocked${guardShort}`;
-                    const blockDiv = makeAlertEl("alert-semantic", `<strong>🧩 SEMANTIC-GUARD — BLOCKED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Little-Canary, AIRS-Inlet and LLM not reached.`, false);
+                    const blockDiv = makeAlertEl("alert-semantic", `<strong>🧩 SEMANTIC-GUARD — BLOCKED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Little-Canary, AIRS-Inlet and LLM not reached.`);
                     chatBox.appendChild(blockDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                     els.debugStatus.innerText = "Blocked (Semantic-Guard)";
@@ -5191,7 +5191,7 @@ Respond ONLY with valid JSON, no other text:
                 canaryBadge.style.display = "inline";
                 canaryBadge.className = "scan-badge canary-block";
                 canaryBadge.textContent = `🐤 Blocked${canaryShort}`;
-                const blockDiv = makeAlertEl("alert-canary-blk", `<strong>🐤 LITTLE-CANARY — BLOCKED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; AIRS-Inlet and LLM not reached.`, false);
+                const blockDiv = makeAlertEl("alert-canary-blk", `<strong>🐤 LITTLE-CANARY — BLOCKED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; AIRS-Inlet and LLM not reached.`);
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (Little-Canary)";
@@ -5273,7 +5273,7 @@ Respond ONLY with valid JSON, no other text:
                 airsBadge.title = "Click to expand";
                 airsBadge.style.cursor = "pointer";
                 const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
-                const blockDiv = makeAlertEl("alert-danger", `<strong>☁️ AIRS-INLET — BLOCKED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`, false);
+                const blockDiv = makeAlertEl("alert-danger", `<strong>☁️ AIRS-INLET — BLOCKED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`);
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (AIRS-Inlet)";
@@ -5455,18 +5455,16 @@ Respond ONLY with valid JSON, no other text:
                     resBadge.style.cursor = "pointer";
                 }
                 if (airsMode === "strict") {
-                    botDiv.querySelector(".content").innerHTML = `
-                            <div class="security-alert alert-danger">
-                                <strong>☁️ AIRS-DUAL — BLOCKED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response withheld.
-                            </div>`;
+                    const blockEl = makeAlertEl("alert-danger", `<strong>☁️ AIRS-DUAL — BLOCKED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response withheld.`);
+                    const contentEl = botDiv.querySelector(".content");
+                    contentEl.innerHTML = "";
+                    contentEl.appendChild(blockEl);
                 } else {
-                    const warnHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
-                            <strong>☁️ AIRS-DUAL — FLAGGED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response shown with warning.</div>`;
+                    const warnEl = makeAlertEl("alert-warning", `<strong>☁️ AIRS-DUAL — FLAGGED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response shown with warning.`);
                     if (responseScan.maskedData) {
-                        botDiv.querySelector(".content").innerHTML = warnHtml + marked.parse(responseScan.maskedData.data);
-                    } else {
-                        botDiv.querySelector(".content").insertAdjacentHTML("afterbegin", warnHtml);
+                        botDiv.querySelector(".content").innerHTML = marked.parse(responseScan.maskedData.data);
                     }
+                    botDiv.querySelector(".content").insertAdjacentElement("afterbegin", warnEl);
                     if (resBadge) {
                         resBadge.className = "scan-badge flagged";
                         resBadge.textContent = `☁️ AIRS-Dual FLAGGED ${airsDualLat}`;
@@ -5488,9 +5486,9 @@ Respond ONLY with valid JSON, no other text:
                     resBadge.title = "Click to expand";
                     resBadge.style.cursor = "pointer";
                 }
-                const maskHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
-                        <strong>☁️ AIRS-DUAL — DLP MASKED ${airsDualLat}</strong><br>Sensitive data detected and redacted from response.</div>`;
-                botDiv.querySelector(".content").innerHTML = maskHtml + marked.parse(responseScan.maskedData.data);
+                const maskEl = makeAlertEl("alert-warning", `<strong>☁️ AIRS-DUAL — DLP MASKED ${airsDualLat}</strong><br>Sensitive data detected and redacted from response.`);
+                botDiv.querySelector(".content").innerHTML = marked.parse(responseScan.maskedData.data);
+                botDiv.querySelector(".content").insertAdjacentElement("afterbegin", maskEl);
                 els.debugStatus.innerText = "Done (DLP Masked)";
                 rpUpdateGate('airs-dual', 'alert', airsDualMs);
                 setDbgBadge('airsOut', 'ALERT');
@@ -5545,7 +5543,7 @@ Respond ONLY with valid JSON, no other text:
                     resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
                     resBadge.textContent = `🔬 LG-OUT BLOCKED ${lgOutputLat}`;
                 }
-                const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`, false);
+                const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`);
                 botDiv.querySelector(".content").insertAdjacentElement("afterbegin", blockDiv);
                 els.debugStatus.innerText = "Blocked (LLM-Guard OUTPUT)";
                 rpUpdateGate('lg-output', 'block', lgOutputMs);
