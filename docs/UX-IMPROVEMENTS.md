@@ -73,7 +73,9 @@ Backlog of UX tasks for `dev/8a-ux-improvements.html`, derived from the chat col
 
 ---
 
-## Task 3 — Collapsed Alert → Opens API Inspector
+## Task 3 — Collapsed Alert → Opens API Inspector ✅
+
+**Status: Done in 8a**
 
 **Priority:** Medium — turns every alert into a navigation shortcut
 
