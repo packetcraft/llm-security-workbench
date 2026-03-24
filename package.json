@@ -21,10 +21,10 @@
     "stage:6b": "node scripts/stage.js 6b",
     "stage:7a": "node scripts/stage.js 7a",
     "stage:7c": "node scripts/stage.js 7c",
-    "canary": "python3 services/canary/canary_server.py",
+    "canary": "node scripts/canary.js",
     "llmguard": "node scripts/llmguard.js",
     "llmguard:warmup": "node scripts/llmguard.js --warmup",
-    "airs-sdk": "python3 services/airs-sdk/airs_sdk_server.py"
+    "airs-sdk": "node scripts/airs-sdk.js"
   },
   "keywords": [],
   "author": "",
