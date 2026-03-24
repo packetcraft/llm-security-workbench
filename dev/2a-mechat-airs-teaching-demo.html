@@ -320,7 +320,7 @@
     <p id="subtitle">
         i am a chat bot with <select id="persona-select" class="inline-select"></select> personality.<br>
         powered by <select id="model-select" class="inline-select"></select><br>
-        — chat ingress secured by Prisma AIRS.
+        — chat ingress secured by AIRS.
         <button id="airs-toggle" onclick="toggleAIRS()">[ 🛡️ AIRS ON ]</button><br>
         api key <input type="password" id="airs-api-key" class="inline-input" placeholder="x-pan-token" />
         <span id="env-key-badge" style="display:none; font-size:10px; color:#9ece6a;">🔒 .env</span>
@@ -547,10 +547,10 @@
          * HOW THE async FUNCTION DOES THE SAME THING IN JAVASCRIPT
          * ══════════════════════════════════════════════════════════════
          *
-         * The curl command above hits the Prisma AIRS cloud endpoint directly.
+         * The curl command above hits the AIRS cloud endpoint directly.
          * Browsers can't do that (CORS), so instead we POST to our local Node
          * proxy at localhost:3080/api/prisma — which forwards the request to
-         * Prisma AIRS on our behalf and relays the response back.
+         * AIRS on our behalf and relays the response back.
          *
          *   Browser → fetch("localhost:3080/api/prisma", { body: payload })
          *                  ↓
@@ -599,7 +599,7 @@
             document.getElementById("char-counter").textContent = "0 chars";
             document.getElementById("threat-select").value = "";
 
-            // ── STEP 1: Scan the prompt with Prisma AIRS ──────────────────────
+            // ── STEP 1: Scan the prompt with AIRS ──────────────────────
             if (airsEnabled) {
                 const badge = document.getElementById(msgId);
                 let verdict;

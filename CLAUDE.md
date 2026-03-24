@@ -6,7 +6,7 @@ Project context and working conventions for Claude Code. Read this before making
 
 ## What This Project Is
 
-A browser-based LLM security testing workbench. A Node.js proxy (`src/server.js`) serves the UI and routes security scans. All LLM inference runs locally via Ollama. Security scanning uses a six-gate pipeline — some gates local (LLM-Guard, Semantic-Guard, Little-Canary), some cloud (Prisma AIRS).
+A browser-based LLM security testing workbench. A Node.js proxy (`src/server.js`) serves the UI and routes security scans. All LLM inference runs locally via Ollama. Security scanning uses a six-gate pipeline — some gates local (LLM-Guard, Semantic-Guard, Little-Canary), some cloud (AIRS).
 
 **Active workbench files:** `dev/5d`, `dev/6a`, `dev/6b`, `dev/7a`, and `dev/7c` — these are the ones users run and demo.
 - `7c` — `7a` + 🔍 full-featured API Inspector debug drawer — per-gate score, HTTP status, latency, trigger, config snapshot, modal popout — current development file
@@ -100,7 +100,7 @@ Ollama requires `OLLAMA_ORIGINS=*` set as an environment variable before launch 
 
 ```
 🔬 LLM-Guard (input)  →  🧩 Semantic-Guard  →  🐦 Little-Canary
-  →  📥🛡️ AIRS-Inlet  →  🤖 LLM  →  🔀🛡️ AIRS-Dual  →  🔬 LLM-Guard OUTPUT
+  →  ☁︎ AIRS-Inlet  →  🤖 LLM  →  ☁︎ AIRS-Dual  →  🔬 LLM-Guard OUTPUT
 ```
 
 Each gate is independent — Off / Advisory / Strict. All local gates work without an API key.
@@ -112,8 +112,8 @@ Each gate is independent — Off / Advisory / Strict. All local gates work witho
 | Phase 0.6 / LLM Guard input | LLM-Guard | 🔬 |
 | Phase 0 / Native Guardrail | Semantic-Guard | 🧩 |
 | Phase 0.5 / Little Canary | Little-Canary | 🐦 |
-| Phase 1 / AIRS Prompt Scan | AIRS-Inlet | 📥🛡️ |
-| Phase 2 / AIRS Response Scan | AIRS-Dual | 🔀🛡️ |
+| Phase 1 / AIRS Prompt Scan | AIRS-Inlet | ☁︎ |
+| Phase 2 / AIRS Response Scan | AIRS-Dual | ☁︎ |
 | Phase 2.5 / LLM Guard output | LLM-Guard OUTPUT | 🔬 |
 
 Always use 5b names in new documentation and code comments.

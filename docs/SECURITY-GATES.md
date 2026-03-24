@@ -24,8 +24,8 @@
 | 🔬 LLM-Guard INPUT | LLM-Guard (input) | :5002 | Invisible text, secrets, prompt injection, toxicity, banned topics |
 | 🧩 Semantic-Guard | Semantic-Guard | Ollama :11434 | Jailbreaks, unsafe intent, social engineering |
 | 🐦 Little-Canary | Little-Canary | :5001 | Prompt injection (structural + behavioural) |
-| 📥🛡️ AIRS-Inlet | AIRS-Inlet | Cloud | Threat categories per Prisma AIRS profile |
-| 🔀🛡️ AIRS-Dual | AIRS-Dual | Cloud | DLP, malicious content, policy violations |
+| ☁︎ AIRS-Inlet | AIRS-Inlet | Cloud | Threat categories per AIRS profile |
+| ☁︎ AIRS-Dual | AIRS-Dual | Cloud | DLP, malicious content, policy violations |
 | 🔬 LLM-Guard OUTPUT | LLM-Guard (output) | :5002 | PII, malicious URLs, refusal evasion, bias, relevance |
 
 Each gate has three enforcement modes: **Off**, **Advisory/Audit** (flag and continue), **Strict/Full** (block). Modes are set independently per gate.
@@ -90,7 +90,7 @@ Semantic-Guard is a local LLM-as-judge gate. It intercepts prompts using a local
 
 ### Why it exists
 
-Prisma AIRS is a cloud API — every scan request leaves the local network. Semantic-Guard is a **local, offline first-pass** that catches obvious threats (jailbreaks, injection patterns, social engineering) before a single byte is sent to the cloud. It also works as a standalone gate when an AIRS API key is unavailable.
+AIRS is a cloud API — every scan request leaves the local network. Semantic-Guard is a **local, offline first-pass** that catches obvious threats (jailbreaks, injection patterns, social engineering) before a single byte is sent to the cloud. It also works as a standalone gate when an AIRS API key is unavailable.
 
 It mirrors the pattern used by the [n8n LangChain Guardrails node](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.guardrails/) — an LLM evaluates content against a safety system prompt and outputs a structured confidence-weighted verdict.
 
@@ -199,20 +199,20 @@ Browser → /api/canary (Node proxy) → localhost:5001/check (Flask) → Securi
 
 ---
 
-## 📥🛡️ AIRS-Inlet
+## ☁︎ AIRS-Inlet
 
-AIRS-Inlet scans the **user prompt** before it reaches the LLM. It calls the Prisma AIRS API via the Node proxy at `/api/prisma`.
+AIRS-Inlet scans the **user prompt** before it reaches the LLM. It calls the AIRS API via the Node proxy at `/api/prisma`.
 
-- Requires a Prisma AIRS API key (`AIRS_API_KEY` in `.env` or entered in the UI).
+- Requires a AIRS API key (`AIRS_API_KEY` in `.env` or entered in the UI).
 - Returns a threat verdict including category (injection, DLP, jailbreak, etc.) and confidence.
 - In **Strict** mode, a blocked prompt never reaches the LLM.
 - In **Audit** mode, a warning is shown but the LLM is still called.
 
 ---
 
-## 🔀🛡️ AIRS-Dual
+## ☁︎ AIRS-Dual
 
-AIRS-Dual scans the **LLM response** (with the original prompt as context) after generation. It calls the same Prisma AIRS API endpoint but with both prompt and response in the payload.
+AIRS-Dual scans the **LLM response** (with the original prompt as context) after generation. It calls the same AIRS API endpoint but with both prompt and response in the payload.
 
 - Catches DLP violations, malicious content, and policy violations in responses.
 - **DLP masking:** when sensitive data is detected, AIRS automatically masks it (e.g. `XXXXXXXXXXXX`) before returning the response.

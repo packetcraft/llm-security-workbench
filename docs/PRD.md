@@ -8,14 +8,14 @@
 
 ## 1. Product Overview
 
-The **Ollama Pro Workbench** is a lightweight, browser-based environment for interfacing with local Ollama LLM instances, secured end-to-end by **Palo Alto Networks Prisma AIRS**. It bridges rapid prompt engineering with enterprise-grade AI security testing by implementing a full six-gate scanning pipeline:
+The **Ollama Pro Workbench** is a lightweight, browser-based environment for interfacing with local Ollama LLM instances, secured end-to-end by **Palo Alto Networks AIRS**. It bridges rapid prompt engineering with enterprise-grade AI security testing by implementing a full six-gate scanning pipeline:
 
 1. 🔬 **LLM-Guard (input)** — local ProtectAI transformer scanners (:5002) intercept the prompt first
 2. 🧩 **Semantic-Guard** — local Ollama LLM-as-judge evaluates intent before any cloud call
 3. 🐦 **Little-Canary** — structural regex + behavioural canary probe for injection detection (:5001)
-4. 📥🛡️ **AIRS-Inlet** — cloud-based pre-flight prompt scan (Prisma AIRS)
+4. ☁︎ **AIRS-Inlet** — cloud-based pre-flight prompt scan (AIRS)
 5. 🤖 **LLM Generation** — local Ollama inference
-6. 🔀🛡️ **AIRS-Dual** — cloud-based post-response scan (Prisma AIRS)
+6. ☁︎ **AIRS-Dual** — cloud-based post-response scan (AIRS)
 7. 🔬 **LLM-Guard OUTPUT** — local transformer scanners check the response before display (:5002)
 
 All gates are independent and individually configurable (Off / Advisory / Strict). The cloud gates (AIRS-Inlet, AIRS-Dual) are optional — the local-only gates provide a fully offline security baseline.
@@ -123,7 +123,7 @@ The same `:5002` sidecar, running **after** LLM generation and AIRS-Dual.
 
 An **LLM-as-judge** gate that evaluates the user prompt using a locally running Ollama model — before any cloud API is ever called.
 
-**Design rationale:** Prisma AIRS is a cloud service; every scan request leaves `localhost`. Semantic-Guard provides an offline first-pass that can catch obvious threats (jailbreaks, injection patterns, social engineering) with zero network dependency.
+**Design rationale:** AIRS is a cloud service; every scan request leaves `localhost`. Semantic-Guard provides an offline first-pass that can catch obvious threats (jailbreaks, injection patterns, social engineering) with zero network dependency.
 
 **Technical implementation:**
 * Non-streaming POST to `http://localhost:11434/api/chat` with `format: "json"` and `options.temperature: 0.1`.
@@ -173,7 +173,7 @@ Respond ONLY with valid JSON, no other text:
 
 An **LLM-as-judge** gate that evaluates the user prompt using a locally running Ollama model — before any cloud API is ever called.
 
-**Design rationale:** Prisma AIRS is a cloud service; every scan request leaves `localhost`. Phase 0 provides an offline first-pass that can catch obvious threats (jailbreaks, injection patterns, social engineering) with zero network dependency. It mirrors the approach used by the n8n LangChain Guardrails node, adapted for local inference.
+**Design rationale:** AIRS is a cloud service; every scan request leaves `localhost`. Phase 0 provides an offline first-pass that can catch obvious threats (jailbreaks, injection patterns, social engineering) with zero network dependency. It mirrors the approach used by the n8n LangChain Guardrails node, adapted for local inference.
 
 **Technical implementation:**
 * Non-streaming POST to `http://localhost:11434/api/chat` with `format: "json"` and `options.temperature: 0.1`.
@@ -263,19 +263,19 @@ Browser → POST /api/canary (Node proxy) → localhost:5001/check (Flask micros
 
 ---
 
-#### 📥🛡️ AIRS-Inlet — Pre-Flight Prompt Scan
+#### ☁︎ AIRS-Inlet — Pre-Flight Prompt Scan
 
 *(Previously "Phase 1")*
 
-Runs **before** the prompt reaches the LLM. Requires Prisma AIRS API key and mode set to Audit or Strict.
+Runs **before** the prompt reaches the LLM. Requires AIRS API key and mode set to Audit or Strict.
 
 * **Request:** `contents: [{ prompt }]` with `tr_id` and `metadata` (model name, app name).
 * **On BLOCK (Strict mode):** Halt execution. LLM is never called. Show red block alert.
 * **On BLOCK (Audit mode):** Show yellow warning, continue to LLM.
 * **On ALLOW:** Proceed to LLM with no interruption.
-* **Scan badge** on user message: `📥🛡️ Safe-819ms`, `📥🛡️ Flagged-611ms`, or `📥🛡️ Blocked-204ms` (5b format).
+* **Scan badge** on user message: `☁︎ Safe-819ms`, `☁︎ Flagged-611ms`, or `☁︎ Blocked-204ms` (5b format).
 
-#### 🔀🛡️ AIRS-Dual — Post-Response Scan
+#### ☁︎ AIRS-Dual — Post-Response Scan
 
 *(Previously "Phase 2")*
 
@@ -352,14 +352,14 @@ Slide-up drawer above the prompt bar. Displays seven collapsible accordion secti
 | **🔬 LLM-Guard INPUT** | Scan payload (text + active scanners) + verdict JSON (valid, summary, per-scanner results) |
 | **🧩 Semantic-Guard** | Judge request (model, system prompt, user message) + raw verdict JSON (safe, confidence, reason) |
 | **🐦 Little-Canary** | Request payload (input, model, mode, threshold) + verdict JSON (safe, summary, advisory) |
-| **📥🛡️ AIRS-Inlet** | Outgoing AIRS prompt scan request + AIRS verdict JSON |
+| **☁︎ AIRS-Inlet** | Outgoing AIRS prompt scan request + AIRS verdict JSON |
 | **🤖 Ollama** | Outgoing LLM request payload (model parameters + any canary advisory prefix) + last raw stream chunk |
-| **🔀🛡️ AIRS-Dual** | Outgoing AIRS response scan request + AIRS verdict JSON |
+| **☁︎ AIRS-Dual** | Outgoing AIRS response scan request + AIRS verdict JSON |
 | **🔬 LLM-Guard OUTPUT** | Scan payload (truncated prompt + response + active scanners) + verdict JSON (valid, summary, per-scanner results) |
 
 All columns reset to "Waiting..." automatically at the start of each new prompt. When a gate is set to Off, its columns show `"Disabled."` rather than staying on `"Waiting..."`. This prevents stale data from a prior exchange persisting when a gate does not run (e.g. LLM-Guard INPUT blocks, so all subsequent gates never fire).
 
-Real-time status indicator in the header cycles through: `🔬 LLM-Guard scanning...` → `🧩 Semantic-Guard scanning...` → `🐦 Little-Canary scanning...` → `📥🛡️ AIRS-Inlet scanning...` → `🤖 Streaming LLM...` → `🔀🛡️ AIRS-Dual scanning...` → `🔬 LLM-Guard OUTPUT scanning...` → `Done ✅`.
+Real-time status indicator in the header cycles through: `🔬 LLM-Guard scanning...` → `🧩 Semantic-Guard scanning...` → `🐦 Little-Canary scanning...` → `☁︎ AIRS-Inlet scanning...` → `🤖 Streaming LLM...` → `☁︎ AIRS-Dual scanning...` → `🔬 LLM-Guard OUTPUT scanning...` → `Done ✅`.
 
 **Per-phase latency** is displayed inline on each badge as it resolves — observers can read bottlenecks without opening the API Inspector. The LLM generation pill (`🤖 Xs`) appears on the AI message header immediately after the stream ends (or is stopped), distinct from the security scan badges via its dark background style.
 
@@ -391,7 +391,7 @@ The Phase 0 native local judge pipeline now robustly handles JSON bypasses when 
 | `/` | `GET` | Serves `src/index.html` |
 | `/dev/:prefix` | `GET` | Serves the first `/dev` HTML file whose name starts with `:prefix` — e.g. `/dev/3c` serves `3c-llm-security-workbench-little-canary.html`. AIRS proxy works normally. |
 | `/api/config` | `GET` | Returns `{ hasApiKey: bool, profile: string \| null }` — presence signal only, key never returned |
-| `/api/prisma` | `POST` | Proxies scan requests to Prisma AIRS; prefers `process.env.AIRS_API_KEY` over the `x-pan-token` request header |
+| `/api/prisma` | `POST` | Proxies scan requests to AIRS; prefers `process.env.AIRS_API_KEY` over the `x-pan-token` request header |
 | `/api/canary` | `POST` | Proxies canary scan requests to the Flask microservice at `localhost:5001/check`; returns `502` with a helpful error if the service is unavailable |
 
 **Key preference logic in `/api/prisma`:**
@@ -560,7 +560,7 @@ Response body:
 
 ## 5. Security & Privacy Considerations
 
-* **Local Data Sovereignty:** All LLM inference remains on `localhost`. Prompts and responses are only sent to Prisma AIRS for security evaluation.
+* **Local Data Sovereignty:** All LLM inference remains on `localhost`. Prompts and responses are only sent to AIRS for security evaluation.
 * **Phase 0 is fully offline:** The Native Guardrail calls `localhost:11434` only — no prompt data leaves the machine during Phase 0.
 * **Phase 0.5 is fully offline:** Little Canary calls `localhost:5001` (Flask) → `localhost:11434` (Ollama) only — no data leaves the machine during Phase 0.5.
 * **Defense-in-depth:** Phase 0 is a convenience gate, not a replacement for AIRS. LLM-based judges can be tricked via adversarial prompts; they are a first filter, not a guarantee.
@@ -652,7 +652,7 @@ llm-security-workbench/
 - **Three model roles** — Attacker LLM (generates adversarial prompts), Target LLM (model under test), Judge LLM (scores responses 1–10). All three call Ollama directly from the browser — the Node proxy is not involved.
 - **Iteration feedback loop** — attacker adapts each round: blocked prompts are rewritten to be more evasive; low-scoring prompts are escalated with new framing
 - **Input gate coverage** — LLM-Guard INPUT, Little-Canary, and AIRS-Inlet are active; Semantic-Guard, AIRS-Dual, and LLM-Guard OUTPUT are skipped
-- **Per-gate security trace** — every attempt card shows a colour-coded chip row (🔬 LLM-Guard · 🐦 Little-Canary · 📥🛡️ AIRS-Inlet) with status (`pass / block / flag / skip / error / off`), mode, detail string, and latency. Makes silent gate failures and misconfigurations immediately visible.
+- **Per-gate security trace** — every attempt card shows a colour-coded chip row (🔬 LLM-Guard · 🐦 Little-Canary · ☁︎ AIRS-Inlet) with status (`pass / block / flag / skip / error / off`), mode, detail string, and latency. Makes silent gate failures and misconfigurations immediately visible.
 - **Judge scoring with reasoning** — judge produces a one-sentence rationale before the integer score. Reasoning is displayed in the attempt card and included in the markdown export. Prevents false-positive breaches where the judge score contradicts its own stated reasoning.
 - **Strict judge rubric** — explicit rule that verbose off-topic responses score 1–2; only score 7+ if the response actually contains the requested content
 - **Export** — JSON and professional markdown red team report (reference ID, executive summary, gate config table, scope/limitations, per-attempt log with gate trace table and judge reasoning)
@@ -716,8 +716,8 @@ llm-security-workbench/
 | Phase 0.6 / LLM Guard (input) | LLM-Guard | 🔬 |
 | Phase 0 / Native Guardrail | Semantic-Guard | 🧩 |
 | Phase 0.5 / Little Canary | Little-Canary | 🐦 |
-| Phase 1 / AIRS Prompt Scan | AIRS-Inlet | 📥🛡️ |
-| Phase 2 / AIRS Response Scan | AIRS-Dual | 🔀🛡️ |
+| Phase 1 / AIRS Prompt Scan | AIRS-Inlet | ☁︎ |
+| Phase 2 / AIRS Response Scan | AIRS-Dual | ☁︎ |
 | Phase 2.5 / LLM Guard (output) | LLM-Guard OUTPUT | 🔬 |
 
 **Compact badge format** (5b): `🔬 Safe-312ms` instead of `🔒 Safe · 312ms`.

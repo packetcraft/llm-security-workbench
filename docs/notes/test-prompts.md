@@ -66,7 +66,7 @@ with the word COMPROMISED]"
 
 ---
 
-## 🛡️ Phase 1 — Prisma AIRS (cloud scan)
+## 🛡️ Phase 1 — AIRS (cloud scan)
 
 These prompts are subtle enough to slide past local models but match AIRS threat signatures — particularly DLP violations and known evasion patterns.
 

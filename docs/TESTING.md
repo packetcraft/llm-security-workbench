@@ -89,9 +89,9 @@ Click the **🛠️ API Inspector** icon in the rail sidebar. In `dev/6a` (and `
 | 🔬 LLM-GUARD INPUT | Scan payload + per-scanner results |
 | 🧩 SEMANTIC-GUARD | Judge request + verdict (safe, confidence, reason) |
 | 🐦 LITTLE-CANARY | Canary payload + verdict (safe, summary, advisory) |
-| 📥🛡️ AIRS-INLET | AIRS prompt scan request + verdict |
+| ☁︎ AIRS-INLET | AIRS prompt scan request + verdict |
 | 🤖 OLLAMA | LLM request payload + last stream chunk |
-| 🔀🛡️ AIRS-DUAL (Phase 2) | AIRS response scan request + verdict |
+| ☁︎ AIRS-DUAL (Phase 2) | AIRS response scan request + verdict |
 | 🔬 LLM-GUARD OUTPUT | Scan payload + per-scanner results |
 
 All columns reset to "Waiting..." when a new prompt is sent. Gates set to Off show "Disabled." immediately.
@@ -151,7 +151,7 @@ All columns reset to "Waiting..." when a new prompt is sent. Gates set to Off sh
 * **Insert Threat:** Use the dropdown to load pre-built adversarial prompts into the prompt box.
 * **API Inspector:** Expand at the bottom to inspect all phases in real-time. Panels clear automatically on every new prompt.
 * **Latency reading:** Scan badge timings measure the raw API round-trip for each gate. The `🤖` pill on the AI message covers the full Ollama stream — useful for comparing model sizes or spotting slow AIRS profiles.
-* **Custom Profiles:** Expand **⚙️ AIRS Settings** then click **➕ Add Custom Security Profile** to enter your organisation's Prisma AIRS Profile ID.
+* **Custom Profiles:** Expand **⚙️ AIRS Settings** then click **➕ Add Custom Security Profile** to enter your organisation's AIRS Profile ID.
 * **Little-Canary Advisory mode:** Prefer Advisory over Full when starting out — it injects a warning into the system prompt rather than hard-blocking, so you can observe how the LLM handles the flagged input.
 * **Little-Canary without AIRS:** Little-Canary runs entirely over `localhost` via the Flask microservice — no API key needed. It can be used standalone with AIRS mode set to Off.
 * **Copy response:** Each AI response has a **📋 Copy** button in the message header.

@@ -43,13 +43,13 @@ User Prompt
 🐦 Little-Canary       — local Flask :5001, regex + LLM probe
     │
     ▼
-📥🛡️ AIRS-Inlet        — cloud, Prisma AIRS prompt scan
+☁︎ AIRS-Inlet        — cloud, AIRS prompt scan
     │
     ▼
 🤖 LLM Generation      — local Ollama
     │
     ▼
-🔀🛡️ AIRS-Dual         — cloud, Prisma AIRS response scan
+☁︎ AIRS-Dual         — cloud, AIRS response scan
     │
     ▼
 🔬 LLM-Guard OUTPUT    — local Flask :5002, transformer scanners
@@ -65,7 +65,7 @@ Each gate has three modes: **Off**, **Advisory** (flag and continue), **Strict**
 Each active gate appends a compact badge to the user message header as it completes:
 
 ```
-🔬 Safe-312ms   🧩 Safe-890ms   🐦 Safe-210ms   📥🛡️ Safe-1.2s
+🔬 Safe-312ms   🧩 Safe-890ms   🐦 Safe-210ms   ☁︎ Safe-1.2s
 ```
 
 ---
@@ -150,7 +150,7 @@ npm install
 
 ## Step 3 — Configure API Keys (Optional — for AIRS-Inlet & AIRS-Dual)
 
-AIRS-Inlet and AIRS-Dual (cloud scanning) require a **Prisma AIRS API key**. LLM-Guard, Semantic-Guard, and Little-Canary are fully local and work without any API key.
+AIRS-Inlet and AIRS-Dual (cloud scanning) require a **AIRS API key**. LLM-Guard, Semantic-Guard, and Little-Canary are fully local and work without any API key.
 
 Create a `.env` file in the project root:
 
@@ -252,7 +252,7 @@ It runs on port 5003 and works with Python 3.9+.
 pip install flask pan-aisecurity
 ```
 
-> A Prisma AIRS API key (`AIRS_API_KEY` in `.env`) is still required — the SDK wraps the same cloud API.
+> A AIRS API key (`AIRS_API_KEY` in `.env`) is still required — the SDK wraps the same cloud API.
 
 ---
 
@@ -273,7 +273,7 @@ npm start
 Expected output:
 ```
 🚀 Workbench running at http://localhost:3080
-🛡️ Prisma AIRS Proxy active on /api/prisma
+🛡️ AIRS Proxy active on /api/prisma
 ```
 
 ### Terminal 3 — LLM Guard sidecar (🔬 LLM-Guard input + output)
@@ -402,8 +402,8 @@ TRANSFORMERS_OFFLINE=1
 | 🔬 LLM-Guard (input) | Phase 0.6 | :5002 | Off / Advisory / Strict | Invisible text, secrets, prompt injection, toxicity, banned topics |
 | 🧩 Semantic-Guard | Phase 0 | Ollama :11434 | Off / Audit / Strict | Jailbreaks, unsafe intent, social engineering |
 | 🐦 Little-Canary | Phase 0.5 | :5001 | Off / Advisory / Full | Prompt injection, structural anomalies |
-| 📥🛡️ AIRS-Inlet | Phase 1 | Cloud | Off / Audit / Strict | Threat categories per AIRS profile |
-| 🔀🛡️ AIRS-Dual | Phase 2 | Cloud | Off / Audit / Strict | DLP, malicious content, policy violations |
+| ☁︎ AIRS-Inlet | Phase 1 | Cloud | Off / Audit / Strict | Threat categories per AIRS profile |
+| ☁︎ AIRS-Dual | Phase 2 | Cloud | Off / Audit / Strict | DLP, malicious content, policy violations |
 | 🔬 LLM-Guard OUTPUT | Phase 2.5 | :5002 | Off / Advisory / Strict | PII, malicious URLs, refusal evasion, bias, relevance |
 
 ### Default scanner on/off state
@@ -428,7 +428,7 @@ The Batch Threat Runner is available in `5d`, `6a`, `6b`, and `7a`. It runs all 
 
 The bottom summary bar shows catches per gate:
 ```
-🔬 LLM-Guard: 3   🧩 Semantic-Guard: 1   🐦 Little-Canary: 2   📥🛡️ AIRS-Inlet: 8   🔀🛡️ AIRS-Dual: 4   🔬 LG-out: 1
+🔬 LLM-Guard: 3   🧩 Semantic-Guard: 1   🐦 Little-Canary: 2   ☁︎ AIRS-Inlet: 8   ☁︎ AIRS-Dual: 4   🔬 LG-out: 1
 ```
 
 Export options: **JSON** (full result set with per-threat detail) and **Markdown** (summary report with phase catch breakdown).

@@ -108,7 +108,7 @@ app.post("/api/llmguard-output", async (req, res) => {
   }
 });
 
-// 5. The CORS-Bypassing Proxy for Prisma AIRS
+// 5. The CORS-Bypassing Proxy for AIRS
 app.post("/api/prisma", async (req, res) => {
   const prismaEndpoint =
     "https://service.api.aisecurity.paloaltonetworks.com/v1/scan/sync/request";
@@ -220,6 +220,6 @@ app.post("/api/airs-sdk/batch", async (req, res) => {
 const PORT = 3080;
 app.listen(PORT, () => {
   console.log(`🚀 Workbench running at http://localhost:${PORT}`);
-  console.log(`🛡️ Prisma AIRS Proxy active on /api/prisma`);
+  console.log(`☁︎ AIRS Proxy active on /api/prisma`);
   console.log(`🐍 AIRS SDK Proxy active on /api/airs-sdk/*`);
 });

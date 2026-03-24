@@ -39,7 +39,7 @@ The Dynamic Probe implements the **PAIR algorithm** (Prompt Automatic Iterative 
 │                         │                                        │
 │                         ├─▶ 🔬 LLM-Guard INPUT  (if mode ≠ off) │
 │                         ├─▶ 🐦 Little-Canary     (if mode ≠ off) │
-│                         └─▶ 📥🛡️ AIRS-Inlet      (if mode ≠ off) │
+│                         └─▶ ☁︎ AIRS-Inlet      (if mode ≠ off) │
 │                                    │                             │
 │                            blocked?│                             │
 │                         ┌──────────┴──────────┐                 │
@@ -74,9 +74,9 @@ The probe runs a **subset** of the six-gate pipeline. Gate states are read live 
 | 🔬 LLM-Guard INPUT | ✅ | ✅ | Reads current mode; `strict` = block iteration |
 | 🧩 Semantic-Guard | ✅ | ❌ | Skipped — requires streaming Ollama call with conversation context |
 | 🐦 Little-Canary | ✅ | ✅ | Reads current mode; `safe: false` = block iteration |
-| 📥🛡️ AIRS-Inlet | ✅ | ✅ | Reads current mode; `strict` + `action: block` = block iteration |
+| ☁︎ AIRS-Inlet | ✅ | ✅ | Reads current mode; `strict` + `action: block` = block iteration |
 | 🤖 LLM | ✅ | ✅ | Direct non-streaming Ollama call |
-| 🔀🛡️ AIRS-Dual | ✅ | ❌ | Skipped — response is passed directly to judge |
+| ☁︎ AIRS-Dual | ✅ | ❌ | Skipped — response is passed directly to judge |
 | 🔬 LLM-Guard OUTPUT | ✅ | ❌ | Skipped — response is not scanned before judge sees it |
 
 **Advisory mode is treated as pass** — only `strict` mode triggers a block in the probe. Advisory-flagged prompts continue to the LLM, matching the intent of advisory gates (warn, don't stop).
@@ -195,7 +195,7 @@ All three model roles call **Ollama directly from the browser** — the Node pro
 | Judge LLM | Browser → `http://localhost:11434/api/chat` | Non-streaming |
 | LLM-Guard gate check | Browser → Node Proxy `:3080` → Flask `:5002` | Same as chat |
 | Little-Canary gate check | Browser → Node Proxy `:3080` → Flask `:5001` | Same as chat |
-| AIRS-Inlet gate check | Browser → Node Proxy `:3080` → Prisma AIRS (cloud) | Same as chat |
+| AIRS-Inlet gate check | Browser → Node Proxy `:3080` → AIRS (cloud) | Same as chat |
 
 **Implications:**
 

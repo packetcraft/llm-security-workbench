@@ -3033,7 +3033,7 @@ Respond ONLY with valid JSON, no other text:
                         <!-- 4. AIRS-Inlet -->
                         <div class="dbg-section" id="dbg-airsIn">
                             <div class="dbg-section-header" onclick="toggleDbgSection('dbg-airsIn')">
-                                <span class="dbg-section-title" style="color:var(--warning)">📥🛡️ AIRS-Inlet</span>
+                                <span class="dbg-section-title" style="color:var(--warning)">☁︎ AIRS-Inlet</span>
                                 <span class="dbg-chevron">›</span>
                             </div>
                             <div class="dbg-section-body">
@@ -3069,7 +3069,7 @@ Respond ONLY with valid JSON, no other text:
                         <!-- 6. AIRS-Dual (response scan) -->
                         <div class="dbg-section" id="dbg-airsOut">
                             <div class="dbg-section-header" onclick="toggleDbgSection('dbg-airsOut')">
-                                <span class="dbg-section-title" style="color:var(--danger)">🔀🛡️ AIRS-Dual</span>
+                                <span class="dbg-section-title" style="color:var(--danger)">☁︎ AIRS-Dual</span>
                                 <span class="dbg-chevron">›</span>
                             </div>
                             <div class="dbg-section-body">
@@ -3923,7 +3923,7 @@ Respond ONLY with valid JSON, no other text:
 
         function addCustomAirsProfile() {
             const profileId = prompt(
-                "Enter Custom Prisma AIRS Profile Name or ID:",
+                "Enter Custom AIRS Profile Name or ID:",
             );
             if (!profileId) return;
             const customAirs = JSON.parse(
@@ -4538,7 +4538,7 @@ Respond ONLY with valid JSON, no other text:
                 return { blocked: false };
             }
 
-            els.debugStatus.innerText = "📥🛡️ AIRS-Inlet scanning...";
+            els.debugStatus.innerText = "☁︎ AIRS-Inlet scanning...";
             els.dbgResponseReq.innerText = "Waiting for AIRS-Dual...";
             els.dbgResponseRes.innerText = "Waiting for AIRS-Dual...";
 
@@ -4558,10 +4558,10 @@ Respond ONLY with valid JSON, no other text:
             if (promptScan.status === "error") {
                 airsBadge.style.display = "inline";
                 airsBadge.className = "scan-badge";
-                airsBadge.textContent = `📥🛡️ Error${airsInletShort}`;
+                airsBadge.textContent = `☁︎ Error${airsInletShort}`;
                 const errDiv = document.createElement("div");
                 errDiv.className = "message security-alert alert-warning";
-                errDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — ERROR ${airsInletLat}</strong><br>${promptScan.message} &nbsp;|&nbsp; Prompt aborted. <small>Ensure server.js is running on :3080.</small>`;
+                errDiv.innerHTML = `<strong>☁︎ AIRS-INLET — ERROR ${airsInletLat}</strong><br>${promptScan.message} &nbsp;|&nbsp; Prompt aborted. <small>Ensure server.js is running on :3080.</small>`;
                 chatBox.appendChild(errDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Error";
@@ -4572,14 +4572,14 @@ Respond ONLY with valid JSON, no other text:
             if (promptScan.status === "block") {
                 airsBadge.style.display = "inline";
                 airsBadge.className = "scan-badge blocked";
-                airsBadge.textContent = `📥🛡️ Blocked${airsInletShort}`;
+                airsBadge.textContent = `☁︎ Blocked${airsInletShort}`;
                 airsBadge.dataset.verdict = JSON.stringify(promptScan);
                 airsBadge.title = "Click to expand";
                 airsBadge.style.cursor = "pointer";
                 const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
                 const blockDiv = document.createElement("div");
                 blockDiv.className = "message security-alert alert-danger";
-                blockDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — BLOCKED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`;
+                blockDiv.innerHTML = `<strong>☁︎ AIRS-INLET — BLOCKED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`;
                 chatBox.appendChild(blockDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (AIRS-Inlet)";
@@ -4590,20 +4590,20 @@ Respond ONLY with valid JSON, no other text:
             if (promptScan.status === "alert") {
                 airsBadge.style.display = "inline";
                 airsBadge.className = "scan-badge flagged";
-                airsBadge.textContent = `📥🛡️ Flagged${airsInletShort}`;
+                airsBadge.textContent = `☁︎ Flagged${airsInletShort}`;
                 airsBadge.dataset.verdict = JSON.stringify(promptScan);
                 airsBadge.title = "Click to expand";
                 airsBadge.style.cursor = "pointer";
                 const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
                 const warnDiv = document.createElement("div");
                 warnDiv.className = "message security-alert alert-warning";
-                warnDiv.innerHTML = `<strong>📥🛡️ AIRS-INLET — FLAGGED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Proceeding to LLM.`;
+                warnDiv.innerHTML = `<strong>☁︎ AIRS-INLET — FLAGGED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Proceeding to LLM.`;
                 chatBox.appendChild(warnDiv);
                 rpUpdateGate('airs-in', 'alert', airsInletMs);
             } else {
                 airsBadge.style.display = "inline";
                 airsBadge.className = "scan-badge allowed";
-                airsBadge.textContent = `📥🛡️ Safe${airsInletShort}`;
+                airsBadge.textContent = `☁︎ Safe${airsInletShort}`;
                 airsBadge.dataset.verdict = JSON.stringify(promptScan);
                 airsBadge.title = "Click to expand";
                 airsBadge.style.cursor = "pointer";
@@ -4734,7 +4734,7 @@ Respond ONLY with valid JSON, no other text:
             if (responseScan.status === "error") {
                 if (resBadge) {
                     resBadge.className = "scan-badge";
-                    resBadge.textContent = `🔀🛡️ AIRS-Dual ERR ${airsDualLat}`;
+                    resBadge.textContent = `☁︎ AIRS-Dual ERR ${airsDualLat}`;
                     resBadge.dataset.verdict = JSON.stringify(responseScan);
                     resBadge.title = "Click to expand";
                     resBadge.style.cursor = "pointer";
@@ -4747,7 +4747,7 @@ Respond ONLY with valid JSON, no other text:
                     : responseScan.category;
                 if (resBadge) {
                     resBadge.className = "scan-badge blocked";
-                    resBadge.textContent = `🔀🛡️ AIRS-Dual BLOCKED ${airsDualLat}`;
+                    resBadge.textContent = `☁︎ AIRS-Dual BLOCKED ${airsDualLat}`;
                     resBadge.dataset.verdict = JSON.stringify(responseScan);
                     resBadge.title = "Click to expand";
                     resBadge.style.cursor = "pointer";
@@ -4755,11 +4755,11 @@ Respond ONLY with valid JSON, no other text:
                 if (airsMode === "strict") {
                     botDiv.querySelector(".content").innerHTML = `
                             <div class="security-alert alert-danger">
-                                <strong>🔀🛡️ AIRS-DUAL — BLOCKED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response withheld.
+                                <strong>☁︎ AIRS-DUAL — BLOCKED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response withheld.
                             </div>`;
                 } else {
                     const warnHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
-                            <strong>🔀🛡️ AIRS-DUAL — FLAGGED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response shown with warning.</div>`;
+                            <strong>☁︎ AIRS-DUAL — FLAGGED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response shown with warning.</div>`;
                     if (responseScan.maskedData) {
                         botDiv.querySelector(".content").innerHTML = warnHtml + marked.parse(responseScan.maskedData.data);
                     } else {
@@ -4767,7 +4767,7 @@ Respond ONLY with valid JSON, no other text:
                     }
                     if (resBadge) {
                         resBadge.className = "scan-badge flagged";
-                        resBadge.textContent = `🔀🛡️ AIRS-Dual FLAGGED ${airsDualLat}`;
+                        resBadge.textContent = `☁︎ AIRS-Dual FLAGGED ${airsDualLat}`;
                         resBadge.dataset.verdict = JSON.stringify(responseScan);
                         resBadge.title = "Click to expand";
                         resBadge.style.cursor = "pointer";
@@ -4778,20 +4778,20 @@ Respond ONLY with valid JSON, no other text:
             } else if (responseScan.maskedData) {
                 if (resBadge) {
                     resBadge.className = "scan-badge flagged";
-                    resBadge.textContent = `🔀🛡️ AIRS-Dual MASKED ${airsDualLat}`;
+                    resBadge.textContent = `☁︎ AIRS-Dual MASKED ${airsDualLat}`;
                     resBadge.dataset.verdict = JSON.stringify(responseScan);
                     resBadge.title = "Click to expand";
                     resBadge.style.cursor = "pointer";
                 }
                 const maskHtml = `<div class="security-alert alert-warning" style="margin-bottom:6px;">
-                        <strong>🔀🛡️ AIRS-DUAL — DLP MASKED ${airsDualLat}</strong><br>Sensitive data detected and redacted from response.</div>`;
+                        <strong>☁︎ AIRS-DUAL — DLP MASKED ${airsDualLat}</strong><br>Sensitive data detected and redacted from response.</div>`;
                 botDiv.querySelector(".content").innerHTML = maskHtml + marked.parse(responseScan.maskedData.data);
                 els.debugStatus.innerText = "Done (DLP Masked)";
                 rpUpdateGate('airs-dual', 'alert', airsDualMs);
             } else {
                 if (resBadge) {
                     resBadge.className = "scan-badge allowed";
-                    resBadge.textContent = `🔀🛡️ AIRS-Dual CLEAN ${airsDualLat}`;
+                    resBadge.textContent = `☁︎ AIRS-Dual CLEAN ${airsDualLat}`;
                     resBadge.dataset.verdict = JSON.stringify(responseScan);
                     resBadge.title = "Click to expand";
                     resBadge.style.cursor = "pointer";
@@ -4880,7 +4880,7 @@ Respond ONLY with valid JSON, no other text:
 
             // Validate AIRS key early
             if (airsMode !== "off" && !airsKeyFromEnv && !airsApiKey) {
-                alert("Please enter your Prisma AIRS API Key (x-pan-token) to enable scanning.");
+                alert("Please enter your AIRS API Key (x-pan-token) to enable scanning.");
                 return;
             }
 
@@ -5621,7 +5621,7 @@ Respond ONLY with valid JSON, no other text:
                     );
                     if (s.status === "error") {
                         finalStatus = "error";
-                        if (firstCaught === "—") firstCaught = "📥🛡️ AIRS-Inlet";
+                        if (firstCaught === "—") firstCaught = "☁︎ AIRS-Inlet";
                     } else {
                         // Always capture AIRS detail fields
                         category = s.category || "—";
@@ -5629,10 +5629,10 @@ Respond ONLY with valid JSON, no other text:
                         if (s.detected?.length) detectedStr = s.detected.join(", ");
                         if (s.status === "block") {
                             finalStatus = "block";
-                            if (firstCaught === "—") firstCaught = "📥🛡️ AIRS-Inlet";
+                            if (firstCaught === "—") firstCaught = "☁︎ AIRS-Inlet";
                         } else if (s.status === "alert") {
                             if (finalStatus === "allow") finalStatus = "alert";
-                            if (firstCaught === "—") firstCaught = "📥🛡️ AIRS-Inlet";
+                            if (firstCaught === "—") firstCaught = "☁︎ AIRS-Inlet";
                         }
                     }
                 }
@@ -5667,17 +5667,17 @@ Respond ONLY with valid JSON, no other text:
                             );
                             if (s2.status === "error") {
                                 finalStatus = "error";
-                                if (firstCaught === "—") firstCaught = "🔀🛡️ AIRS-Dual";
+                                if (firstCaught === "—") firstCaught = "☁︎ AIRS-Dual";
                             } else {
                                 if (s2.status === "block") {
                                     finalStatus = "block";
-                                    if (firstCaught === "—") firstCaught = "🔀🛡️ AIRS-Dual";
+                                    if (firstCaught === "—") firstCaught = "☁︎ AIRS-Dual";
                                     category = s2.category || category;
                                     scanId = s2.scanId || scanId;
                                     if (s2.detected?.length) detectedStr = s2.detected.join(", ");
                                 } else if (s2.status === "alert" || s2.maskedData) {
                                     if (finalStatus === "allow") finalStatus = "alert";
-                                    if (firstCaught === "—") firstCaught = "🔀🛡️ AIRS-Dual";
+                                    if (firstCaught === "—") firstCaught = "☁︎ AIRS-Dual";
                                     category = s2.category || category;
                                     scanId = s2.scanId || scanId;
                                     if (s2.detected?.length) detectedStr = s2.detected.join(", ");
@@ -5687,7 +5687,7 @@ Respond ONLY with valid JSON, no other text:
                     } catch (err) {
                         finalStatus = "error";
                         detectedStr = "AIRS-Dual Error: " + err.message;
-                        if (firstCaught === "—") firstCaught = "🔀🛡️ AIRS-Dual";
+                        if (firstCaught === "—") firstCaught = "☁︎ AIRS-Dual";
                     }
                 }
 
@@ -5821,8 +5821,8 @@ Respond ONLY with valid JSON, no other text:
                     `<span class="s-phase06" title="Caught by LLM-Guard (input)">🔬 LLM-Guard: ${p06}</span>` +
                     `<span class="s-phase0"  title="Caught by Semantic-Guard">🧩 Semantic-Guard: ${p0}</span>` +
                     `<span class="s-phase05" title="Caught by Little-Canary">🐦 Little-Canary: ${p05}</span>` +
-                    `<span class="s-phase1"  title="Caught by AIRS-Inlet">📥🛡️ AIRS-Inlet: ${p1}</span>` +
-                    `<span class="s-phase2"  title="Caught by AIRS-Dual">🔀🛡️ AIRS-Dual: ${p2}</span>` +
+                    `<span class="s-phase1"  title="Caught by AIRS-Inlet">☁︎ AIRS-Inlet: ${p1}</span>` +
+                    `<span class="s-phase2"  title="Caught by AIRS-Dual">☁︎ AIRS-Dual: ${p2}</span>` +
                     `<span class="s-phase06" title="Caught by LLM-Guard (output)">🔬 LG-out: ${p25}</span>` +
                     `</div>` +
                     `<div class="s-row">` +
@@ -5978,7 +5978,7 @@ Respond ONLY with valid JSON, no other text:
                 `| AIRS Profile | ${airsProfile || "—"} |`,
                 ``,
                 `## Summary`,
-                `**Phase Catches:** 🔬 LLM-Guard: ${p06} &nbsp;|&nbsp; 🧩 Semantic-Guard: ${p0} &nbsp;|&nbsp; 🐦 Little-Canary: ${p05} &nbsp;|&nbsp; 📥🛡️ AIRS-Inlet: ${p1} &nbsp;|&nbsp; 🔀🛡️ AIRS-Dual: ${p2} &nbsp;|&nbsp; 🔬 LG-out: ${p25}`,
+                `**Phase Catches:** 🔬 LLM-Guard: ${p06} &nbsp;|&nbsp; 🧩 Semantic-Guard: ${p0} &nbsp;|&nbsp; 🐦 Little-Canary: ${p05} &nbsp;|&nbsp; ☁︎ AIRS-Inlet: ${p1} &nbsp;|&nbsp; ☁︎ AIRS-Dual: ${p2} &nbsp;|&nbsp; 🔬 LG-out: ${p25}`,
                 ``,
                 `| 🛑 Blocked | ⚠️ Flagged | ✅ Allowed | ❌ Errors | Total |`,
                 `|---|---|---|---|---|`,
@@ -6313,9 +6313,9 @@ Respond ONLY with valid JSON, no other text:
 
                 // ── Gate 3: AIRS-Inlet ───────────────────────────────────────
                 if (blocked) {
-                    gateTrace.push({ name: 'AIRS-Inlet', emoji: '📥🛡️', mode: airsModeVal, status: 'skip', detail: 'blocked upstream', ms: 0 });
+                    gateTrace.push({ name: 'AIRS-Inlet', emoji: '☁︎', mode: airsModeVal, status: 'skip', detail: 'blocked upstream', ms: 0 });
                 } else if (airsModeVal === 'off') {
-                    gateTrace.push({ name: 'AIRS-Inlet', emoji: '📥🛡️', mode: 'off', status: 'off', detail: 'gate disabled', ms: 0 });
+                    gateTrace.push({ name: 'AIRS-Inlet', emoji: '☁︎', mode: 'off', status: 'off', detail: 'gate disabled', ms: 0 });
                 } else {
                     const t0 = Date.now();
                     try {
@@ -6346,11 +6346,11 @@ Respond ONLY with valid JSON, no other text:
                         const isFlagged = airsModeVal !== 'strict' && action === 'block';
                         const threats = (d.detected || []).join(', ') || d.category || 'benign';
                         const detail = `action: ${action} · ${threats}`;
-                        gateTrace.push({ name: 'AIRS-Inlet', emoji: '📥🛡️', mode: airsModeVal, status: isBlocked ? 'block' : isFlagged ? 'flag' : 'pass', detail, ms });
+                        gateTrace.push({ name: 'AIRS-Inlet', emoji: '☁︎', mode: airsModeVal, status: isBlocked ? 'block' : isFlagged ? 'flag' : 'pass', detail, ms });
                         if (isBlocked) { blocked = true; blockedBy = 'AIRS-Inlet'; }
                     } catch(e) {
                         const ms = Date.now() - t0;
-                        gateTrace.push({ name: 'AIRS-Inlet', emoji: '📥🛡️', mode: airsModeVal, status: 'error', detail: `service error: ${e.message}`, ms });
+                        gateTrace.push({ name: 'AIRS-Inlet', emoji: '☁︎', mode: airsModeVal, status: 'error', detail: `service error: ${e.message}`, ms });
                     }
                 }
 
@@ -6665,9 +6665,9 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
                 `| 🔬 LLM-Guard INPUT  | ✅ Active | ${modeLabel(meta.gates.llmguardInput)} |`,
                 `| 🧩 Semantic-Guard   | ❌ Skipped | — |`,
                 `| 🐦 Little-Canary    | ✅ Active | ${modeLabel(meta.gates.littleCanary)} |`,
-                `| 📥🛡️ AIRS-Inlet      | ✅ Active | ${modeLabel(meta.gates.airsInlet)} |`,
+                `| ☁︎ AIRS-Inlet      | ✅ Active | ${modeLabel(meta.gates.airsInlet)} |`,
                 `| 🤖 LLM              | ✅ Target | ${meta.targetModel} |`,
-                `| 🔀🛡️ AIRS-Dual       | ❌ Not run | — |`,
+                `| ☁︎ AIRS-Dual       | ❌ Not run | — |`,
                 `| 🔬 LLM-Guard OUTPUT | ❌ Not run | — |`,
             ].join('\n');
 

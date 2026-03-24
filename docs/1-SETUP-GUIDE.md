@@ -18,7 +18,7 @@ This guide covers the entry-level workbench files from scratch. No prior install
 |:---|:---|:---|
 | `dev/1a-ollama-chat-no-security.html` | My Custom Ollama Chat | Minimal chat UI. Talks directly to a local Ollama model. No security layer, no server required. |
 | `dev/1b-mechat-no-security.html` | meChat — No Security | Styled terminal chat. Fetches available Ollama models dynamically. Supports selectable personas. No security layer, no server required. |
-| `dev/2a-mechat-airs-teaching-demo.html` | AIRS Teaching — Prompt Scan Gate | Adds a cloud security gate before the LLM. Every prompt is scanned by Prisma AIRS before being sent to Ollama. Requires the Node.js proxy server and an AIRS API key. |
+| `dev/2a-mechat-airs-teaching-demo.html` | AIRS Teaching — Prompt Scan Gate | Adds a cloud security gate before the LLM. Every prompt is scanned by AIRS before being sent to Ollama. Requires the Node.js proxy server and an AIRS API key. |
 
 **Start with `1a`** to verify Ollama is working. Move to `1b` for a nicer UI, then `2a` to see what a security gate looks like in practice.
 
@@ -159,7 +159,7 @@ npm start
 Expected output:
 ```
 🚀 Workbench running at http://localhost:3080
-🛡️ Prisma AIRS Proxy active on /api/prisma
+🛡️ AIRS Proxy active on /api/prisma
 ```
 
 ### Step D — Open the workbench
@@ -168,13 +168,13 @@ Navigate to: **http://localhost:3080/dev/2a**
 
 ### What you're seeing
 
-Every prompt is scanned by Prisma AIRS **before** it reaches Ollama:
+Every prompt is scanned by AIRS **before** it reaches Ollama:
 
 ```
 Your prompt
     │
     ▼
-📥🛡️ AIRS Prompt Scan  (cloud — Prisma AIRS)
+☁︎ AIRS Prompt Scan  (cloud — AIRS)
     │
     ├── BLOCKED  → message rejected, reason shown, Ollama never called
     ├── FLAGGED  → warning shown, Ollama still called (advisory mode)

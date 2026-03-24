@@ -9,7 +9,7 @@ Every prompt and response passes through a configurable seven-step, six-gate pip
 
 ```
 🔬 LLM-Guard (input)  →  🧩 Semantic-Guard  →  🐦 Little-Canary
-    →  📥🛡️ AIRS-Inlet  →  🤖 LLM  →  🔀🛡️ AIRS-Dual  →  🔬 LLM-Guard (output)
+    →  ☁︎ AIRS-Inlet  →  🤖 LLM  →  ☁︎ AIRS-Dual  →  🔬 LLM-Guard (output)
 ```
 
 Each gate runs independently in **Off / Advisory / Strict** mode. Local gates (LLM-Guard, Semantic-Guard, Little-Canary) work without any API key.
@@ -20,7 +20,7 @@ Each gate runs independently in **Off / Advisory / Strict** mode. Local gates (L
 - ​LLM-Guard (Input): Uses the llm-guard library to scan for things like PII (Personally Identifiable Information) or toxic language in the prompt.
 - ​Semantic-Guard: A local gate that likely evaluates the intent or meaning of the prompt.
 - ​Little-Canary: A specialized filter for catching prompt injection attempts.
-- ​AIRS-Inlet: A cloud-based gate using Prisma AIRS (AI Risk Subsystem) for advanced prompt scanning (requires an API key).
+- ​AIRS-Inlet: A cloud-based gate using AIRS (AI Risk Subsystem) for advanced prompt scanning (requires an API key).
 - ​LLM Execution: The actual model (e.g., Llama 3, Mistral) processing the request.
 - ​AIRS-Dual & LLM-Guard (Output): Final scans of the model's response to ensure it doesn't leak secrets or generate harmful content.
 
@@ -46,7 +46,7 @@ Each gate runs independently in **Off / Advisory / Strict** mode. Local gates (L
 | [Node.js](https://nodejs.org/) 18+ | Runs the proxy server |
 | [Ollama](https://ollama.com/) | Local LLM runtime |
 | Python 3.12 | Required for LLM-Guard sidecar — macOS: `brew install python@3.12`; Windows: [python.org](https://www.python.org/downloads/) installer (not Microsoft Store) |
-| Prisma AIRS API key | Optional — only needed for AIRS-Inlet and AIRS-Dual gates |
+| AIRS API key | Optional — only needed for AIRS-Inlet and AIRS-Dual gates |
 
 ---
 
@@ -240,7 +240,7 @@ http://localhost:3080/dev/1a    →  bare Ollama chat, no security
 |   | `5d` — `rail-sidebar` | Two-layer rail sidebar, 🐙PacketCraft branding (unrefactored) | ✓ |
 | ⭐ | `6a` — `instrument-panel` | rail sidebar + live telemetry instrument panel (right panel, open by default) | ✓ |
 | ⭐ | `6b` — `dynamic-redteam` | `6a` + 🚩 Red Teaming drawer — Static batch runner + Dynamic Probe (PAIR algorithm) | ✓ |
-|   | `7a` — `airs-sdk` | `6b` + 🐍 Prisma AIRS Python SDK — batch pre-scan (5-parallel) via `pan-aisecurity` sidecar | ✓ |
+|   | `7a` — `airs-sdk` | `6b` + 🐍 AIRS Python SDK — batch pre-scan (5-parallel) via `pan-aisecurity` sidecar | ✓ |
 | ⭐ | `7c` — `debug-inspector` | `7a` + 🔍 full-featured API Inspector debug drawer — score, HTTP status, latency, trigger, config snapshot, gate modal popout | ✓ |
 
 To make a dev file the default at `http://localhost:3080`:

@@ -54,12 +54,12 @@ flowchart TD
 
     LCA --> AIRS1
 
-    subgraph PHASE1 ["📥🛡️ AIRS-Inlet (cloud)"]
-        AIRS1[Prisma AIRS scan\ncontents: prompt] --> A1V{Verdict}
+    subgraph PHASE1 ["☁︎ AIRS-Inlet (cloud)"]
+        AIRS1[AIRS scan\ncontents: prompt] --> A1V{Verdict}
     end
 
-    A1V -- "📥🛡️ BLOCK · Strict" --> A1B([Prompt Blocked\nLLM not reached])
-    A1V -- "📥🛡️ BLOCK · Audit" --> A1F([Warn user\nContinue to LLM])
+    A1V -- "☁︎ BLOCK · Strict" --> A1B([Prompt Blocked\nLLM not reached])
+    A1V -- "☁︎ BLOCK · Audit" --> A1F([Warn user\nContinue to LLM])
     A1V -- "✅ ALLOW" --> LLM
 
     A1F --> LLM
@@ -70,11 +70,11 @@ flowchart TD
 
     LLM --> AIRS2
 
-    subgraph PHASE2 ["🔀🛡️ AIRS-Dual (cloud)"]
-        AIRS2[Prisma AIRS scan\ncontents: prompt + response] --> A2V{Verdict}
+    subgraph PHASE2 ["☁︎ AIRS-Dual (cloud)"]
+        AIRS2[AIRS scan\ncontents: prompt + response] --> A2V{Verdict}
     end
 
-    A2V -- "🔀🛡️ BLOCK · Strict" --> A2B([Response replaced\nwith block notice])
+    A2V -- "☁︎ BLOCK · Strict" --> A2B([Response replaced\nwith block notice])
     A2V -- "⚠️ DLP Masked" --> A2M([Sensitive data masked\nby AIRS])
     A2V -- "✅ ALLOW" --> LGOUT
 
@@ -130,7 +130,7 @@ graph LR
     end
 
     subgraph CLOUD ["☁️  cloud"]
-        AIRS["Prisma AIRS API\nservice.api.aisecurity\n.paloaltonetworks.com"]
+        AIRS["AIRS API\nservice.api.aisecurity\n.paloaltonetworks.com"]
     end
 
     %% Browser → Node proxy
@@ -139,7 +139,7 @@ graph LR
     %% Browser → Ollama direct (streaming + non-streaming)
     UI -- "POST /api/chat  streaming\nGET /api/tags\nSemantic-Guard judge + chat LLM\nDynamic Probe: attacker · target · judge" --> OLL
 
-    %% Node → Prisma AIRS (cloud)
+    %% Node → AIRS (cloud)
     PROXY -- "POST /v1/scan/sync/request\nAIRS-Inlet prompt scan\nAIRS-Dual response scan" --> AIRS
 
     %% Node → LLM Guard Flask
@@ -151,7 +151,7 @@ graph LR
     %% Node → AIRS SDK Flask
     PROXY -- "GET /health\nPOST /scan/sync\nPOST /scan/batch" --> SDKSERV
 
-    %% SDK → Prisma AIRS (cloud)
+    %% SDK → AIRS (cloud)
     PANSDK -- "pan-aisecurity SDK\nsync_scan() × 5 parallel" --> AIRS
 
     %% Flask → Ollama (canary probe)
@@ -164,9 +164,9 @@ graph LR
 
 | Traffic | Route |
 | :--- | :--- |
-| AIRS-Inlet / AIRS-Dual scans (chat) | Browser → Node Proxy `:3080/api/prisma` → Prisma AIRS API (cloud) |
-| AIRS SDK batch pre-scan (7a batch runner) | Browser → Node Proxy `:3080/api/airs-sdk/batch` → Flask sidecar `:5003/scan/batch` → Prisma AIRS API (cloud, 5 parallel) |
-| AIRS SDK single scan | Browser → Node Proxy `:3080/api/airs-sdk/sync` → Flask sidecar `:5003/scan/sync` → Prisma AIRS API (cloud) |
+| AIRS-Inlet / AIRS-Dual scans (chat) | Browser → Node Proxy `:3080/api/prisma` → AIRS API (cloud) |
+| AIRS SDK batch pre-scan (7a batch runner) | Browser → Node Proxy `:3080/api/airs-sdk/batch` → Flask sidecar `:5003/scan/batch` → AIRS API (cloud, 5 parallel) |
+| AIRS SDK single scan | Browser → Node Proxy `:3080/api/airs-sdk/sync` → Flask sidecar `:5003/scan/sync` → AIRS API (cloud) |
 | LLM-Guard input scan | Browser → Node Proxy `:3080/api/llmguard-input` → Flask sidecar `:5002/scan/input` |
 | LLM-Guard output scan | Browser → Node Proxy `:3080/api/llmguard-output` → Flask sidecar `:5002/scan/output` |
 | Little-Canary scan | Browser → Node Proxy `:3080/api/canary` → Flask sidecar `:5001/check` → Ollama |
@@ -185,7 +185,7 @@ graph LR
 
 The Node.js proxy (`src/server.js`) exists for two reasons:
 
-1. **CORS bypass** — Browsers block direct `fetch()` calls to Prisma AIRS and to the local Flask sidecars because they don't emit `Access-Control-Allow-Origin` headers. The Node proxy makes those requests server-side where CORS doesn't apply.
+1. **CORS bypass** — Browsers block direct `fetch()` calls to AIRS and to the local Flask sidecars because they don't emit `Access-Control-Allow-Origin` headers. The Node proxy makes those requests server-side where CORS doesn't apply.
 
 2. **Credential isolation** — `AIRS_API_KEY` is loaded from `.env` at startup and attached to outbound requests by the proxy. The browser never receives the key — only a boolean `hasApiKey` flag from `/api/config`.
 
@@ -208,7 +208,7 @@ Ollama requires `OLLAMA_ORIGINS=*` to accept requests from the browser. See the 
 The output side of the pipeline runs in this order:
 
 ```
-🤖 LLM  →  🔀🛡️ AIRS-Dual  →  🔬 LLM-Guard Output
+🤖 LLM  →  ☁︎ AIRS-Dual  →  🔬 LLM-Guard Output
 ```
 
 An alternative ordering — LLM-Guard Output first, AIRS-Dual second — was evaluated and rejected. The rationale:
