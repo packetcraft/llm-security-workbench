@@ -9,6 +9,21 @@ const os = require("os");
 
 const root = path.join(__dirname, "..");
 
+// Load .env so HF_HUB_OFFLINE / TRANSFORMERS_OFFLINE are forwarded to Python
+const envFile = path.join(root, ".env");
+if (fs.existsSync(envFile)) {
+  const lines = fs.readFileSync(envFile, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    const val = trimmed.slice(eq + 1).trim();
+    if (!(key in process.env)) process.env[key] = val;
+  }
+}
+
 const isWindows = os.platform() === "win32";
 
 const python = isWindows
