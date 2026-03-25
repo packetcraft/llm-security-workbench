@@ -212,6 +212,22 @@ In Demo Mode, scan badges are hidden.
 
 ---
 
+## Testing & Verification
+
+Before a demo or security assessment, run the gate verification tests in **[TESTING.md](TESTING.md)** to confirm every service is reachable and every gate is behaving as expected.
+
+The guide covers:
+
+- **Quick Health Check** — four `curl` commands to verify Ollama, the Node proxy, LLM-Guard, and Little-Canary are all up before you start
+- **11 numbered gate tests** — step-by-step instructions for manually triggering each gate (LLM-Guard input/output, Semantic-Guard, Little-Canary, AIRS-Inlet, AIRS-Dual), plus API Inspector, Live Telemetry, Static Batch Runner, and Dynamic Probe
+- **Direct sidecar tests** — raw `curl` commands for LLM-Guard and Little-Canary so you can verify the Python services independently of the UI
+- **Troubleshooting table** — common failure modes with likely causes and fixes (connection refused, model not found, HuggingFace download errors, AIRS auth failures, and more)
+- **Tips** — shortcuts, scan badge navigation, warmup and offline mode for LLM-Guard
+
+→ **[TESTING.md](TESTING.md)**
+
+---
+
 ## Technical Reference Index
 
 | Doc | Contents |
