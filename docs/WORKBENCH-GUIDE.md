@@ -216,12 +216,13 @@ In Demo Mode, scan badges are hidden.
 
 | Doc | Contents |
 | :--- | :--- |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Component diagram, traffic routing, Node proxy |
-| [SECURITY-GATES.md](SECURITY-GATES.md) | Per-gate deep dives |
-| [GATE-LLM-GUARD.md](GATE-LLM-GUARD.md) | All 13 scanners, HuggingFace models |
-| [GATE-SEMANTIC-GUARD.md](GATE-SEMANTIC-GUARD.md) | LLM-as-judge architecture |
-| [GATE-LITTLE-CANARY.md](GATE-LITTLE-CANARY.md) | Detection patterns, model guide |
-| [GATE-AIRS.md](GATE-AIRS.md) | REST API, SDK, enforcement modes |
-| [RED-TEAM-STATIC.md](RED-TEAM-STATIC.md) | Batch runner, threat library, exports |
-| [RED-TEAM-DYNAMIC.md](RED-TEAM-DYNAMIC.md) | PAIR algorithm, prompts, iteration logic |
-| [TESTING.md](TESTING.md) | Gate verification tests, troubleshooting |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Component diagram, traffic routing, Node proxy design |
+| **[SECURITY-GATES.md](SECURITY-GATES.md)** | **Security gates — pipeline overview, one-paragraph summary per gate** |
+| ↳ [GATE-LLM-GUARD.md](GATE-LLM-GUARD.md) | LLM-Guard — all 13 scanners, HuggingFace models, thresholds, sidecar API |
+| ↳ [GATE-SEMANTIC-GUARD.md](GATE-SEMANTIC-GUARD.md) | Semantic-Guard — LLM-as-judge, exact prompts, verdict schema, judge model guide |
+| ↳ [GATE-LITTLE-CANARY.md](GATE-LITTLE-CANARY.md) | Little-Canary — detection patterns, model recommendations, Flask API |
+| ↳ [GATE-AIRS.md](GATE-AIRS.md) | AIRS — REST API, SDK sidecar, DLP, enforcement modes |
+| **[Red Teaming]** | |
+| ↳ [RED-TEAM-STATIC.md](RED-TEAM-STATIC.md) | Static Batch Runner — threat library, 6-gate pipeline, exports |
+| ↳ [RED-TEAM-DYNAMIC.md](RED-TEAM-DYNAMIC.md) | Dynamic Probe — PAIR algorithm, attacker/judge prompts, gate trace |
+| [TESTING.md](TESTING.md) | Gate verification tests and troubleshooting |
