@@ -2201,7 +2201,9 @@
         .ms-status-pill.ms-pass  { background: rgba(88,117,57,0.12);  border-color: var(--green);  color: var(--green); }
         .ms-status-pill.ms-block { background: rgba(140,67,81,0.12);  border-color: var(--danger); color: var(--danger); }
         .ms-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-        .ms-metrics { display: flex; gap: 4px; margin-bottom: 6px; }
+        .ms-metrics { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+        .ms-format-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+        .ms-format-tag { font-size: 0.62rem; font-family: monospace; padding: 1px 5px; border-radius: 3px; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); }
         .ms-metric {
             flex: 1; background: var(--panel); border: 1px solid var(--border);
             border-radius: 6px; padding: 6px 4px; text-align: center;
@@ -3589,8 +3591,20 @@ Respond ONLY with valid JSON, no other text:
                                     <span class="ms-metric-value" id="ms-passrate">—</span>
                                     <span class="ms-metric-label">Pass Rate</span>
                                 </div>
+                                <div class="ms-metric">
+                                    <span class="ms-metric-value" id="ms-files-scanned">—</span>
+                                    <span class="ms-metric-label">Scanned</span>
+                                </div>
+                                <div class="ms-metric">
+                                    <span class="ms-metric-value" id="ms-files-skipped">—</span>
+                                    <span class="ms-metric-label">Skipped</span>
+                                </div>
                             </div>
                             <div class="ms-meta" id="ms-meta-block"></div>
+                            <div id="ms-formats-row" style="display:none;margin-top:5px">
+                                <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:3px">Formats detected</div>
+                                <div class="ms-format-tags" id="ms-format-tags"></div>
+                            </div>
                         </div>
 
                         <div id="ms-violations-section" style="display:none">
@@ -6005,6 +6019,12 @@ Respond ONLY with valid JSON, no other text:
             metricsRow.style.display = 'none';
             violationsSection.style.display = 'none';
             jsonSection.style.display = 'none';
+            document.getElementById('ms-formats-row').style.display = 'none';
+            document.getElementById('ms-format-tags').innerHTML = '';
+            document.getElementById('ms-meta-block').innerHTML = '';
+            ['ms-passed','ms-failed','ms-passrate','ms-files-scanned','ms-files-skipped'].forEach(id => {
+                document.getElementById(id).textContent = '—';
+            });
 
             const t0 = Date.now();
             try {
@@ -6047,20 +6067,46 @@ Respond ONLY with valid JSON, no other text:
                 const passed = data.passed_rules ?? summary.rules_passed ?? null;
                 const failed = data.failed_rules ?? summary.rules_failed ?? null;
                 if (passed !== null || failed !== null) {
-                    const total = (passed || 0) + (failed || 0);
+                    const total = summary.total_rules ?? (passed || 0) + (failed || 0);
                     const rate  = total > 0 ? ((passed / total) * 100).toFixed(1) + '%' : '—';
-                    document.getElementById('ms-passed').textContent   = total > 0 ? `${passed} / ${total}` : (passed ?? '—');
-                    document.getElementById('ms-failed').textContent   = total > 0 ? `${failed} / ${total}` : (failed ?? '—');
+                    document.getElementById('ms-passed').textContent   = total > 0 ? `${passed}/${total}` : (passed ?? '—');
+                    document.getElementById('ms-failed').textContent   = total > 0 ? `${failed}/${total}` : (failed ?? '—');
                     document.getElementById('ms-passrate').textContent = rate;
                     metricsRow.style.display = 'block';
+                }
 
+                // File counts (always show when present)
+                const filesScanned = data.total_files_scanned ?? data.files_scanned ?? null;
+                const filesSkipped = data.total_files_skipped ?? data.files_skipped ?? null;
+                if (filesScanned != null) document.getElementById('ms-files-scanned').textContent = filesScanned;
+                if (filesSkipped != null) document.getElementById('ms-files-skipped').textContent = filesSkipped;
+                if (filesScanned != null || filesSkipped != null) metricsRow.style.display = 'block';
+
+                // Compact meta line
+                {
                     const meta = [];
-                    if (data.scan_id)                            meta.push(`Scan ID: <span>${escHtml(String(data.scan_id))}</span>`);
-                    if (data.created_at || data.created)         meta.push(`Created: <span>${escHtml(data.created_at || data.created)}</span>`);
-                    if (data.scanner_version)    meta.push(`Scanner: <span>${escHtml(data.scanner_version)}</span>`);
-                    if (data.files_scanned != null) meta.push(`Files scanned: <span>${data.files_scanned}</span>`);
-                    if (data.files_skipped  != null) meta.push(`Files skipped: <span>${data.files_skipped}</span>`);
+                    if (data.scanner_version)       meta.push(`Scanner v<span>${escHtml(data.scanner_version)}</span>`);
+                    if (data.security_group_name)   meta.push(`Group: <span>${escHtml(data.security_group_name)}</span>`);
+                    if (data.scan_origin || data.source_type) meta.push(`Source: <span>${escHtml(data.scan_origin || data.source_type)}</span>`);
+                    // Scan duration from time_started + updated_at
+                    if (data.time_started && data.updated_at) {
+                        const dur = ((new Date(data.updated_at) - new Date(data.time_started)) / 1000).toFixed(2);
+                        meta.push(`API time: <span>${dur}s</span>`);
+                    }
+                    if (data.uuid)                  meta.push(`UUID: <span title="${escHtml(data.uuid)}">${escHtml(data.uuid.substring(0,8))}…</span>`);
+                    if (data.created_at || data.created) {
+                        const ts = new Date(data.created_at || data.created).toLocaleString();
+                        meta.push(`Scanned: <span>${escHtml(ts)}</span>`);
+                    }
                     document.getElementById('ms-meta-block').innerHTML = meta.join(' &nbsp;·&nbsp; ');
+                }
+
+                // Model format tags
+                const formats = data.model_formats || [];
+                if (formats.length > 0) {
+                    document.getElementById('ms-format-tags').innerHTML =
+                        formats.map(f => `<span class="ms-format-tag">${escHtml(f)}</span>`).join('');
+                    document.getElementById('ms-formats-row').style.display = 'block';
                 }
 
                 // Violations list
