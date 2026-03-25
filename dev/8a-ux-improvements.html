@@ -4120,6 +4120,7 @@ Respond ONLY with valid JSON, no other text:
         let _rpCtxWindow = 0;
 
         function toggleRightPanel() {
+            if (document.body.classList.contains('demo-mode')) return; // ghost column locked in demo mode
             const panel = document.getElementById('right-panel');
             const btn = document.getElementById('rp-collapse-btn');
             const rail = document.getElementById('rail-telemetry');
@@ -4335,6 +4336,7 @@ Respond ONLY with valid JSON, no other text:
 
         // Nav panel toggle (5d)
         function toggleNavPanel() {
+            if (document.body.classList.contains('demo-mode')) return; // ghost column locked in demo mode
             const panel = document.getElementById('nav-panel');
             const btn = document.getElementById('nav-collapse-btn');
             panel.classList.toggle('nav-collapsed');
