@@ -326,11 +326,9 @@ If `SDK available: False` is shown, run `pip install pan-aisecurity` and restart
 
 | URL | File |
 |:---|:---|
-| http://localhost:3080/dev/7a | `7a` — `6b` + AIRS Python SDK batch pre-scan ⭐ current |
-| http://localhost:3080/dev/6b | `6b` — `6a` + Red Teaming drawer (Static batch + Dynamic Probe) |
-| http://localhost:3080/dev/6a | `6a` — rail sidebar + live telemetry instrument panel |
-| http://localhost:3080/dev/5d | `5d` — same UI as 6a, pre-refactor (previous iteration reference) |
-| http://localhost:3080/dev/5c | `5c` — Tokyo Night accordion sidebar (archived) |
+| http://localhost:3080/dev/8a | `8a` — `7c` + Demo/Audit mode, user bubble, alert→Inspector link ⭐ current |
+| http://localhost:3080/dev/7c | `7c` — full API Inspector debug drawer (stable reference) |
+| http://localhost:3080/dev/6b | `6b` — Red Teaming drawer (Static batch + Dynamic Probe) |
 
 On first load, the workbench automatically:
 - Fetches available Ollama models and pre-selects `JOSIEFIED-Qwen3:4b`
@@ -397,10 +395,9 @@ TRANSFORMERS_OFFLINE=1
 | `npm run llmguard` | Start the LLM Guard sidecar on :5002 |
 | `npm run canary` | Start the Little-Canary sidecar on :5001 |
 | `npm run airs-sdk` | Start the AIRS Python SDK sidecar on :5003 (7a only) |
-| `npm run stage 7a` | Copy `dev/7a-*.html` → `src/index.html` (makes it the default at `/`) |
+| `npm run stage 8a` | Copy `dev/8a-*.html` → `src/index.html` (makes it the default at `/`) |
+| `npm run stage 7c` | Copy `dev/7c-*.html` → `src/index.html` |
 | `npm run stage 6b` | Copy `dev/6b-*.html` → `src/index.html` |
-| `npm run stage 6a` | Copy `dev/6a-*.html` → `src/index.html` |
-| `npm run stage 5d` | Copy `dev/5d-*.html` → `src/index.html` |
 
 ---
 
@@ -433,7 +430,7 @@ Bias, Relevance, LanguageSame
 
 ## Batch Threat Runner
 
-The Batch Threat Runner is available in `5d`, `6a`, `6b`, and `7a`. It runs all selected threats from the 68-threat adversarial library through the full pipeline automatically.
+The Batch Threat Runner is available in `6b`, `7c`, and `8a`. It runs all selected threats from the 68-threat adversarial library through the full pipeline automatically.
 
 The bottom summary bar shows catches per gate:
 ```
@@ -514,9 +511,9 @@ When the AIRS SDK sidecar is running (`npm run airs-sdk`), `dev/7a` pre-scans al
 ```
 llm-security-workbench/
 ├── dev/
-│   ├── 6b-dynamic-redteam.html                      ← 6a + Red Teaming drawer
-│   ├── 7c-sdk-api-inspector.html                    ← 6b + AIRS SDK sidecar + API Inspector drawer
-│   ├── 8a-ux-improvements.html                      ← 7c + UX improvements (current)
+│   ├── 8a-ux-improvements.html                      ← current (Demo/Audit mode, user bubble)
+│   ├── 7c-sdk-api-inspector.html                    ← stable reference (API Inspector drawer)
+│   ├── 6b-dynamic-redteam.html                      ← stable reference (Red Teaming drawer)
 │   └── builds/                                      ← archived iterations (5d, 6a, 7a, 7b, …)
 ├── services/
 │   ├── llm-guard/
@@ -530,7 +527,7 @@ llm-security-workbench/
 │       ├── airs_sdk_server.py                       ← AIRS Python SDK sidecar :5003 (7a only)
 │       └── requirements.txt
 ├── src/
-│   ├── index.html                                   ← promoted via npm run stage 7a
+│   ├── index.html                                   ← promoted via npm run stage 8a
 │   └── server.js                                    ← Node proxy :3080
 ├── test/
 │   └── sample_threats.json                          ← 68-threat adversarial library
