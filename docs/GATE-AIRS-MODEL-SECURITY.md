@@ -151,7 +151,10 @@ You should see a URL printed. If it prints empty or an error, check that `MODEL_
 ### Step 6 — Install the SDK from the private index
 
 ```bash
+# Windows
 services/airs-model-scan/.venv/Scripts/pip install model-security-client --extra-index-url "$PYPI_URL"
+# MacOS
+services/airs-model-scan/.venv/bin/pip install model-security-client --extra-index-url "$PYPI_URL"
 ```
 
 The real package is larger than the public stub (1.5 kB). Confirm the correct version installed:
@@ -166,7 +169,10 @@ services/airs-model-scan/.venv/Scripts/pip show model-security-client
 Before starting the full sidecar, confirm the SDK and credentials work end-to-end:
 
 ```bash
+# Windows
 services/airs-model-scan/.venv/Scripts/python services/airs-model-scan/hf-scan.py google/flan-t5-small
+# MacOS
+services/airs-model-scan/.venv/bin/python services/airs-model-scan/hf-scan.py google/flan-t5-small
 ```
 
 Expected output:
