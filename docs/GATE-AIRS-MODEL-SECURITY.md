@@ -120,7 +120,11 @@ services/airs-model-scan/.venv/bin/python --version
 ### Step 4 — Install base dependencies
 
 ```bash
+# Windows
 services/airs-model-scan/.venv/Scripts/pip install flask python-dotenv
+
+# MacOS
+services/airs-model-scan/.venv/bin/pip install flask python-dotenv
 ```
 
 ---
