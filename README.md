@@ -98,7 +98,6 @@ For the full six-gate pipeline including LLM-Guard and Little-Canary, follow the
 | ↳ [`docs/RED-TEAM-STATIC.md`](docs/RED-TEAM-STATIC.md) | Static Batch Runner — threat library, 6-gate pipeline execution, exports |
 | ↳ [`docs/RED-TEAM-DYNAMIC.md`](docs/RED-TEAM-DYNAMIC.md) | Dynamic Probe — PAIR algorithm, attacker/judge prompts, gate trace |
 | [`docs/TESTING.md`](docs/TESTING.md) | Gate verification tests and troubleshooting |
-| [`docs/PRD.md`](docs/PRD.md) | Product requirements and roadmap |
 
 ---
 

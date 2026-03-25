@@ -9,10 +9,10 @@ Project context and working conventions for Claude Code. Read this before making
 A browser-based LLM security testing workbench. A Node.js proxy (`src/server.js`) serves the UI and routes security scans. All LLM inference runs locally via Ollama. Security scanning uses a six-gate pipeline — some gates local (LLM-Guard, Semantic-Guard, Little-Canary), some cloud (AIRS).
 
 **Active workbench files:** `dev/6b`, `dev/7c`, and `dev/8a` — these are the ones users run and demo.
-- `8a` — `7c` + UX improvements (Demo/Audit mode, user bubble, alert→Inspector link) — current development file
-- `7c` — `7a` + 🔍 full-featured API Inspector debug drawer — per-gate score, HTTP status, latency, trigger, config snapshot, modal popout — stable reference (`7c-sdk-api-inspector`)
-- `6b` — `6a` + 🚩 Red Teaming drawer (Static batch runner + Dynamic Probe / PAIR algorithm) — stable reference
-- `7a` and earlier — archived in `dev/builds/` (`7a-airs-sdk-sidecar` was the first SDK integration)
+- `8a` — `7c` + UX improvements (Demo/Audit mode, ghost columns, alert→Inspector link) — **current development file**
+- `7c` — `6b` + full-featured API Inspector drawer (per-gate score, HTTP status, latency, trigger, config snapshot) — stable reference
+- `6b` — `6a` + Red Teaming drawer (Static batch runner + Dynamic Probe / PAIR algorithm) — stable reference
+- `6a` and earlier — archived in `dev/builds/`
 
 ---
 
@@ -23,8 +23,8 @@ src/
   server.js           # Node proxy :3080 — only backend file; loads .env
   index.html          # Promoted from dev/ via npm run stage
 
-dev/                  # Active iteration files (5d, 6a, 6b, 7a, 7c)
-dev/builds/           # Archived intermediate builds (3xx, 4xx) — do not edit
+dev/                  # Active iteration files (6b, 7c, 8a)
+dev/builds/           # Archived intermediate builds — do not edit
 
 scripts/
   stage.js            # Copies a dev/ file → src/index.html by prefix match
@@ -38,26 +38,27 @@ services/
   canary/
     canary_server.py    # Flask microservice :5001 (Little-Canary)
     requirements.txt
-  airs-sdk/
-    airs_sdk_server.py  # Flask sidecar :5003 (pan-aisecurity SDK, Python 3.9+)
-    requirements.txt
 
 tools/
   garak_to_threats.py # Converts garak hitlog JSONL → threats JSON
 
 test/
-  sample_threats.json # 68-threat adversarial library
+  sample_threats.json # Adversarial threat library
 
-docs/                 # Project docs only at the root level
+docs/                 # Project docs only
+  WORKBENCH-GUIDE.md    # Features & capabilities walk-through
   SETUP-GUIDE-BASIC.md  # Setup for dev/1a, 1b, 2a
   SETUP-GUIDE-FULL.md   # Setup for dev/6b, 7c, 8a (full six-gate)
-  7A-AIRS-SDK.md      # 7a technical reference — SDK design, function map, optimisation guide
-  ARCHITECTURE.md     # Component diagram, traffic routing, flow diagrams
-  SECURITY-GATES.md   # Per-gate deep dives, config tables, system prompts
-  TESTING.md          # Verification tests, troubleshooting, usage tips
-  DYNAMIC-PROBE.md    # Dynamic Probe (PAIR) architecture, judge scoring, network routing
-  PRD.md              # Product requirements v3.2
-  notes/              # Personal study notes — not project documentation
+  ARCHITECTURE.md       # Component diagram, traffic routing, flow diagrams
+  SECURITY-GATES.md     # Pipeline overview + one-paragraph summary per gate
+  GATE-LLM-GUARD.md     # LLM-Guard deep dive (13 scanners, models, thresholds)
+  GATE-SEMANTIC-GUARD.md # Semantic-Guard deep dive (prompts, verdict schema)
+  GATE-LITTLE-CANARY.md  # Little-Canary deep dive (patterns, Flask API)
+  GATE-AIRS.md           # AIRS deep dive (REST API, DLP, enforcement modes)
+  RED-TEAM-STATIC.md     # Static Batch Runner reference
+  RED-TEAM-DYNAMIC.md    # Dynamic Probe / PAIR reference
+  TESTING.md             # Gate verification tests and troubleshooting
+  notes/                 # Personal study notes — not project documentation
 ```
 
 ---
@@ -67,13 +68,10 @@ docs/                 # Project docs only at the root level
 | Command | What it does |
 | :--- | :--- |
 | `npm start` | Start Node proxy on :3080 |
-| `npm run stage 6a` | Copy `dev/6a-*.html` → `src/index.html` |
+| `npm run stage 8a` | Copy `dev/8a-*.html` → `src/index.html` |
 | `npm run stage` | List all available dev files |
-| `npm run stage:6a` | Named shortcut (also: 1a, 1b, 2a, 3a–3c, 4a, 4c, 5a, 5d) |
 | `npm run canary` | Start Little-Canary Flask sidecar on :5001 |
 | `npm run llmguard` | Start LLM Guard Flask sidecar on :5002 |
-| `npm run airs-sdk` | Start AIRS Python SDK sidecar on :5003 (7a only) |
-| `npm run stage:7a` | Named shortcut for `npm run stage 7a` |
 
 The `stage` script searches `dev/` first, then `dev/builds/` as fallback — prefix matching works for archived files too (e.g. `npm run stage 3c` still works).
 
@@ -98,23 +96,10 @@ Ollama requires `OLLAMA_ORIGINS=*` set as an environment variable before launch 
 
 ```
 🔬 LLM-Guard (input)  →  🧩 Semantic-Guard  →  🐦 Little-Canary
-  →  ☁︎ AIRS-Inlet  →  🤖 LLM  →  ☁︎ AIRS-Dual  →  🔬 LLM-Guard OUTPUT
+  →  ☁︎ AIRS-Inlet  →  🤖 LLM  →  ☁︎ AIRS-Dual  →  🔬 LLM-Guard (output)
 ```
 
 Each gate is independent — Off / Advisory / Strict. All local gates work without an API key.
-
-**Gate name mapping (5a legacy → 5b current):**
-
-| 5a legacy name | 5b name | Emoji |
-| :--- | :--- | :--- |
-| Phase 0.6 / LLM Guard input | LLM-Guard | 🔬 |
-| Phase 0 / Native Guardrail | Semantic-Guard | 🧩 |
-| Phase 0.5 / Little Canary | Little-Canary | 🐦 |
-| Phase 1 / AIRS Prompt Scan | AIRS-Inlet | ☁︎ |
-| Phase 2 / AIRS Response Scan | AIRS-Dual | ☁︎ |
-| Phase 2.5 / LLM Guard output | LLM-Guard OUTPUT | 🔬 |
-
-Always use 5b names in new documentation and code comments.
 
 ---
 
@@ -136,9 +121,10 @@ Always use 5b names in new documentation and code comments.
 
 ## Docs Conventions
 
-- `docs/` root: project-facing documentation only (setup guides, architecture, PRD, testing)
+- `docs/` root: project-facing documentation only
+- Gate deep-dive docs use the `GATE-` prefix (e.g. `GATE-LLM-GUARD.md`) so they group visually in the folder
 - `docs/notes/`: personal study notes — not linked from README or other docs
-- When writing new documentation, link it from `README.md`'s Documentation table
+- When writing new documentation, link it from `README.md`'s Technical Reference table
 
 ---
 
@@ -155,9 +141,9 @@ Always use 5b names in new documentation and code comments.
 Short imperative subject line, present tense. No trailing period. Examples:
 
 ```
-Fix Phase 2.5 batch runner to call runLLMGuardOutput
-Add compact badge format to 5b (Safe-312ms style)
-Move study notes to docs/notes/
+fix demo mode ghost columns in nav panel
+add GATE-LLM-GUARD.md deep dive
+update TESTING.md with 11 gate verification tests
 ```
 
 Multi-line commits: subject + blank line + bullet points for the detail.
