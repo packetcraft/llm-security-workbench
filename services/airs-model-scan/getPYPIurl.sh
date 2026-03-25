@@ -31,9 +31,10 @@ TOKEN_RESPONSE=$(curl -sf -X POST "$TOKEN_ENDPOINT" \
     exit 1
 }
 
-SCM_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token')
+SCM_TOKEN=$(echo "$TOKEN_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('access_token',''))")
 if [[ -z "$SCM_TOKEN" || "$SCM_TOKEN" == "null" ]]; then
     echo "Error: Failed to extract access token from response" >&2
+    echo "Response was: $TOKEN_RESPONSE" >&2
     exit 1
 fi
 
@@ -44,9 +45,10 @@ PYPI_RESPONSE=$(curl -sf -X GET "$API_ENDPOINT/mgmt/v1/pypi/authenticate" \
     exit 1
 }
 
-PYPI_URL=$(echo "$PYPI_RESPONSE" | jq -r '.url')
+PYPI_URL=$(echo "$PYPI_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('url',''))")
 if [[ -z "$PYPI_URL" || "$PYPI_URL" == "null" ]]; then
     echo "Error: Failed to extract PyPI URL from response" >&2
+    echo "Response was: $PYPI_RESPONSE" >&2
     exit 1
 fi
 
