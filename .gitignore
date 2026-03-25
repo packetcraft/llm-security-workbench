@@ -4,6 +4,9 @@ node_modules/
 # Python virtual environments
 services/llm-guard/.venv/
 services/canary/.venv/
+services/airs-model-scan/.venv/
+services/airs-sdk/.venv/
+**/.venv/
 
 # Environment variables
 .env
@@ -21,6 +24,7 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+.claude/
 
 # deepeval config dir (auto-created by pip install deepeval)
 .deepeval/

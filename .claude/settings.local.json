@@ -64,7 +64,9 @@
       "Bash(cp \"C:/Users/B006/Downloads/RedTeaming-Static-Probes.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/redteaming-static.png\")",
       "Bash(cp \"C:/Users/B006/Downloads/Workbench-Audit-Mode.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/workbench-audit-mode.png\")",
       "Bash(cp \"C:/Users/B006/Downloads/Workbench-Demo-Mode.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/workbench-demo-mode.png\")",
-      "Bash(cp \"C:/Users/B006/Downloads/Debug-API-Inspection.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/debug-api-inspection.png\")"
+      "Bash(cp \"C:/Users/B006/Downloads/Debug-API-Inspection.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/debug-api-inspection.png\")",
+      "WebFetch(domain:api.github.com)",
+      "Bash(curl:*)"
     ]
   }
 }
