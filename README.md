@@ -146,7 +146,7 @@ This loads all 13 scanners one by one with progress output. The server stays up 
 > HF_HUB_OFFLINE=1
 > TRANSFORMERS_OFFLINE=1
 > ```
-> See `docs/5-SETUP-GUIDE.md` → Step 8 for full details.
+> See `docs/SETUP-GUIDE-FULL.md` → Step 8 for full details.
 
 #### Little-Canary sidecar (Python 3.9+ — gate 🐦)
 
@@ -193,7 +193,7 @@ cp .env.example .env
 #   AIRS_PROFILE=your-profile-name-here
 ```
 
-The key stays server-side and never reaches the browser. See `docs/5-SETUP-GUIDE.md` for details.
+The key stays server-side and never reaches the browser. See `docs/SETUP-GUIDE-FULL.md` for details.
 
 ---
 
@@ -261,8 +261,8 @@ npm run stage 6a        # copies dev/6a-*.html → src/index.html
 
 | Doc | Contents |
 | :--- | :--- |
-| [`docs/5-SETUP-GUIDE.md`](docs/5-SETUP-GUIDE.md) | Full setup for `dev/5d` / `dev/6a` — LLM Guard install, sidecar startup, HuggingFace model downloads |
-| [`docs/1-SETUP-GUIDE.md`](docs/1-SETUP-GUIDE.md) | Setup for `dev/1a`, `dev/1b`, `dev/2a` — Ollama, Node install, AIRS key |
+| [`docs/SETUP-GUIDE-FULL.md`](docs/SETUP-GUIDE-FULL.md) | Full setup for `dev/5d` / `dev/6a` — LLM Guard install, sidecar startup, HuggingFace model downloads |
+| [`docs/SETUP-GUIDE-BASIC.md`](docs/SETUP-GUIDE-BASIC.md) | Setup for `dev/1a`, `dev/1b`, `dev/2a` — Ollama, Node install, AIRS key |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Component diagram, traffic routing table, six-gate flow diagram, Node proxy design notes |
 | [`docs/SECURITY-GATES.md`](docs/SECURITY-GATES.md) | Per-gate deep dives — how each gate works, configuration tables, recommended models, system prompts |
 | [`docs/TESTING.md`](docs/TESTING.md) | Gate-by-gate verification tests, troubleshooting table, usage tips |

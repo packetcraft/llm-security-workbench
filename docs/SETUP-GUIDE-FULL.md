@@ -1,15 +1,18 @@
 <!--
-  SCOPE: This guide covers dev/5d, dev/6a, dev/6b, and dev/7a.
-  These are the full six-gate LLM security workbench files including the LLM Guard sidecar.
-  For the entry-level files (dev/1a, dev/1b, dev/2a), see docs/1-SETUP-GUIDE.md.
+  SCOPE: This guide covers the full six-gate workbench — dev/6b, dev/7c, dev/8a.
+  Requires Node.js, Python 3.12 (LLM-Guard sidecar), and Ollama. AIRS API key is optional.
+  For the entry-level files (dev/1a, dev/1b, dev/2a) with no Python sidecars, see docs/SETUP-GUIDE-BASIC.md.
   Files dev/3xx and dev/4xx are intermediate builds not covered by any standalone guide.
-  dev/5a–5c (earlier iterations) are archived in dev/builds/.
+  dev/5a–5d, dev/6a, dev/7a, dev/7b are archived in dev/builds/.
 -->
 
-# LLM Security Workbench — Six-Gate Setup Guide
-### `dev/5d` · `dev/6a` · `dev/6b` · `dev/7a`
+# LLM Security Workbench — Full Six-Gate Setup Guide
+### `dev/6b` · `dev/7c` · `dev/8a`
 
 This guide walks through a full from-scratch setup of the six-gate LLM security workbench. No prior installation is assumed.
+
+> **Scope:** Full six-gate pipeline — requires Node.js, Python 3.12 (LLM-Guard sidecar), and Ollama. An AIRS API key is optional.
+> If you only need the entry-level files (`dev/1a`, `dev/1b`, `dev/2a`) with no Python sidecars, see **[`docs/SETUP-GUIDE-BASIC.md`](SETUP-GUIDE-BASIC.md)** instead.
 
 ---
 
@@ -17,12 +20,11 @@ This guide walks through a full from-scratch setup of the six-gate LLM security 
 
 | File | Description |
 |:---|:---|
-| `dev/7a-airs-sdk.html` | **Current development file.** `6b` + 🐍 AIRS Python SDK evaluation — batch pre-scan (5 parallel) via `pan-aisecurity` sidecar on `:5003` |
+| `dev/8a-ux-improvements.html` | **Current development file.** `7c` + UX improvements (Demo/Audit mode, user bubble, alert→Inspector link) |
+| `dev/7c-debug-inspector.html` | `7a` + 🔍 API Inspector debug drawer — per-gate score, HTTP status, latency, trigger, config snapshot |
 | `dev/6b-dynamic-redteam.html` | `6a` + 🚩 Red Teaming drawer — Static batch runner + Dynamic Probe (PAIR algorithm) |
-| `dev/6a-instrument-panel.html` | Rail sidebar + live telemetry instrument panel (right panel, open by default) — stable reference |
-| `dev/5d-rail-sidebar.html` | Two-layer rail sidebar, 🐙PacketCraft branding — unrefactored; retained as previous iteration reference |
 
-Use `7a` for current development and demos. `6b` and `6a` are stable references. `5a`–`5c` are archived in `dev/builds/`.
+Use `8a` for current development and demos. `7c` and `6b` are stable references. Earlier files are archived in `dev/builds/`.
 
 ---
 
@@ -533,8 +535,8 @@ llm-security-workbench/
 ├── test/
 │   └── sample_threats.json                          ← 68-threat adversarial library
 ├── docs/
-│   ├── 1-SETUP-GUIDE.md                            ← setup for dev/1a, 1b, 2a
-│   └── 5-SETUP-GUIDE.md                            ← this file
+│   ├── SETUP-GUIDE-BASIC.md                        ← setup for dev/1a, 1b, 2a
+│   └── SETUP-GUIDE-FULL.md                         ← this file
 ├── .env                                             ← your API keys (gitignored)
 ├── .env.example                                     ← safe template to commit
 └── package.json

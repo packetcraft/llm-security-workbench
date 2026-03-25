@@ -1,14 +1,18 @@
 <!--
   SCOPE: This guide covers dev/1a, dev/1b, and dev/2a only.
   These are the entry-level HTML files — minimal Ollama chat and AIRS prompt-gate demo.
-  For the full six-gate pipeline (dev/5d / dev/6a), see docs/5-SETUP-GUIDE.md.
+  No Python sidecars required. Ollama + Node.js is sufficient.
+  For the full six-gate pipeline (LLM-Guard, Semantic-Guard, Little-Canary, AIRS), see docs/SETUP-GUIDE-FULL.md.
   Files dev/3xx and dev/4xx are intermediate builds not covered by any standalone guide.
 -->
 
-# Getting Started — LLM Security Workbench
+# Getting Started — LLM Security Workbench (Basic)
 ### `dev/1a` · `dev/1b` · `dev/2a`
 
 This guide covers the entry-level workbench files from scratch. No prior installation is assumed.
+
+> **Scope:** Entry-level files only — Ollama and Node.js, no Python sidecars.
+> If you want the full six-gate pipeline (LLM-Guard, Semantic-Guard, Little-Canary, AIRS), see **[`docs/SETUP-GUIDE-FULL.md`](SETUP-GUIDE-FULL.md)** instead.
 
 ---
 
@@ -244,4 +248,4 @@ llm-security-workbench/
 
 `2a` shows a single-gate prompt scan. The full six-gate pipeline (LLM-Guard → Semantic-Guard → Little-Canary → AIRS-Inlet → LLM → AIRS-Dual → LLM-Guard OUTPUT) is covered in:
 
-→ **`docs/5-SETUP-GUIDE.md`** (`dev/5d` / `dev/6a`)
+→ **[`docs/SETUP-GUIDE-FULL.md`](SETUP-GUIDE-FULL.md)** (`dev/6b`, `dev/7c`, `dev/8a`)

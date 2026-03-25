@@ -11,7 +11,7 @@
 
   CROSS-REFERENCES:
   - docs/ARCHITECTURE.md    — system flow and component diagram
-  - docs/5-SETUP-GUIDE.md   — how to install and start each gate's sidecar
+  - docs/SETUP-GUIDE-FULL.md   — how to install and start each gate's sidecar
   - docs/TESTING.md         — how to verify each gate is working
 -->
 

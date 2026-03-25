@@ -10,7 +10,7 @@
 
   CROSS-REFERENCES:
   - docs/ARCHITECTURE.md    — component diagram, traffic routing, UI layout
-  - docs/5-SETUP-GUIDE.md   — how to install and start every sidecar
+  - docs/SETUP-GUIDE-FULL.md   — how to install and start every sidecar
   - docs/SECURITY-GATES.md  — per-gate logic and configuration
   - docs/DYNAMIC-PROBE.md   — Dynamic Probe (PAIR) architecture (inherited from 6b)
 -->

@@ -51,8 +51,8 @@ test/
   sample_threats.json # 68-threat adversarial library
 
 docs/                 # Project docs only at the root level
-  1-SETUP-GUIDE.md    # Setup for dev/1a, 1b, 2a
-  5-SETUP-GUIDE.md    # Setup for dev/5d, 6a, 6b, 7a (full six-gate)
+  SETUP-GUIDE-BASIC.md  # Setup for dev/1a, 1b, 2a
+  SETUP-GUIDE-FULL.md   # Setup for dev/6b, 7c, 8a (full six-gate)
   7A-AIRS-SDK.md      # 7a technical reference — SDK design, function map, optimisation guide
   ARCHITECTURE.md     # Component diagram, traffic routing, flow diagrams
   SECURITY-GATES.md   # Per-gate deep dives, config tables, system prompts

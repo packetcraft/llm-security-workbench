@@ -10,7 +10,7 @@
 
   CROSS-REFERENCES:
   - docs/SECURITY-GATES.md  — per-gate logic and configuration details
-  - docs/5-SETUP-GUIDE.md   — how to start each component
+  - docs/SETUP-GUIDE-FULL.md   — how to start each component
   - src/server.js           — the Node proxy implementation
 -->
 

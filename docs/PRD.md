@@ -584,8 +584,8 @@ llm-security-workbench/
 │   └── llmguard.js       # Launcher — starts the LLM Guard Python sidecar via venv
 ├── docs/
 │   ├── PRD.md            # This document
-│   ├── 1-SETUP-GUIDE.md  # Setup guide for dev/1a, 1b, 2a
-│   ├── 5-SETUP-GUIDE.md  # Setup guide for dev/5d, 6a (six-gate pipeline)
+│   ├── SETUP-GUIDE-BASIC.md  # Setup guide for dev/1a, 1b, 2a
+│   ├── SETUP-GUIDE-FULL.md   # Setup guide for dev/6b, 7c, 8a (six-gate pipeline)
 │   ├── notes/            # Personal study notes (not linked from README)
 ├── dev/                  # Iteration history — serve via /dev/<prefix> or promote with npm run stage
 │   ├── 1a-ollama-chat-no-security.html

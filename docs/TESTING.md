@@ -10,7 +10,7 @@
 
   CROSS-REFERENCES:
   - docs/SECURITY-GATES.md  — gate internals and configuration
-  - docs/5-SETUP-GUIDE.md   — installation and startup instructions
+  - docs/SETUP-GUIDE-FULL.md   — installation and startup instructions
   - docs/ARCHITECTURE.md    — system flow reference
 -->
 

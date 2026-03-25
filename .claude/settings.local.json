@@ -53,7 +53,8 @@
       "Bash(grep -v \"^\\\\s*//\")",
       "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\B006\\\\Documents\\\\github\\\\llm-security-workbench\\\\dev\\\\7b-airs-sdk.html' -Pattern 'Collapse chat area' -SimpleMatch | Select-Object LineNumber, Line\")",
       "Bash(npm run:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(cd:*)"
     ]
   }
 }
