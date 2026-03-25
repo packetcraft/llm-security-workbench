@@ -5,6 +5,23 @@
 
 ---
 
+## Attribution
+
+This gate is built on the **`little-canary`** open-source library by **Hermes Labs**.
+
+| | |
+| :--- | :--- |
+| **Author** | Hermes Labs (`lpcisystems@gmail.com`) |
+| **GitHub** | [github.com/roli-lpci/little-canary](https://github.com/roli-lpci/little-canary) |
+| **PyPI** | [pypi.org/project/little-canary](https://pypi.org/project/little-canary/) |
+| **Homepage** | [littlecanary.ai](https://littlecanary.ai) |
+| **Version used** | `0.2.2` |
+| **License** | See repository |
+
+The internal prompts, detection patterns, and pipeline logic documented in this file are derived from the library source code at the above repository. All credit for the design and implementation of the detection approach belongs to the original authors.
+
+---
+
 ## What Little Canary Is
 
 Little Canary ([`little-canary`](https://pypi.org/project/little-canary/)) is a **prompt injection detection library** built around the "sacrificial canary" concept: instead of asking "does this input look like an attack?", it feeds the raw input to a sandboxed LLM and asks "did this input compromise the model?".
