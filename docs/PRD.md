@@ -658,7 +658,7 @@ llm-security-workbench/
 - **Export** — JSON and professional markdown red team report (reference ID, executive summary, gate config table, scope/limitations, per-attempt log with gate trace table and judge reasoning)
 - **Default models** — `qwen2.5:1.5b` for both attacker and judge on first load; recommended upgrade to `llama3.1:8b` (attacker) + `gemma2:9b` or `qwen2.5:7b` (judge) for reliable verdicts
 
-**Recommended model guidance (documented in `docs/DYNAMIC-PROBE.md`):**
+**Recommended model guidance (documented in `docs/RED-TEAM-DYNAMIC.md`):**
 
 | Role | Minimum | Recommended |
 | :--- | :--- | :--- |
