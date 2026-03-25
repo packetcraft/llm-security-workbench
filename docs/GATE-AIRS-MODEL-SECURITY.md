@@ -95,10 +95,10 @@ MODEL_SECURITY_API_ENDPOINT=https://api.sase.paloaltonetworks.com/aims
 ### Step 3 — Create the Python virtual environment
 
 ```bash
-// py: This is a utility specific to WINDOWS installations of Python.
+# py: This is a utility specific to WINDOWS installations of Python.
 py -3.12 -m venv services/airs-model-scan/.venv
 
-// python3: This is the standard command for **macOS and Linux.**
+# python3: This is the standard command for **macOS and Linux.**
 python3.12 -m venv services/airs-model-scan/.venv
 ```
 
