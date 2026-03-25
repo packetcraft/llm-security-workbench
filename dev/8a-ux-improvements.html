@@ -884,6 +884,23 @@
             border: 1px solid var(--purple);
         }
 
+        /* PAIR probe verdict banner */
+        .pair-banner {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            border: 1px solid;
+        }
+        .pair-banner.warn   { background: rgba(224,175,104,0.15); color: var(--warning); border-color: var(--warning); }
+        .pair-banner.danger { background: rgba(247,118,142,0.15); color: var(--danger);  border-color: var(--danger);  }
+        .pair-banner.safe   { background: rgba(158,206,106,0.15); color: var(--green);   border-color: var(--green);   }
+
+        /* LLM-Guard badge colour overrides — replaces inline style.cssText */
+        .scan-badge.lg     { border-color: var(--llmguard); color: var(--llmguard); }
+        .scan-badge.lg-err { border-color: var(--warning);  color: var(--warning);  }
+
         /* Replay button on user messages */
         .replay-btn {
             background: none;
@@ -4265,12 +4282,11 @@ Respond ONLY with valid JSON, no other text:
                 const models = data.models || [];
                 const currentModel = (document.getElementById('model-select') || {}).value || '';
                 const entry = models.find(m => m.name === currentModel) || models[0];
-                const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '—'; };
                 if (entry) {
-                    set('rp-mem-proc', entry.details?.processor || entry.processor || '—');
-                    set('rp-mem-vram', rpFormatBytes(entry.size_vram));
+                    setEl('rp-mem-proc', entry.details?.processor || entry.processor || '—');
+                    setEl('rp-mem-vram', rpFormatBytes(entry.size_vram));
                     const ramVal = (entry.size || 0) - (entry.size_vram || 0);
-                    set('rp-mem-ram', ramVal > 0 ? rpFormatBytes(ramVal) : '—');
+                    setEl('rp-mem-ram', ramVal > 0 ? rpFormatBytes(ramVal) : '—');
                     const totalMem = entry.size || 1;
                     const vramBar = document.getElementById('rp-mem-vram-bar');
                     const ramBar = document.getElementById('rp-mem-ram-bar');
@@ -4280,15 +4296,15 @@ Respond ONLY with valid JSON, no other text:
                         const secsLeft = Math.max(0, Math.round((new Date(entry.expires_at) - Date.now()) / 1000));
                         const mins = Math.floor(secsLeft / 60);
                         const secs = secsLeft % 60;
-                        set('rp-mem-ttl', secsLeft > 0 ? `${mins}m ${secs}s` : 'unloading');
+                        setEl('rp-mem-ttl', secsLeft > 0 ? `${mins}m ${secs}s` : 'unloading');
                     } else {
-                        set('rp-mem-ttl', '—');
+                        setEl('rp-mem-ttl', '—');
                     }
                 } else {
-                    set('rp-mem-proc', '—');
-                    set('rp-mem-vram', '—');
-                    set('rp-mem-ram', '—');
-                    set('rp-mem-ttl', 'not loaded');
+                    setEl('rp-mem-proc', '—');
+                    setEl('rp-mem-vram', '—');
+                    setEl('rp-mem-ram', '—');
+                    setEl('rp-mem-ttl', 'not loaded');
                 }
             } catch (_) { /* Ollama not running — silently skip */ }
         }
@@ -5070,8 +5086,7 @@ Respond ONLY with valid JSON, no other text:
 
             if (lg.error) {
                 llmguardBadge.style.display = "";
-                llmguardBadge.className = "scan-badge";
-                llmguardBadge.style.cssText = "border-color:var(--warning);color:var(--warning)";
+                llmguardBadge.className = "scan-badge lg-err";
                 llmguardBadge.textContent = `🔬 Error${lgInputShort}`;
                 const warnDiv = makeAlertEl("alert-warning", `<strong>⚠️ LLM-GUARD — ERROR ${lgInputLat}</strong><br>Scan failed, proceeding without LLM-Guard. <small>${lg.message}</small>`, 'dbg-lgInput');
                 chatBox.appendChild(warnDiv);
@@ -5080,8 +5095,7 @@ Respond ONLY with valid JSON, no other text:
                 setDbgBadge('lgInput', 'ERR');
             } else if (lg.blocked) {
                 llmguardBadge.style.display = "";
-                llmguardBadge.className = "scan-badge blocked";
-                llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                llmguardBadge.className = "scan-badge blocked lg";
                 llmguardBadge.textContent = `🔬 Blocked${lgInputShort}`;
                 const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD — BLOCKED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Semantic-Guard, Little-Canary, AIRS-Inlet and LLM not reached.`, 'dbg-lgInput');
                 chatBox.appendChild(blockDiv);
@@ -5092,8 +5106,7 @@ Respond ONLY with valid JSON, no other text:
                 return { blocked: true };
             } else if (lg.flagged) {
                 llmguardBadge.style.display = "";
-                llmguardBadge.className = "scan-badge flagged";
-                llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                llmguardBadge.className = "scan-badge flagged lg";
                 llmguardBadge.textContent = `🔬 Flagged${lgInputShort}`;
                 const warnDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD — FLAGGED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Proceeding to Semantic-Guard.`, 'dbg-lgInput');
                 chatBox.appendChild(warnDiv);
@@ -5102,8 +5115,7 @@ Respond ONLY with valid JSON, no other text:
                 setDbgBadge('lgInput', 'ALERT');
             } else {
                 llmguardBadge.style.display = "";
-                llmguardBadge.className = "scan-badge allowed";
-                llmguardBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                llmguardBadge.className = "scan-badge allowed lg";
                 llmguardBadge.textContent = `🔬 Safe${lgInputShort}`;
                 rpUpdateGate('lg-input', 'safe', lgInputMs);
                 setDbgBadge('lgInput', 'PASS');
@@ -5568,8 +5580,7 @@ Respond ONLY with valid JSON, no other text:
                 setDbgBadge('lgOutput', 'ERR');
             } else if (lgOut.blocked) {
                 if (resBadge) {
-                    resBadge.className = "scan-badge blocked";
-                    resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                    resBadge.className = "scan-badge blocked lg";
                     resBadge.textContent = `🔬 LG-OUT BLOCKED ${lgOutputLat}`;
                 }
                 const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`, 'dbg-lgOutput');
@@ -5579,8 +5590,7 @@ Respond ONLY with valid JSON, no other text:
                 setDbgBadge('lgOutput', 'BLOCK');
             } else if (lgOut.flagged) {
                 if (resBadge) {
-                    resBadge.className = "scan-badge flagged";
-                    resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                    resBadge.className = "scan-badge flagged lg";
                     resBadge.textContent = `🔬 LG-OUT FLAGGED ${lgOutputLat}`;
                 }
                 const warnDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD OUTPUT — FLAGGED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response shown with warning.`, 'dbg-lgOutput');
@@ -5590,8 +5600,7 @@ Respond ONLY with valid JSON, no other text:
                 setDbgBadge('lgOutput', 'ALERT');
             } else {
                 if (resBadge && !resBadge.textContent.includes("AIRS-2")) {
-                    resBadge.className = "scan-badge allowed";
-                    resBadge.style.cssText = "border-color:var(--llmguard);color:var(--llmguard)";
+                    resBadge.className = "scan-badge allowed lg";
                     resBadge.textContent = `🔬 LG-OUT SAFE ${lgOutputLat}`;
                 }
                 els.debugStatus.innerText = "Done ✅";
@@ -7745,7 +7754,7 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
                 const errBanner = document.getElementById('pair-verdict-banner');
                 if (errBanner) {
                     errBanner.textContent = `⚠ Probe error — ${e.message}`;
-                    errBanner.style.cssText = 'padding:8px 12px;border-radius:6px;font-size:13px;font-weight:700;margin-bottom:10px;background:rgba(224,175,104,0.15);color:var(--warn,#e0af68);border:1px solid var(--warn,#e0af68);';
+                    errBanner.className = 'pair-banner warn';
                 }
                 _pairRunning = false;
                 document.getElementById('pair-run-btn').style.display  = '';
@@ -7762,13 +7771,13 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
             const banner = document.getElementById('pair-verdict-banner');
             if (breached) {
                 banner.textContent = `\uD83D\uDD34 BREACHED — Security bypassed at iteration ${breachIteration} (judge score \u2265 ${threshold})`;
-                banner.style.cssText = 'padding:8px 12px;border-radius:6px;font-size:13px;font-weight:700;margin-bottom:10px;background:rgba(247,118,142,0.15);color:var(--danger,#f7768e);border:1px solid var(--danger,#f7768e);';
+                banner.className = 'pair-banner danger';
             } else if (_pairStop) {
                 banner.textContent = `\u23F9 STOPPED — Probe cancelled after ${_pairLog.length} iteration(s)`;
-                banner.style.cssText = 'padding:8px 12px;border-radius:6px;font-size:13px;font-weight:700;margin-bottom:10px;background:rgba(224,175,104,0.15);color:var(--warn,#e0af68);border:1px solid var(--warn,#e0af68);';
+                banner.className = 'pair-banner warn';
             } else {
                 banner.textContent = `\uD83D\uDFE2 HELD — All ${_pairLog.length} attack iterations blocked or scored below threshold`;
-                banner.style.cssText = 'padding:8px 12px;border-radius:6px;font-size:13px;font-weight:700;margin-bottom:10px;background:rgba(158,206,106,0.15);color:var(--safe,#9ece6a);border:1px solid var(--safe,#9ece6a);';
+                banner.className = 'pair-banner safe';
             }
 
             document.getElementById('pair-status-bar').textContent =
@@ -8255,7 +8264,7 @@ Generate a refined attack prompt. Escalate if needed. Try different angles: stor
 
                 <!-- Results -->
                 <div id="pair-results" style="display:none;">
-                    <div id="pair-verdict-banner" style="padding:8px 12px;border-radius:6px;font-size:13px;font-weight:700;margin-bottom:6px;"></div>
+                    <div id="pair-verdict-banner" class="pair-banner"></div>
                     <div id="pair-coverage-note" class="pair-output-note" style="display:none;margin-bottom:8px;"></div>
                     <div id="pair-result-stats" style="font-size:11px;color:var(--text-muted);margin-bottom:6px;display:flex;gap:12px;"></div>
                     <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Attempt Log</div>
