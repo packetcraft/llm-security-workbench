@@ -3580,7 +3580,11 @@ Respond ONLY with valid JSON, no other text:
                 <div class="nav-pane" id="pane-model-security">
                     <div style="padding: 0 10px 12px">
 
-                        <div class="ms-description">Scan a HuggingFace model for supply-chain threats, malicious code, and policy violations using AIRS Model Security.</div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                            <span style="font-size:0.72rem;font-weight:700;color:var(--text)">🔍 Model Security</span>
+                            <span class="sidecar-dot" id="sc-model-scan" title="Model Security sidecar: checking…"></span>
+                        </div>
+                        <div class="ms-description">Scan a HuggingFace model for supply-chain threats, malicious code, and policy violations using AIRS Model Security.<br><span style="font-size:0.67rem;color:var(--text-muted)">Requires: <code style="font-size:0.67rem">npm run model-scan</code></span></div>
 
                         <div class="ms-section-title">Quick Select</div>
                         <div class="ms-model-cards">
@@ -6868,6 +6872,18 @@ Respond ONLY with valid JSON, no other text:
                             ok ? "Little-Canary: online" : "Little-Canary: offline — npm run canary");
                     })
                     .catch(() => setSidecarDot("sc-canary", false, "Little-Canary: offline — npm run canary")),
+
+                // AIRS Model Security (:5004)
+                fetch("/api/model-scan/health", { signal: AbortSignal.timeout(5000) })
+                    .then(r => r.json())
+                    .then(d => {
+                        const ok = d.status === "ok" && d.sdk_available;
+                        setSidecarDot("sc-model-scan", ok,
+                            ok ? "Model Security: online — SDK ready" :
+                            d.sdk_error ? `Model Security: SDK not installed — ${d.sdk_error}` :
+                                          "Model Security: offline — npm run model-scan");
+                    })
+                    .catch(() => setSidecarDot("sc-model-scan", false, "Model Security: offline — npm run model-scan")),
 
                 // AIRS SDK (:5003)
                 fetch("/api/airs-sdk/health", { signal: AbortSignal.timeout(5000) })

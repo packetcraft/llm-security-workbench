@@ -38,6 +38,9 @@ services/
   canary/
     canary_server.py    # Flask microservice :5001 (Little-Canary)
     requirements.txt
+  airs-model-scan/
+    model_scan_server.py  # Flask sidecar :5004 (AIRS Model Security SDK)
+    requirements.txt      # flask, python-dotenv; model-security-client via private PyPI
 
 tools/
   garak_to_threats.py # Converts garak hitlog JSONL → threats JSON
@@ -73,6 +76,7 @@ docs/                 # Project docs only
 | `npm run stage` | List all available dev files |
 | `npm run canary` | Start Little-Canary Flask sidecar on :5001 |
 | `npm run llmguard` | Start LLM Guard Flask sidecar on :5002 |
+| `npm run model-scan` | Start AIRS Model Security Flask sidecar on :5004 |
 
 The `stage` script searches `dev/` first, then `dev/builds/` as fallback — prefix matching works for archived files too (e.g. `npm run stage 3c` still works).
 

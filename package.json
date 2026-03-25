@@ -24,7 +24,8 @@
     "canary": "node scripts/canary.js",
     "llmguard": "node scripts/llmguard.js",
     "llmguard:warmup": "node scripts/llmguard.js --warmup",
-    "airs-sdk": "node scripts/airs-sdk.js"
+    "airs-sdk": "node scripts/airs-sdk.js",
+    "model-scan": "node scripts/model-scan.js"
   },
   "keywords": [],
   "author": "",

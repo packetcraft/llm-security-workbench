@@ -1,6 +1,6 @@
 # AIRS Model Security — Technical Reference
 
-> **Scope:** Complete technical reference for the 🔍 Model Security scanner in this workbench. Covers what it scans, the AIRS API, request/response schema, UI integration, and operational guidance.
+> **Scope:** Complete technical reference for the 🔍 Model Security scanner in this workbench. Covers the SDK-based sidecar architecture, private PyPI bootstrap, credentials, request/response schema, and UI integration.
 > For runtime prompt/response security, see **[`docs/GATE-AIRS.md`](GATE-AIRS.md)**.
 > For setup instructions, see **[`docs/SETUP-GUIDE-FULL.md`](SETUP-GUIDE-FULL.md)**.
 
@@ -8,23 +8,23 @@
 
 ## What Model Security Is
 
-**AIRS Model Security** scans AI model artifacts — weights, tokenizer files, config files, and other components — for supply-chain threats before or after deployment. This is a fundamentally different threat surface from runtime security:
+**AIRS Model Security** scans AI model artifacts — weights, tokenizer files, config files — for supply-chain threats *before or after deployment*. This is a different threat surface from runtime security:
 
 | | Runtime Security (AIRS-Inlet / AIRS-Dual) | Model Security |
 | :--- | :--- | :--- |
 | **What is scanned** | Prompts and responses at inference time | Model files and artifacts |
-| **When it runs** | Every chat turn | On-demand, pre/post-deployment |
-| **Threat category** | Prompt injection, DLP, jailbreak, policy violation | Malicious code, backdoors, supply-chain tampering |
-| **Trigger** | Automatic per-message | Manual — user initiates a scan |
-| **Latency** | ~200–800 ms | Seconds to minutes (depends on model size) |
+| **When it runs** | Every chat turn (automatic) | On-demand |
+| **Threat category** | Prompt injection, DLP, jailbreak | Malicious code, backdoors, supply-chain tampering |
+| **Credentials** | `AIRS_API_KEY` | OAuth2 client credentials (separate) |
+| **Sidecar port** | None | `:5004` |
 
 ### What it detects
 
-- **Malicious code injection** — executable payloads embedded in model files (pickle exploits, `__reduce__` overrides, deserialization bombs)
-- **Backdoors and trojans** — hidden behaviours triggered by specific inputs
+- **Malicious code injection** — pickle exploits, `__reduce__` overrides, deserialization bombs embedded in model files
+- **Backdoors and trojans** — hidden behaviours triggered by specific inputs at inference time
 - **Supply-chain tampering** — weights or configs modified after original publication
-- **Policy violations** — violations of configured security rules across the model artifact set
-- **Unsafe serialisation formats** — formats known to allow arbitrary code execution on load
+- **Policy violations** — violations of security rules configured in the AIRS console
+- **Unsafe serialisation formats** — formats known to allow arbitrary code execution on model load
 
 ---
 
@@ -32,196 +32,196 @@
 
 ```
 Browser (8b UI — Model Security pane)
-    │  POST /api/model-scan  { model_id, source }
+    │  POST /api/model-scan  { model_id: "google/flan-t5-small" }
     ▼
 src/server.js  :3080
-    │  forwards to AIRS Model Security API
+    │  forwards to http://localhost:5004/scan/hf
     ▼
-AIRS Model Security API
-    POST https://service.api.aisecurity.paloaltonetworks.com/v1/aiml/model/scan
-    │
-    │  AIRS pulls model artifacts from HuggingFace Hub and scans them
-    │  against the configured security policy set
+services/airs-model-scan/model_scan_server.py  :5004
+    │  normalises model_id → https://huggingface.co/google/flan-t5-small
+    │  calls ModelSecurityAPIClient.scan(security_group_uuid, model_uri)
     ▼
-Response: { scan_id, action, passed_rules, failed_rules, violations[], ... }
+model-security-client SDK  (private PyPI package)
+    │  OAuth2 client_credentials → access token
+    │  POST https://api.sase.paloaltonetworks.com/aims  (model scan API)
+    ▼
+Result: { eval_outcome, ... } — Pydantic v2 model, serialised as JSON
     ▼
 server.js returns result to browser
     ▼
 8b UI: status pill + metrics + violations list + raw JSON
 ```
 
-**No Python sidecar required.** Model Security calls the AIRS cloud API directly via the Node proxy — the same credential path (`AIRS_API_KEY` in `.env`) as AIRS-Inlet and AIRS-Dual.
+**This gate uses its own Python sidecar** — like LLM-Guard and Little-Canary, it must be running before scans will work. The sidecar wraps the private `model-security-client` SDK which handles OAuth2 token acquisition internally.
 
 ---
 
-## API Reference
+## Setup
 
-### Endpoint
+### Step 1 — Get credentials
+
+Model Security uses **OAuth2 client credentials** — separate from the `AIRS_API_KEY` used for runtime security. Obtain from the Palo Alto AI Model Security console:
+
+| Credential | Where to find it |
+| :--- | :--- |
+| `MODEL_SECURITY_CLIENT_ID` | Prisma Cloud → AI Model Security → API Credentials |
+| `MODEL_SECURITY_CLIENT_SECRET` | Same — shown once at creation |
+| `TSG_ID` | Tenant Service Group ID — visible in the console URL or tenant settings |
+| `SECURITY_GROUP_UUID_HF` | AI Model Security → Security Groups → your HuggingFace group UUID |
+
+Add all four to your `.env`:
+
+```env
+MODEL_SECURITY_CLIENT_ID=your-client-id
+MODEL_SECURITY_CLIENT_SECRET=your-client-secret
+TSG_ID=your-tsg-id
+SECURITY_GROUP_UUID_HF=your-hf-security-group-uuid
+MODEL_SECURITY_API_ENDPOINT=https://api.sase.paloaltonetworks.com/aims
+```
+
+### Step 2 — Bootstrap private PyPI and install the SDK
+
+The `model-security-client` package is **not on public PyPI**. It lives on an authenticated private index. The bootstrap requires your credentials from Step 1.
+
+**Get an OAuth2 access token:**
+```bash
+SCM_TOKEN=$(curl -s -X POST "https://auth.apps.paloaltonetworks.com/oauth2/access_token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -u "$MODEL_SECURITY_CLIENT_ID:$MODEL_SECURITY_CLIENT_SECRET" \
+  -d "grant_type=client_credentials&scope=tsg_id:$TSG_ID" \
+  | python -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+```
+
+**Get the private PyPI URL:**
+```bash
+PYPI_URL=$(curl -s -X GET "https://api.sase.paloaltonetworks.com/aims/mgmt/v1/pypi/authenticate" \
+  -H "Authorization: Bearer $SCM_TOKEN" \
+  | python -c "import sys,json; print(json.load(sys.stdin)['url'])")
+```
+
+**Create the venv and install:**
+```bash
+# Windows
+py -3.12 -m venv services/airs-model-scan/.venv
+services\airs-model-scan\.venv\Scripts\pip install flask python-dotenv
+services\airs-model-scan\.venv\Scripts\pip install model-security-client --extra-index-url %PYPI_URL%
+
+# macOS / Linux
+python3.12 -m venv services/airs-model-scan/.venv
+services/airs-model-scan/.venv/bin/pip install flask python-dotenv
+services/airs-model-scan/.venv/bin/pip install model-security-client --extra-index-url $PYPI_URL
+```
+
+> **Python version:** 3.12 required — the same as LLM-Guard. Do not use 3.13 or 3.14.
+
+### Step 3 — Start the sidecar
+
+```bash
+npm run model-scan
+```
+
+Verify it is running:
+```bash
+curl http://localhost:5004/health
+# → { "status": "ok", "service": "airs-model-scan", "sdk_available": true }
+```
+
+The 🔍 icon in the 8b nav panel shows a **green dot** when the sidecar is online with the SDK loaded, and a **grey dot** when it is offline or the SDK is not installed.
+
+---
+
+## SDK Reference
+
+### Package
 
 ```
-POST https://api.aisecurity.paloaltonetworks.com/v1/aiml/model/scan
+model-security-client   (private PyPI — see bootstrap above)
 ```
 
-> **Note:** Verify the current path at [pan.dev/airs](https://pan.dev/airs). The Palo Alto AIRS API surface evolves; the endpoint above reflects the known path at time of writing. The raw JSON panel in the UI will show the actual response — use it to confirm the endpoint is correct and to inspect the response schema.
+### Client construction
 
-### Authentication
+```python
+from model_security_client.api import ModelSecurityAPIClient
 
-Uses the same `x-pan-token` header as all other AIRS gates:
-
+client = ModelSecurityAPIClient(
+    base_url="https://api.sase.paloaltonetworks.com/aims"
+)
 ```
-x-pan-token: <AIRS_API_KEY>
+
+The client reads `MODEL_SECURITY_CLIENT_ID`, `MODEL_SECURITY_CLIENT_SECRET`, and `TSG_ID` from the environment automatically after `load_dotenv()`. No credentials are passed to the constructor.
+
+### Scan a HuggingFace model
+
+```python
+result = client.scan(
+    security_group_uuid="<SECURITY_GROUP_UUID_HF>",
+    model_uri="https://huggingface.co/google/flan-t5-small"
+)
 ```
 
-The Node proxy reads `AIRS_API_KEY` from `.env` server-side and injects it — the key is never sent to the browser.
+### Response
 
-### Request body
-
-```json
-{
-  "model_id": "google/flan-t5-small",
-  "source":   "huggingface"
-}
-```
+The result is a **Pydantic v2 model**. Key fields:
 
 | Field | Type | Description |
 | :--- | :--- | :--- |
-| `model_id` | string | HuggingFace repository ID in `owner/model-name` format |
-| `source` | string | Model source — `"huggingface"` for HuggingFace Hub |
+| `eval_outcome` | str | Top-level verdict — e.g. `"SAFE"`, `"UNSAFE"` |
+| *(full schema)* | — | Use `result.model_dump_json(indent=2)` to see all fields — the full schema is defined inside the private package |
 
-### Response schema
+The sidecar returns `json.loads(result.model_dump_json())` — the complete Pydantic model as a plain JSON dict.
 
-The response structure follows the AIRS scan response pattern. Fields observed from the sandbox demo:
+---
 
+## Sidecar API
+
+**File:** `services/airs-model-scan/model_scan_server.py`
+**Port:** `5004`
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/health` | GET | Returns `{ status, service, sdk_available, sdk_error }` |
+| `/scan/hf` | POST | Scans a HuggingFace model |
+
+**`POST /scan/hf` — request:**
+```json
+{ "model_id": "google/flan-t5-small" }
+```
+or equivalently:
+```json
+{ "model_uri": "https://huggingface.co/google/flan-t5-small" }
+```
+
+Both forms are accepted. `model_id` (bare `author/model-name`) is normalised to a full URL internally.
+
+**`POST /scan/hf` — response:**
 ```json
 {
-  "scan_id":         "ms-<uuid>",
-  "action":          "block",
-  "passed_rules":    23,
-  "failed_rules":    7,
-  "violations": [
-    {
-      "rule_name":   "No pickle serialisation",
-      "severity":    "HIGH",
-      "description": "Model uses unsafe pickle format with __reduce__ override"
-    }
-  ],
-  "scanner_version": "1.2.0",
-  "created":         "2026-03-25T10:42:00Z",
-  "files_scanned":   12,
-  "files_skipped":   2,
-  "tsg_id":          "<tenant-id>",
-  "security_group":  "default"
+  "eval_outcome": "SAFE",
+  ...
 }
 ```
 
-| Field | Description |
-| :--- | :--- |
-| `scan_id` | Unique identifier for this scan — use for audit trail lookup in Strata Cloud Manager |
-| `action` | `"block"` if violations found, `"allow"` if clean |
-| `passed_rules` | Count of security rules that passed |
-| `failed_rules` | Count of security rules that failed (violations) |
-| `violations[]` | Array of rule violation objects — `rule_name`, `severity`, `description` |
-| `scanner_version` | Version of the AIRS model scanning engine |
-| `created` | ISO 8601 timestamp of the scan |
-| `files_scanned` | Number of model artifact files inspected |
-| `files_skipped` | Files AIRS could not scan (unsupported format or corrupt) |
-| `tsg_id` | Tenant Security Group ID — ties this scan to your AIRS tenant |
+---
 
-> **Schema note:** The exact field names may vary depending on the API version. The Raw Response panel in the UI always shows the full unmodified JSON — use it to map actual field names if the UI metrics do not populate.
+## Node Proxy Routes
+
+| Route | Description |
+| :--- | :--- |
+| `GET /api/model-scan/health` | Proxies to `:5004/health` — used by the UI status dot |
+| `POST /api/model-scan` | Proxies to `:5004/scan/hf` — used by the Scan button |
+
+Both routes are in `src/server.js`. If the sidecar is not running, the proxy returns `502` with a message telling you to run `npm run model-scan`.
 
 ---
 
-## UI Integration
+## Pre-configured Model Cards
 
-Model Security is a standalone panel accessed via the **🔍** icon in the left rail — it is not part of the chat message pipeline and does not block or flag individual prompts.
+Two models are hardcoded in the UI as quick-select shortcuts:
 
-### Panel layout
-
-```
-🔍 Model Security (nav panel title)
-│
-├── Description
-├── Quick Select — two pre-configured model cards
-│     ├── google/flan-t5-small        [✓ Safe]
-│     └── opendiffusion/sentimentcheck [⚠ Malicious]
-│
-├── HuggingFace Model ID — free text input + Scan button
-│
-├── [on scan complete]
-│     ├── Status pill — ✅ Passed or ⛔ Violations found · Xs
-│     ├── Metrics row — Passed / Failed / Pass Rate
-│     ├── Metadata — Scan ID · Created · Scanner version · Files
-│     ├── Violations list — one item per failed rule (name, severity, description)
-│     └── Raw Response — full AIRS JSON for debugging
-```
-
-### Pre-configured model cards
-
-Two models are hard-coded as quick-select shortcuts, taken from the official AIRS sandbox demo:
-
-| Model | Expected result | Purpose |
+| Model | Expected verdict | Purpose |
 | :--- | :--- | :--- |
-| `google/flan-t5-small` | ✅ Clean — no violations | Baseline test — confirms the scanner is working and can pass a known-good model |
-| `opendiffusion/sentimentcheck` | ⛔ Malicious — violations found | Positive test — confirms the scanner correctly identifies a known-malicious model |
-
-Clicking a card populates the input field and selects the card. The Scan button must be clicked to run.
-
-### Status pill
-
-| State | Condition |
-| :--- | :--- |
-| `✅ Passed · Xs` | `failed_rules === 0` and `violations.length === 0` and `action !== "block"` |
-| `⛔ Violations found · Xs` | Any of: `failed_rules > 0`, `violations.length > 0`, `action === "block"` |
-| `Error N — <message>` | Non-2xx HTTP response from the API |
-| `Failed — <message>` | Network error or proxy unreachable |
-
-### Raw Response panel
-
-Always shown after a scan attempt — whether success or error. Displays the full unmodified JSON returned by the AIRS API (or the proxy error object). This is the primary debugging surface:
-
-- If the endpoint is wrong, you will see a 404 or 401 response
-- If the request body schema is wrong, you will see a 400 with an AIRS error message
-- If the scan completes but UI metrics are empty, compare the actual field names against the ones the UI expects
-
----
-
-## Node Proxy Route
-
-```javascript
-// src/server.js
-app.post("/api/model-scan", async (req, res) => {
-  const modelScanEndpoint =
-    "https://api.aisecurity.paloaltonetworks.com/v1/aiml/model/scan";
-  const apiKey = process.env.AIRS_API_KEY || req.headers["x-pan-token"];
-  // ... forwards req.body with x-pan-token header
-});
-```
-
-The proxy follows the same pattern as `/api/prisma`: credential injection server-side, full response forwarded to browser, HTTP status code preserved.
-
----
-
-## Requirements & Setup
-
-### Prerequisites
-
-- **AIRS API key** (`AIRS_API_KEY` in `.env`) — same key used for runtime security gates
-- **Model Security entitlement** — the AIRS account must have Model Security scanning enabled. This is a separate product feature from runtime security. If you receive a `403 Forbidden` or a feature-unavailable error, the account may not have this entitlement. Contact your Palo Alto Networks representative or check your Prisma Cloud / AIRS subscription.
-- **`npm start`** — the Node proxy must be running (`:3080`)
-
-No Python sidecar, no Ollama model, no additional install required.
-
-### Verify setup
-
-1. Set `AIRS_API_KEY` in `.env` and restart `npm start`
-2. Open `http://localhost:3080/dev/8b`
-3. Click the 🔍 icon in the left rail
-4. Click `google/flan-t5-small` → **Scan**
-5. The Raw Response panel shows the API response — check the status code and JSON
-
-If you see `401 Unauthorized`: API key is missing or invalid.
-If you see `403 Forbidden`: Model Security entitlement may not be enabled on this account.
-If you see `404 Not Found`: The endpoint path may have changed — check pan.dev for the current path.
+| `google/flan-t5-small` | ✅ SAFE | Baseline test — confirms scanner is working on a known-clean model |
+| `opendiffusion/sentimentcheck` | ⚠ Malicious | Positive test — confirms scanner correctly flags a known-malicious model |
 
 ---
 
@@ -229,24 +229,19 @@ If you see `404 Not Found`: The endpoint path may have changed — check pan.dev
 
 | Dimension | Runtime Security | Model Security |
 | :--- | :--- | :--- |
-| **Pipeline position** | Gates 1 and 6 (AIRS-Inlet, AIRS-Dual) | Standalone panel — not in the chat pipeline |
-| **Scans** | User prompts + LLM responses | Model weights and artifact files |
-| **Frequency** | Every message automatically | On-demand |
-| **Blocking** | Can block individual chat turns | Reports findings — does not block chat |
-| **Threat surface** | Adversarial inputs (injection, DLP, jailbreak) | Supply-chain (malicious code, tampering) |
-| **Requires Ollama** | No | No |
-| **Requires sidecar** | No (AIRS is cloud-only) | No |
-| **Latency** | 200–800 ms | Seconds to minutes |
-
-**Use both.** Runtime security protects the live conversation. Model security protects the model itself before it is used. A model that passes the supply-chain scan can still generate harmful content — and a clean model can still be attacked via adversarial prompts. They are complementary, not redundant.
+| Pipeline position | Gates 1 and 6 | Standalone panel — not in the chat pipeline |
+| Credentials | `AIRS_API_KEY` (x-pan-token) | OAuth2 client credentials |
+| Sidecar | None | `:5004` (Python SDK wrapper) |
+| Scans | Prompts + responses | Model artifacts |
+| Frequency | Every message automatically | On-demand |
+| Blocking | Blocks individual chat turns | Reports only — does not block chat |
 
 ---
 
 ## Limitations
 
-- **HuggingFace only (current UI).** The workbench UI supports HuggingFace Hub scanning only. Local file upload (the second tab in the AIRS sandbox) is not implemented — this avoids the complexity of multipart form data handling in the proxy.
-- **Scan time.** Large models (>1 GB of weights) may take minutes to scan. The UI shows a spinner but does not stream progress.
-- **Entitlement dependency.** Model Security is a separate AIRS product feature. If the account does not have it enabled, all scans will return an error.
-- **Endpoint stability.** The AIRS API surface evolves. If the endpoint moves, update the URL constant in `server.js` route `/api/model-scan`.
-- **No caching.** The same model will be re-scanned on every button click. AIRS may cache results server-side for recent scans.
-- **No pipeline integration.** Model Security results do not flow into the API Inspector, Live Telemetry, or Red Teaming panels — it is a standalone tool.
+- **HuggingFace only.** The workbench UI supports HuggingFace Hub scanning only. Local file path scanning is implemented in the sidecar (`/scan/local` not yet wired to the UI).
+- **Private PyPI.** The `model-security-client` package requires the three-step bootstrap above. The sidecar will start without it but every scan will return a `503` with the install instructions.
+- **Separate entitlement.** Model Security is a separate AIRS product. If your account does not have it, the OAuth2 token request or the scan call will return an auth or entitlement error.
+- **Scan latency.** Model scanning is not real-time — large models (>1 GB) may take minutes. The UI shows a spinner but does not stream progress.
+- **No pipeline integration.** Model Security results do not appear in the API Inspector, Live Telemetry, or Red Teaming panels.

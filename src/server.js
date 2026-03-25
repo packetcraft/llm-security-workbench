@@ -217,31 +217,29 @@ app.post("/api/airs-sdk/batch", async (req, res) => {
 });
 
 
-// 7. AIRS Model Security — scans a HuggingFace model for supply-chain threats and policy violations
-//    Endpoint: POST /v1/aiml/model/scan  (verify latest path at pan.dev/airs)
-app.post("/api/model-scan", async (req, res) => {
-  const modelScanEndpoint =
-    "https://service.api.aisecurity.paloaltonetworks.com/v1/aiml/model/scan";
-
-  const apiKey = process.env.AIRS_API_KEY || req.headers["x-pan-token"];
-  if (!apiKey) {
-    return res.status(401).json({ error: "Missing API key — set AIRS_API_KEY in .env" });
-  }
+// 7. AIRS Model Security — proxies to the Python SDK sidecar on :5004
+app.get("/api/model-scan/health", async (req, res) => {
   try {
-    const response = await fetch(modelScanEndpoint, {
+    const response = await fetch("http://localhost:5004/health");
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ status: "offline", error: "AIRS Model Scan sidecar unavailable — is model_scan_server.py running? " + err.message });
+  }
+});
+
+app.post("/api/model-scan", async (req, res) => {
+  try {
+    const response = await fetch("http://localhost:5004/scan/hf", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-pan-token": apiKey,
-        "Authorization": `Bearer ${apiKey}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req.body),
     });
     const data = await response.json();
     if (!response.ok) return res.status(response.status).json(data);
     res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: "Model scan proxy error: " + error.message });
+  } catch (err) {
+    res.status(502).json({ error: "AIRS Model Scan sidecar unavailable — run `npm run model-scan` in a separate terminal. " + err.message });
   }
 });
 

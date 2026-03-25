@@ -1,0 +1,4 @@
+flask>=3.0.0
+python-dotenv>=1.0.0
+# model-security-client is on a private PyPI index — it cannot be installed with plain pip.
+# See docs/GATE-AIRS-MODEL-SECURITY.md for the three-step bootstrap process.
