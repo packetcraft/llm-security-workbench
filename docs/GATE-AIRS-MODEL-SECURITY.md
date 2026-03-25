@@ -38,7 +38,7 @@ src/server.js  :3080
     │  forwards to AIRS Model Security API
     ▼
 AIRS Model Security API
-    POST https://api.aisecurity.paloaltonetworks.com/v1/aiml/model/scan
+    POST https://service.api.aisecurity.paloaltonetworks.com/v1/aiml/model/scan
     │
     │  AIRS pulls model artifacts from HuggingFace Hub and scans them
     │  against the configured security policy set

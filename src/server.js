@@ -221,7 +221,7 @@ app.post("/api/airs-sdk/batch", async (req, res) => {
 //    Endpoint: POST /v1/aiml/model/scan  (verify latest path at pan.dev/airs)
 app.post("/api/model-scan", async (req, res) => {
   const modelScanEndpoint =
-    "https://api.aisecurity.paloaltonetworks.com/v1/aiml/model/scan";
+    "https://service.api.aisecurity.paloaltonetworks.com/v1/aiml/model/scan";
 
   const apiKey = process.env.AIRS_API_KEY || req.headers["x-pan-token"];
   if (!apiKey) {
