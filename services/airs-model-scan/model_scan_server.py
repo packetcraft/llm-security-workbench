@@ -36,7 +36,8 @@ except ImportError as e:
     )
 
 # ── Config ───────────────────────────────────────────────────────────────────
-HF_UUID  = os.getenv("SECURITY_GROUP_UUID_HF")
+HF_UUID    = os.getenv("SECURITY_GROUP_UUID_HF")
+LOCAL_UUID = os.getenv("SECURITY_GROUP_UUID_LOCAL")
 BASE_URL = os.getenv("MODEL_SECURITY_API_ENDPOINT",
                      "https://api.sase.paloaltonetworks.com/aims")
 
@@ -101,11 +102,42 @@ def scan_hf():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/scan/local", methods=["POST"])
+def scan_local():
+    """
+    Scan a local model directory.
+    Body: { "model_path": "/path/to/model" }
+    Returns: full AIRS scan result JSON
+    """
+    if not SDK_AVAILABLE:
+        return jsonify({"error": SDK_ERROR}), 503
+
+    if not LOCAL_UUID:
+        return jsonify({"error": "SECURITY_GROUP_UUID_LOCAL not set in .env"}), 500
+
+    data = request.get_json(force=True) or {}
+    model_path = data.get("model_path")
+    if not model_path:
+        return jsonify({"error": "model_path is required"}), 400
+    if not os.path.exists(model_path):
+        return jsonify({"error": f"Path does not exist: {model_path}"}), 400
+
+    try:
+        result = get_client().scan(
+            security_group_uuid=LOCAL_UUID,
+            model_path=model_path,
+        )
+        return jsonify(json.loads(result.model_dump_json()))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     if not SDK_AVAILABLE:
         print(f"⚠️  WARNING: {SDK_ERROR}")
-        print("   The /health endpoint will still respond but /scan/hf will return 503.")
+        print("   The /health endpoint will still respond but scans will return 503.")
     print(f"🔍 AIRS Model Security sidecar running on http://localhost:5004")
-    print(f"   Base URL : {BASE_URL}")
-    print(f"   HF UUID  : {HF_UUID or '(not set)'}")
+    print(f"   Base URL   : {BASE_URL}")
+    print(f"   HF UUID    : {HF_UUID or '(not set)'}")
+    print(f"   Local UUID : {LOCAL_UUID or '(not set)'}")
     app.run(host="0.0.0.0", port=5004, debug=False)

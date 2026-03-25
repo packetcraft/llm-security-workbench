@@ -81,35 +81,28 @@ MODEL_SECURITY_API_ENDPOINT=https://api.sase.paloaltonetworks.com/aims
 
 ### Step 2 — Bootstrap private PyPI and install the SDK
 
-The `model-security-client` package is **not on public PyPI**. It lives on an authenticated private index. The bootstrap requires your credentials from Step 1.
+The `model-security-client` package is **not on public PyPI**. It lives on an authenticated private index. Use the included `getPYPIurl.sh` script to get the URL (requires `jq` and `curl`):
 
-**Get an OAuth2 access token:**
 ```bash
-SCM_TOKEN=$(curl -s -X POST "https://auth.apps.paloaltonetworks.com/oauth2/access_token" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -u "$MODEL_SECURITY_CLIENT_ID:$MODEL_SECURITY_CLIENT_SECRET" \
-  -d "grant_type=client_credentials&scope=tsg_id:$TSG_ID" \
-  | python -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+# Load your .env first, then run the script
+export $(grep -v '^#' .env | xargs)
+PYPI_URL=$(bash services/airs-model-scan/getPYPIurl.sh)
 ```
 
-**Get the private PyPI URL:**
-```bash
-PYPI_URL=$(curl -s -X GET "https://api.sase.paloaltonetworks.com/aims/mgmt/v1/pypi/authenticate" \
-  -H "Authorization: Bearer $SCM_TOKEN" \
-  | python -c "import sys,json; print(json.load(sys.stdin)['url'])")
-```
+> **Windows:** run in Git Bash or WSL. The script requires `jq` — install via `winget install jqlang.jq` or `choco install jq`.
 
 **Create the venv and install:**
+
 ```bash
-# Windows
+# Windows (Git Bash or PowerShell)
 py -3.12 -m venv services/airs-model-scan/.venv
 services\airs-model-scan\.venv\Scripts\pip install flask python-dotenv
-services\airs-model-scan\.venv\Scripts\pip install model-security-client --extra-index-url %PYPI_URL%
+services\airs-model-scan\.venv\Scripts\pip install model-security-client --extra-index-url "$PYPI_URL"
 
 # macOS / Linux
 python3.12 -m venv services/airs-model-scan/.venv
 services/airs-model-scan/.venv/bin/pip install flask python-dotenv
-services/airs-model-scan/.venv/bin/pip install model-security-client --extra-index-url $PYPI_URL
+services/airs-model-scan/.venv/bin/pip install model-security-client --extra-index-url "$PYPI_URL"
 ```
 
 > **Python version:** 3.12 required — the same as LLM-Guard. Do not use 3.13 or 3.14.
@@ -127,6 +120,28 @@ curl http://localhost:5004/health
 ```
 
 The 🔍 icon in the 8b nav panel shows a **green dot** when the sidecar is online with the SDK loaded, and a **grey dot** when it is offline or the SDK is not installed.
+
+---
+
+## CLI Scripts
+
+Three standalone scripts in `services/airs-model-scan/` can be run directly inside the venv. Use them to verify credentials and the SDK work before starting the full sidecar.
+
+| Script | What it does |
+| :--- | :--- |
+| `getPYPIurl.sh` | Gets the private PyPI URL from the AIRS auth API — pipe output to `pip install --extra-index-url` |
+| `hf-scan.py` | Scans a HuggingFace model from the command line |
+| `local-scan.py` | Scans a local model directory from the command line |
+
+```bash
+# Verify HuggingFace scanning works
+.venv/Scripts/python services/airs-model-scan/hf-scan.py google/flan-t5-small
+
+# Verify local scanning works
+.venv/Scripts/python services/airs-model-scan/local-scan.py /path/to/model
+```
+
+Both scripts accept bare `author/model-name` or a full `https://huggingface.co/...` URL. They print `eval_outcome` and the full JSON result to stdout.
 
 ---
 
