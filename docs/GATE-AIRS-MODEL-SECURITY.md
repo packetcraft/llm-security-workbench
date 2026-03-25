@@ -106,8 +106,13 @@ python3.12 -m venv services/airs-model-scan/.venv
 
 Verify:
 ```bash
+# Windows
 services/airs-model-scan/.venv/Scripts/python --version
 # Python 3.12.x
+
+
+# macOS
+services/airs-model-scan/.venv/bin/python --version
 ```
 
 ---
