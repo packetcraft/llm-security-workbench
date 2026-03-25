@@ -271,5 +271,8 @@ npm run stage 6a        # copies dev/6a-*.html → src/index.html
 | [`docs/PRD.md`](docs/PRD.md) | Product requirements and roadmap |
 | [`docs/UX-IMPROVEMENTS.md`](docs/UX-IMPROVEMENTS.md) | Chat column UX backlog — Demo Mode toggle, user bubble, alert→Inspector link, shield badge consolidation |
 | [`docs/LITTLE-CANARY.md`](docs/LITTLE-CANARY.md) | Little Canary technical reference — full pipeline internals, exact prompts, all detection patterns, model recommendations |
+| [`docs/LLM-GUARD.md`](docs/LLM-GUARD.md) | LLM-Guard technical reference — all 13 scanners, HuggingFace models, thresholds, sidecar API, curl test commands, known limitations |
+| [`docs/SEMANTIC-GUARD.md`](docs/SEMANTIC-GUARD.md) | Semantic-Guard technical reference — LLM-as-judge architecture, system prompt, verdict schema, judge model recommendations, enforcement modes |
+| [`docs/AIRS.md`](docs/AIRS.md) | AIRS technical reference — Inlet + Dual gates, REST API, SDK sidecar, request/response schema, threat categories, enforcement modes, curl commands |
 | [`docs/notes/LLM-GUARD-DEEP-DIVE.md`](docs/notes/LLM-GUARD-DEEP-DIVE.md) | LLM-Guard internals — HuggingFace scanner mapping, lazy loading, observability commands |
 | [`docs/notes/LITTLE-CANARY-DEEP-DIVE.md`](docs/notes/LITTLE-CANARY-DEEP-DIVE.md) | Little Canary — earlier study notes (superseded by LITTLE-CANARY.md) |
