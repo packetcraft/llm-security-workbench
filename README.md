@@ -114,4 +114,6 @@ For the full six-gate pipeline including LLM-Guard and Little-Canary, follow the
 
 ---
 
-*Built by [@PacketCraft](https://github.com/packetcraft)*
+---
+
+*Built by [@PacketCraft](https://github.com/packetcraft) as a hobby and learning project — to understand inline security for LLMs and LLM-based applications.*
