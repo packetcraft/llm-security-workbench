@@ -59,7 +59,7 @@ Transformer-based scanner using the ProtectAI `llm-guard` library. Runs locally 
 
 Each scanner uses a dedicated HuggingFace model. Models download once on first use (~2–3 GB, cached). Scanners are individually toggleable in the LLM-Guard settings panel.
 
-→ [Full LLM-Guard Reference](LLM-GUARD.md)
+→ [Full LLM-Guard Reference](GATE-LLM-GUARD.md)
 
 ---
 
@@ -69,7 +69,7 @@ LLM-as-judge gate — calls a local Ollama model directly (no sidecar, no proxy)
 
 Default judge model: `JOSIEFIED-Qwen3:4b` (also used as the main chat model). Any Ollama model works. Uses `temperature: 0.1` and `format: "json"` for stable, low-variance verdicts.
 
-→ [Full Semantic-Guard Reference](SEMANTIC-GUARD.md)
+→ [Full Semantic-Guard Reference](GATE-SEMANTIC-GUARD.md)
 
 ---
 
@@ -77,7 +77,7 @@ Default judge model: `JOSIEFIED-Qwen3:4b` (also used as the main chat model). An
 
 Lightweight injection and structural anomaly detector. Runs as a Flask sidecar on `:5001`. Combines regex pattern matching and a small LLM probe to classify prompts. Particularly effective at catching tool-call override patterns and indirect injection via document content.
 
-→ [Full Little-Canary Reference](LITTLE-CANARY.md)
+→ [Full Little-Canary Reference](GATE-LITTLE-CANARY.md)
 
 ---
 
@@ -85,7 +85,7 @@ Lightweight injection and structural anomaly detector. Runs as a Flask sidecar o
 
 Cloud scanning gates using Palo Alto Networks AIRS (AI Runtime Security). Require an API key (`AIRS_API_KEY` in `.env`). AIRS-Inlet scans the prompt; AIRS-Dual scans the prompt + response pair and can apply DLP masking to the response before it reaches the user.
 
-→ [Full AIRS Reference](AIRS.md) · [pan.dev/airs](https://pan.dev/airs)
+→ [Full AIRS Reference](GATE-AIRS.md) · [pan.dev/airs](https://pan.dev/airs)
 
 ---
 
@@ -218,10 +218,10 @@ In Demo Mode, scan badges are hidden.
 | :--- | :--- |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Component diagram, traffic routing, Node proxy |
 | [SECURITY-GATES.md](SECURITY-GATES.md) | Per-gate deep dives |
-| [LLM-GUARD.md](LLM-GUARD.md) | All 13 scanners, HuggingFace models |
-| [SEMANTIC-GUARD.md](SEMANTIC-GUARD.md) | LLM-as-judge architecture |
-| [LITTLE-CANARY.md](LITTLE-CANARY.md) | Detection patterns, model guide |
-| [AIRS.md](AIRS.md) | REST API, SDK, enforcement modes |
+| [GATE-LLM-GUARD.md](GATE-LLM-GUARD.md) | All 13 scanners, HuggingFace models |
+| [GATE-SEMANTIC-GUARD.md](GATE-SEMANTIC-GUARD.md) | LLM-as-judge architecture |
+| [GATE-LITTLE-CANARY.md](GATE-LITTLE-CANARY.md) | Detection patterns, model guide |
+| [GATE-AIRS.md](GATE-AIRS.md) | REST API, SDK, enforcement modes |
 | [RED-TEAM-STATIC.md](RED-TEAM-STATIC.md) | Batch runner, threat library, exports |
 | [RED-TEAM-DYNAMIC.md](RED-TEAM-DYNAMIC.md) | PAIR algorithm, prompts, iteration logic |
 | [TESTING.md](TESTING.md) | Gate verification tests, troubleshooting |

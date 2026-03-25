@@ -59,7 +59,12 @@
       "Bash(python -c \"import json; data=json.load\\(open\\(''test/sample_threats.json'', encoding=''utf-8''\\)\\); [print\\(f''[{g[\"\"category\"\"]}] \\({len\\(g[\"\"threats\"\"]\\)} threats\\)''\\) for g in data]; print\\(f''\\\\nTotal: {sum\\(len\\(g[\"\"threats\"\"]\\) for g in data\\)} threats across {len\\(data\\)} categories''\\)\")",
       "Bash(python -c \":*)",
       "Bash(python:*)",
-      "Bash(services/llm-guard/.venv/Scripts/python.exe -c \"\nimport json\nwith open\\('test/sample_threats.json', encoding='utf-8'\\) as f:\n    data = json.load\\(f\\)\ntotal = 0\nfor cat in data:\n    n = len\\(cat['threats']\\)\n    total += n\n    print\\(f'{cat[\\\\\"categoryId\\\\\"]} \\({cat[\\\\\"category\\\\\"]}\\): {n} threats'\\)\nprint\\(f'TOTAL: {total}'\\)\n\")"
+      "Bash(services/llm-guard/.venv/Scripts/python.exe -c \"\nimport json\nwith open\\('test/sample_threats.json', encoding='utf-8'\\) as f:\n    data = json.load\\(f\\)\ntotal = 0\nfor cat in data:\n    n = len\\(cat['threats']\\)\n    total += n\n    print\\(f'{cat[\\\\\"categoryId\\\\\"]} \\({cat[\\\\\"category\\\\\"]}\\): {n} threats'\\)\nprint\\(f'TOTAL: {total}'\\)\n\")",
+      "Bash(cp \"C:/Users/B006/Downloads/RedTeaming-Dynamic-Probes.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/redteaming-dynamic-probe.png\")",
+      "Bash(cp \"C:/Users/B006/Downloads/RedTeaming-Static-Probes.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/redteaming-static.png\")",
+      "Bash(cp \"C:/Users/B006/Downloads/Workbench-Audit-Mode.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/workbench-audit-mode.png\")",
+      "Bash(cp \"C:/Users/B006/Downloads/Workbench-Demo-Mode.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/workbench-demo-mode.png\")",
+      "Bash(cp \"C:/Users/B006/Downloads/Debug-API-Inspection.png\" \"C:/Users/B006/Documents/github/llm-security-workbench/docs/screenshots/debug-api-inspection.png\")"
     ]
   }
 }

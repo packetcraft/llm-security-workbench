@@ -90,10 +90,10 @@ For the full six-gate pipeline including LLM-Guard and Little-Canary, follow the
 | :--- | :--- |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Component diagram, traffic routing, Node proxy design |
 | [`docs/SECURITY-GATES.md`](docs/SECURITY-GATES.md) | Per-gate deep dives, configuration tables, system prompts |
-| [`docs/LLM-GUARD.md`](docs/LLM-GUARD.md) | LLM-Guard — all 13 scanners, HuggingFace models, thresholds, sidecar API |
-| [`docs/SEMANTIC-GUARD.md`](docs/SEMANTIC-GUARD.md) | Semantic-Guard — LLM-as-judge architecture, verdict schema, judge model guide |
-| [`docs/LITTLE-CANARY.md`](docs/LITTLE-CANARY.md) | Little-Canary — pipeline internals, detection patterns, model recommendations |
-| [`docs/AIRS.md`](docs/AIRS.md) | AIRS — REST API, SDK sidecar, request/response schema, enforcement modes |
+| [`docs/GATE-LLM-GUARD.md`](docs/GATE-LLM-GUARD.md) | LLM-Guard — all 13 scanners, HuggingFace models, thresholds, sidecar API |
+| [`docs/GATE-SEMANTIC-GUARD.md`](docs/GATE-SEMANTIC-GUARD.md) | Semantic-Guard — LLM-as-judge architecture, verdict schema, judge model guide |
+| [`docs/GATE-LITTLE-CANARY.md`](docs/GATE-LITTLE-CANARY.md) | Little-Canary — pipeline internals, detection patterns, model recommendations |
+| [`docs/GATE-AIRS.md`](docs/GATE-AIRS.md) | AIRS — REST API, SDK sidecar, request/response schema, enforcement modes |
 | [`docs/RED-TEAM-STATIC.md`](docs/RED-TEAM-STATIC.md) | Static Batch Runner — threat library, 6-gate pipeline execution, export formats |
 | [`docs/RED-TEAM-DYNAMIC.md`](docs/RED-TEAM-DYNAMIC.md) | Dynamic Probe — PAIR algorithm, attacker/judge prompts, gate trace, export formats |
 | [`docs/TESTING.md`](docs/TESTING.md) | Gate verification tests, troubleshooting |
