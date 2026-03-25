@@ -3538,44 +3538,6 @@ Respond ONLY with valid JSON, no other text:
                     </div><!-- .workspace-panel -->
                 </div><!-- #pane-workspace -->
 
-            </div><!-- .nav-panel-body -->
-
-            <!-- Hidden selects -->
-            <select id="llmguard-mode" style="display:none">
-                <option value="off">Off</option>
-                <option value="advisory">Advisory</option>
-                <option value="strict" selected>Strict</option>
-            </select>
-            <select id="guardrail-mode" onchange="toggleGuardrailSettings()" style="display:none">
-                <option value="off">Off</option>
-                <option value="audit">Audit</option>
-                <option value="strict" selected>Strict</option>
-            </select>
-            <select id="canary-mode" onchange="toggleCanarySettings()" style="display:none">
-                <option value="off">Off</option>
-                <option value="advisory">Advisory</option>
-                <option value="full" selected>Full</option>
-            </select>
-            <select id="airs-mode" onchange="toggleAIRSSettings()" style="display:none">
-                <option value="off" selected>Off</option>
-                <option value="audit">Audit</option>
-                <option value="strict">Strict</option>
-            </select>
-            <!-- Hidden checkboxes -->
-            <input type="checkbox" id="lg-scan-invisible" checked style="display:none">
-            <input type="checkbox" id="lg-scan-secrets" checked style="display:none">
-            <input type="checkbox" id="lg-scan-injection" checked style="display:none">
-            <input type="checkbox" id="lg-scan-toxicity" checked style="display:none">
-            <input type="checkbox" id="lg-scan-bantopics" checked style="display:none">
-            <input type="checkbox" id="lg-scan-gibberish" style="display:none">
-            <input type="checkbox" id="lg-scan-language" style="display:none">
-            <input type="checkbox" id="lg-out-sensitive" checked style="display:none">
-            <input type="checkbox" id="lg-out-malicious" checked style="display:none">
-            <input type="checkbox" id="lg-out-norefusal" checked style="display:none">
-            <input type="checkbox" id="lg-out-bias" style="display:none">
-            <input type="checkbox" id="lg-out-relevance" style="display:none">
-            <input type="checkbox" id="lg-out-languagesame" style="display:none">
-
                 <!-- Pane: Model Security Scanner -->
                 <div class="nav-pane" id="pane-model-security">
                     <div style="padding: 0 10px 12px">
@@ -3643,6 +3605,44 @@ Respond ONLY with valid JSON, no other text:
 
                     </div>
                 </div><!-- #pane-model-security -->
+
+            </div><!-- .nav-panel-body -->
+
+            <!-- Hidden selects -->
+            <select id="llmguard-mode" style="display:none">
+                <option value="off">Off</option>
+                <option value="advisory">Advisory</option>
+                <option value="strict" selected>Strict</option>
+            </select>
+            <select id="guardrail-mode" onchange="toggleGuardrailSettings()" style="display:none">
+                <option value="off">Off</option>
+                <option value="audit">Audit</option>
+                <option value="strict" selected>Strict</option>
+            </select>
+            <select id="canary-mode" onchange="toggleCanarySettings()" style="display:none">
+                <option value="off">Off</option>
+                <option value="advisory">Advisory</option>
+                <option value="full" selected>Full</option>
+            </select>
+            <select id="airs-mode" onchange="toggleAIRSSettings()" style="display:none">
+                <option value="off" selected>Off</option>
+                <option value="audit">Audit</option>
+                <option value="strict">Strict</option>
+            </select>
+            <!-- Hidden checkboxes -->
+            <input type="checkbox" id="lg-scan-invisible" checked style="display:none">
+            <input type="checkbox" id="lg-scan-secrets" checked style="display:none">
+            <input type="checkbox" id="lg-scan-injection" checked style="display:none">
+            <input type="checkbox" id="lg-scan-toxicity" checked style="display:none">
+            <input type="checkbox" id="lg-scan-bantopics" checked style="display:none">
+            <input type="checkbox" id="lg-scan-gibberish" style="display:none">
+            <input type="checkbox" id="lg-scan-language" style="display:none">
+            <input type="checkbox" id="lg-out-sensitive" checked style="display:none">
+            <input type="checkbox" id="lg-out-malicious" checked style="display:none">
+            <input type="checkbox" id="lg-out-norefusal" checked style="display:none">
+            <input type="checkbox" id="lg-out-bias" style="display:none">
+            <input type="checkbox" id="lg-out-relevance" style="display:none">
+            <input type="checkbox" id="lg-out-languagesame" style="display:none">
 
         </div><!-- #nav-panel -->
 
@@ -6028,18 +6028,24 @@ Respond ONLY with valid JSON, no other text:
                     return;
                 }
 
-                // Status pill
-                const hasViolations = (data.failed_rules > 0) ||
+                // Status pill — check eval_outcome first, fall back to violations/action
+                const outcome = data.eval_outcome || '';
+                const hasViolations = outcome !== '' && outcome !== 'SAFE' ||
+                    (data.failed_rules > 0) ||
                     ((data.violations || data.rule_violations || []).length > 0) ||
                     data.action === 'block';
                 statusPill.className = `ms-status-pill ${hasViolations ? 'ms-block' : 'ms-pass'}`;
                 statusPill.style.display = 'flex';
-                document.getElementById('ms-status-text').textContent =
-                    `${hasViolations ? '⛔ Violations found' : '✅ Passed'} · ${elapsed}s`;
+                const verdictLabel = outcome === 'BLOCKED' ? '⛔ Blocked'
+                    : outcome === 'UNSAFE'   ? '⛔ Unsafe'
+                    : hasViolations          ? '⛔ Violations found'
+                    : '✅ Passed';
+                document.getElementById('ms-status-text').textContent = `${verdictLabel} · ${elapsed}s`;
 
-                // Metrics
-                const passed = data.passed_rules ?? null;
-                const failed = data.failed_rules ?? null;
+                // Metrics — SDK returns nested eval_summary; fall back to top-level fields
+                const summary = data.eval_summary || {};
+                const passed = data.passed_rules ?? summary.rules_passed ?? null;
+                const failed = data.failed_rules ?? summary.rules_failed ?? null;
                 if (passed !== null || failed !== null) {
                     const total = (passed || 0) + (failed || 0);
                     const rate  = total > 0 ? ((passed / total) * 100).toFixed(1) + '%' : '—';
@@ -6049,8 +6055,8 @@ Respond ONLY with valid JSON, no other text:
                     metricsRow.style.display = 'block';
 
                     const meta = [];
-                    if (data.scan_id)            meta.push(`Scan ID: <span>${escHtml(String(data.scan_id))}</span>`);
-                    if (data.created)            meta.push(`Created: <span>${escHtml(data.created)}</span>`);
+                    if (data.scan_id)                            meta.push(`Scan ID: <span>${escHtml(String(data.scan_id))}</span>`);
+                    if (data.created_at || data.created)         meta.push(`Created: <span>${escHtml(data.created_at || data.created)}</span>`);
                     if (data.scanner_version)    meta.push(`Scanner: <span>${escHtml(data.scanner_version)}</span>`);
                     if (data.files_scanned != null) meta.push(`Files scanned: <span>${data.files_scanned}</span>`);
                     if (data.files_skipped  != null) meta.push(`Files skipped: <span>${data.files_skipped}</span>`);
