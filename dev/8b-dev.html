@@ -2256,6 +2256,24 @@
         body.demo-mode .scan-badge          { display: none !important; }
         body.demo-mode .message.security-alert { display: none !important; }
 
+        /* Demo mode: clean end-user block notice (hidden in Audit/normal mode) */
+        .demo-block-notice { display: none; }
+        body.demo-mode .demo-block-notice {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 10px 14px;
+            margin: 3px 0 4px;
+            background: rgba(140,67,81,0.10);
+            border-left: 3px solid var(--danger,#f7768e);
+            border-radius: 0 4px 4px 0;
+            font-size: 0.82rem;
+            color: var(--text);
+        }
+        body.demo-mode .demo-block-notice .dbn-icon { font-size: 1rem; flex-shrink: 0; }
+        body.demo-mode .demo-block-notice .dbn-text { line-height: 1.4; }
+        body.demo-mode .demo-block-notice .dbn-sub  { display: block; font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+
         /* In demo mode: left and right panels become empty ghost columns.
            Width is preserved so the chat column stays centred in the same
            position — the flanking space shows as blank (no content visible).
@@ -4572,6 +4590,15 @@ Respond ONLY with valid JSON, no other text:
             return el;
         }
 
+        function makeDemoBlockNotice(isOutput = false) {
+            const el = document.createElement('div');
+            el.className = 'demo-block-notice';
+            el.innerHTML = isOutput
+                ? `<span class="dbn-icon">🛡️</span><span class="dbn-text">Response withheld<span class="dbn-sub">Security policy prevented this response from being shown.</span></span>`
+                : `<span class="dbn-icon">🛡️</span><span class="dbn-text">Request blocked<span class="dbn-sub">Your message was not processed — it did not reach the AI.</span></span>`;
+            return el;
+        }
+
         // Static gate → DOM ID maps — defined once at module level
         const GATE_SEL_MAP = { llmguard: "llmguard-mode", semantic: "guardrail-mode", canary: "canary-mode", airs: "airs-mode" };
         const GATE_BTN_MAP = {
@@ -5281,6 +5308,7 @@ Respond ONLY with valid JSON, no other text:
                 llmguardBadge.textContent = `🔬 Blocked${lgInputShort}`;
                 const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD — BLOCKED ${lgInputLat}</strong><br>${lg.summary} &nbsp;|&nbsp; Semantic-Guard, Little-Canary, AIRS-Inlet and LLM not reached.`, 'dbg-lgInput');
                 chatBox.appendChild(blockDiv);
+                chatBox.appendChild(makeDemoBlockNotice(false));
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (LLM-Guard)";
                 rpUpdateGate('lg-input', 'block', lgInputMs);
@@ -5351,6 +5379,7 @@ Respond ONLY with valid JSON, no other text:
                     guardBadge.textContent = `🧩 Blocked${guardShort}`;
                     const blockDiv = makeAlertEl("alert-semantic", `<strong>🧩 SEMANTIC-GUARD — BLOCKED ${guardLat}</strong><br>Confidence: <strong>${(gResult.confidence * 100).toFixed(0)}%</strong> &nbsp;|&nbsp; Reason: <em>${gResult.reason}</em> &nbsp;|&nbsp; Little-Canary, AIRS-Inlet and LLM not reached.`, 'dbg-semantic');
                     chatBox.appendChild(blockDiv);
+                    chatBox.appendChild(makeDemoBlockNotice(false));
                     chatBox.scrollTop = chatBox.scrollHeight;
                     els.debugStatus.innerText = "Blocked (Semantic-Guard)";
                     rpUpdateGate('semantic', 'block', guardMs);
@@ -5416,6 +5445,7 @@ Respond ONLY with valid JSON, no other text:
                 canaryBadge.textContent = `🐤 Blocked${canaryShort}`;
                 const blockDiv = makeAlertEl("alert-canary-blk", `<strong>🐤 LITTLE-CANARY — BLOCKED ${canaryLat}</strong><br>${cResult.summary} &nbsp;|&nbsp; AIRS-Inlet and LLM not reached.`, 'dbg-canary');
                 chatBox.appendChild(blockDiv);
+                chatBox.appendChild(makeDemoBlockNotice(false));
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (Little-Canary)";
                 rpUpdateGate('canary', 'block', canaryMs);
@@ -5498,6 +5528,7 @@ Respond ONLY with valid JSON, no other text:
                 const threats = promptScan.detected.length ? promptScan.detected.join(", ") : promptScan.category;
                 const blockDiv = makeAlertEl("alert-danger", `<strong>☁️ AIRS-INLET — BLOCKED ${airsInletLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; LLM not reached.`, 'dbg-airsIn');
                 chatBox.appendChild(blockDiv);
+                chatBox.appendChild(makeDemoBlockNotice(false));
                 chatBox.scrollTop = chatBox.scrollHeight;
                 els.debugStatus.innerText = "Blocked (AIRS-Inlet)";
                 rpUpdateGate('airs-in', 'block', airsInletMs);
@@ -5682,6 +5713,7 @@ Respond ONLY with valid JSON, no other text:
                     const contentEl = botDiv.querySelector(".content");
                     contentEl.innerHTML = "";
                     contentEl.appendChild(blockEl);
+                    contentEl.appendChild(makeDemoBlockNotice(true));
                 } else {
                     const warnEl = makeAlertEl("alert-warning", `<strong>☁️ AIRS-DUAL — FLAGGED ${airsDualLat}</strong><br>Profile: <code>${airsProfile}</code> &nbsp;|&nbsp; Threats: <strong>${threats.toUpperCase()}</strong> &nbsp;|&nbsp; Response shown with warning.`, 'dbg-airsOut');
                     if (responseScan.maskedData) {
@@ -5766,7 +5798,9 @@ Respond ONLY with valid JSON, no other text:
                     resBadge.textContent = `🔬 LG-OUT BLOCKED ${lgOutputLat}`;
                 }
                 const blockDiv = makeAlertEl("alert-llmguard", `<strong>🔬 LLM-GUARD OUTPUT — BLOCKED ${lgOutputLat}</strong><br>${lgOut.summary} &nbsp;|&nbsp; Response flagged by local scanner.`, 'dbg-lgOutput');
-                botDiv.querySelector(".content").insertAdjacentElement("afterbegin", blockDiv);
+                const lgOutContent = botDiv.querySelector(".content");
+                lgOutContent.insertAdjacentElement("afterbegin", blockDiv);
+                lgOutContent.insertAdjacentElement("afterbegin", makeDemoBlockNotice(true));
                 els.debugStatus.innerText = "Blocked (LLM-Guard OUTPUT)";
                 rpUpdateGate('lg-output', 'block', lgOutputMs);
                 setDbgBadge('lgOutput', 'BLOCK');
