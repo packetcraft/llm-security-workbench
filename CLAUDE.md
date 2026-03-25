@@ -55,6 +55,7 @@ docs/                 # Project docs only
   GATE-SEMANTIC-GUARD.md # Semantic-Guard deep dive (prompts, verdict schema)
   GATE-LITTLE-CANARY.md  # Little-Canary deep dive (patterns, Flask API)
   GATE-AIRS.md           # AIRS deep dive (REST API, DLP, enforcement modes)
+  GATE-AIRS-MODEL-SECURITY.md  # AIRS Model Security — supply-chain scanning of HuggingFace models
   RED-TEAM-STATIC.md     # Static Batch Runner reference
   RED-TEAM-DYNAMIC.md    # Dynamic Probe / PAIR reference
   TESTING.md             # Gate verification tests and troubleshooting

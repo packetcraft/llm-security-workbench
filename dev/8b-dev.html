@@ -2144,6 +2144,94 @@
             display: block;
         }
 
+        /* ── Model Security Scanner pane ── */
+        .ms-description {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+            margin-bottom: 10px;
+        }
+        .ms-section-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 10px 0 5px;
+        }
+        .ms-model-cards { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+        .ms-model-card {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            cursor: pointer;
+            background: transparent;
+            text-align: left;
+            width: 100%;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .ms-model-card:hover { border-color: var(--primary); background: rgba(41,89,170,0.04); }
+        .ms-model-card.ms-card-selected { border-color: var(--primary); background: rgba(41,89,170,0.08); }
+        .ms-card-name { font-size: 0.72rem; font-weight: 600; color: var(--text); font-family: monospace; }
+        .ms-card-desc { font-size: 0.67rem; color: var(--text-muted); margin-top: 2px; }
+        .ms-card-badge {
+            font-size: 0.62rem; font-weight: 700; padding: 1px 5px;
+            border-radius: 3px; float: right; margin-top: 1px;
+        }
+        .ms-card-badge.safe   { background: rgba(88,117,57,0.15);  color: var(--green); }
+        .ms-card-badge.threat { background: rgba(140,67,81,0.15);   color: var(--danger); }
+        .ms-input-row { display: flex; gap: 4px; margin-bottom: 8px; }
+        .ms-input-row input {
+            flex: 1; padding: 5px 7px; border: 1px solid var(--border);
+            border-radius: 5px; background: var(--panel); color: var(--text);
+            font-size: 0.72rem; font-family: monospace;
+        }
+        .ms-input-row input:focus { outline: none; border-color: var(--primary); }
+        .ms-scan-btn {
+            padding: 5px 10px; background: var(--primary); color: #fff; border: none;
+            border-radius: 5px; font-size: 0.72rem; font-weight: 600;
+            cursor: pointer; white-space: nowrap;
+        }
+        .ms-scan-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .ms-status-pill {
+            display: none; align-items: center; gap: 6px; padding: 5px 9px;
+            border-radius: 5px; font-size: 0.72rem; font-weight: 600;
+            margin-bottom: 8px; border: 1px solid transparent;
+        }
+        .ms-status-pill.ms-pass  { background: rgba(88,117,57,0.12);  border-color: var(--green);  color: var(--green); }
+        .ms-status-pill.ms-block { background: rgba(140,67,81,0.12);  border-color: var(--danger); color: var(--danger); }
+        .ms-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+        .ms-metrics { display: flex; gap: 4px; margin-bottom: 6px; }
+        .ms-metric {
+            flex: 1; background: var(--panel); border: 1px solid var(--border);
+            border-radius: 6px; padding: 6px 4px; text-align: center;
+        }
+        .ms-metric-value { font-size: 0.88rem; font-weight: 700; color: var(--text); display: block; }
+        .ms-metric-label {
+            font-size: 0.59rem; font-weight: 700; letter-spacing: 0.04em;
+            text-transform: uppercase; color: var(--text-muted); display: block; margin-top: 1px;
+        }
+        .ms-meta { font-size: 0.67rem; color: var(--text-muted); line-height: 1.9; margin-bottom: 8px; }
+        .ms-meta span { color: var(--text); font-weight: 500; font-family: monospace; }
+        .ms-violation-item {
+            padding: 5px 7px; border-left: 3px solid var(--danger);
+            background: rgba(140,67,81,0.06); border-radius: 0 4px 4px 0;
+            margin-bottom: 4px; font-size: 0.7rem;
+        }
+        .ms-violation-name { font-weight: 600; color: var(--text); }
+        .ms-violation-severity {
+            font-size: 0.61rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.04em; margin-left: 5px; color: var(--danger);
+        }
+        .ms-violation-detail { color: var(--text-muted); margin-top: 2px; font-size: 0.67rem; }
+        .ms-json-block {
+            background: var(--debug); color: #c0d6e8; border-radius: 5px; padding: 8px;
+            font-size: 0.64rem; font-family: monospace; max-height: 200px; overflow-y: auto;
+            white-space: pre; border: 1px solid var(--border);
+        }
+        .ms-spinner { display: none; font-size: 0.71rem; color: var(--text-muted); margin: 5px 0; }
+        .ms-spinner.active { display: block; }
+
         #main-content {
             flex: 1;
             display: flex;
@@ -3104,6 +3192,10 @@
                     onclick="selectPane('workspace', 'Workspace', this)">
                     ⬡
                 </button>
+                <button class="rail-icon" id="rail-model-security" title="Model Security" aria-label="Model Security"
+                    onclick="selectPane('model-security', 'Model Security', this)">
+                    🔍
+                </button>
                 <button class="rail-icon" id="rail-redteam" title="Red Teaming" aria-label="Red Teaming"
                     onclick="openRedTeamDrawer()">
                     🚩
@@ -3483,6 +3575,70 @@ Respond ONLY with valid JSON, no other text:
             <input type="checkbox" id="lg-out-bias" style="display:none">
             <input type="checkbox" id="lg-out-relevance" style="display:none">
             <input type="checkbox" id="lg-out-languagesame" style="display:none">
+
+                <!-- Pane: Model Security Scanner -->
+                <div class="nav-pane" id="pane-model-security">
+                    <div style="padding: 0 10px 12px">
+
+                        <div class="ms-description">Scan a HuggingFace model for supply-chain threats, malicious code, and policy violations using AIRS Model Security.</div>
+
+                        <div class="ms-section-title">Quick Select</div>
+                        <div class="ms-model-cards">
+                            <button class="ms-model-card" onclick="selectModelCard(this, 'google/flan-t5-small')">
+                                <span class="ms-card-badge safe">✓ Safe</span>
+                                <div class="ms-card-name">google/flan-t5-small</div>
+                                <div class="ms-card-desc">Known-clean reference model</div>
+                            </button>
+                            <button class="ms-model-card" onclick="selectModelCard(this, 'opendiffusion/sentimentcheck')">
+                                <span class="ms-card-badge threat">⚠ Malicious</span>
+                                <div class="ms-card-name">opendiffusion/sentimentcheck</div>
+                                <div class="ms-card-desc">Known-malicious test model</div>
+                            </button>
+                        </div>
+
+                        <div class="ms-section-title">HuggingFace Model ID</div>
+                        <div class="ms-input-row">
+                            <input type="text" id="ms-model-input" placeholder="author/model-name" />
+                            <button class="ms-scan-btn" id="ms-scan-btn" onclick="runModelScan()">Scan</button>
+                        </div>
+
+                        <div class="ms-spinner" id="ms-spinner">⏳ Scanning model…</div>
+
+                        <div class="ms-status-pill" id="ms-status-pill">
+                            <div class="ms-status-dot"></div>
+                            <span id="ms-status-text">—</span>
+                        </div>
+
+                        <div id="ms-metrics-row" style="display:none">
+                            <div class="ms-metrics">
+                                <div class="ms-metric">
+                                    <span class="ms-metric-value" id="ms-passed">—</span>
+                                    <span class="ms-metric-label">Passed</span>
+                                </div>
+                                <div class="ms-metric">
+                                    <span class="ms-metric-value" id="ms-failed">—</span>
+                                    <span class="ms-metric-label">Failed</span>
+                                </div>
+                                <div class="ms-metric">
+                                    <span class="ms-metric-value" id="ms-passrate">—</span>
+                                    <span class="ms-metric-label">Pass Rate</span>
+                                </div>
+                            </div>
+                            <div class="ms-meta" id="ms-meta-block"></div>
+                        </div>
+
+                        <div id="ms-violations-section" style="display:none">
+                            <div class="ms-section-title">Violations</div>
+                            <div id="ms-violations-list"></div>
+                        </div>
+
+                        <div id="ms-json-section" style="display:none">
+                            <div class="ms-section-title">Raw Response</div>
+                            <div class="ms-json-block" id="ms-json-block">// No scan run yet.</div>
+                        </div>
+
+                    </div>
+                </div><!-- #pane-model-security -->
 
         </div><!-- #nav-panel -->
 
@@ -5818,6 +5974,108 @@ Respond ONLY with valid JSON, no other text:
 
         // ── Shared DOM text setter — avoids repeating getElementById + null check ──
         function setEl(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+
+        // ── Model Security Scanner ──────────────────────────────────────────────
+
+        function selectModelCard(btn, modelId) {
+            document.querySelectorAll('.ms-model-card').forEach(c => c.classList.remove('ms-card-selected'));
+            btn.classList.add('ms-card-selected');
+            document.getElementById('ms-model-input').value = modelId;
+        }
+
+        async function runModelScan() {
+            const modelId = (document.getElementById('ms-model-input').value || '').trim();
+            if (!modelId) { alert('Enter a HuggingFace model ID (e.g. google/flan-t5-small)'); return; }
+
+            const btn              = document.getElementById('ms-scan-btn');
+            const spinner          = document.getElementById('ms-spinner');
+            const statusPill       = document.getElementById('ms-status-pill');
+            const metricsRow       = document.getElementById('ms-metrics-row');
+            const violationsSection = document.getElementById('ms-violations-section');
+            const jsonSection      = document.getElementById('ms-json-section');
+
+            // Reset
+            btn.disabled = true;
+            spinner.classList.add('active');
+            statusPill.style.display = 'none';
+            metricsRow.style.display = 'none';
+            violationsSection.style.display = 'none';
+            jsonSection.style.display = 'none';
+
+            const t0 = Date.now();
+            try {
+                const res  = await fetch('/api/model-scan', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ model_id: modelId, source: 'huggingface' }),
+                });
+                const data    = await res.json();
+                const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+
+                // Always show raw JSON
+                jsonSection.style.display = 'block';
+                document.getElementById('ms-json-block').textContent = JSON.stringify(data, null, 2);
+
+                if (!res.ok) {
+                    statusPill.className = 'ms-status-pill ms-block';
+                    statusPill.style.display = 'flex';
+                    document.getElementById('ms-status-text').textContent =
+                        `Error ${res.status} — ${escHtml(data.error || 'scan failed')}`;
+                    return;
+                }
+
+                // Status pill
+                const hasViolations = (data.failed_rules > 0) ||
+                    ((data.violations || data.rule_violations || []).length > 0) ||
+                    data.action === 'block';
+                statusPill.className = `ms-status-pill ${hasViolations ? 'ms-block' : 'ms-pass'}`;
+                statusPill.style.display = 'flex';
+                document.getElementById('ms-status-text').textContent =
+                    `${hasViolations ? '⛔ Violations found' : '✅ Passed'} · ${elapsed}s`;
+
+                // Metrics
+                const passed = data.passed_rules ?? null;
+                const failed = data.failed_rules ?? null;
+                if (passed !== null || failed !== null) {
+                    const total = (passed || 0) + (failed || 0);
+                    const rate  = total > 0 ? ((passed / total) * 100).toFixed(1) + '%' : '—';
+                    document.getElementById('ms-passed').textContent   = total > 0 ? `${passed} / ${total}` : (passed ?? '—');
+                    document.getElementById('ms-failed').textContent   = total > 0 ? `${failed} / ${total}` : (failed ?? '—');
+                    document.getElementById('ms-passrate').textContent = rate;
+                    metricsRow.style.display = 'block';
+
+                    const meta = [];
+                    if (data.scan_id)            meta.push(`Scan ID: <span>${escHtml(String(data.scan_id))}</span>`);
+                    if (data.created)            meta.push(`Created: <span>${escHtml(data.created)}</span>`);
+                    if (data.scanner_version)    meta.push(`Scanner: <span>${escHtml(data.scanner_version)}</span>`);
+                    if (data.files_scanned != null) meta.push(`Files scanned: <span>${data.files_scanned}</span>`);
+                    if (data.files_skipped  != null) meta.push(`Files skipped: <span>${data.files_skipped}</span>`);
+                    document.getElementById('ms-meta-block').innerHTML = meta.join(' &nbsp;·&nbsp; ');
+                }
+
+                // Violations list
+                const violations = data.violations || data.rule_violations || [];
+                if (violations.length > 0) {
+                    violationsSection.style.display = 'block';
+                    document.getElementById('ms-violations-list').innerHTML = violations.map(v => `
+                        <div class="ms-violation-item">
+                            <div class="ms-violation-name">${escHtml(v.rule_name || v.name || 'Unnamed rule')}
+                                <span class="ms-violation-severity">${escHtml(v.severity || '')}</span>
+                            </div>
+                            <div class="ms-violation-detail">${escHtml(v.description || v.detail || '')}</div>
+                        </div>`).join('');
+                }
+            } catch (err) {
+                jsonSection.style.display = 'block';
+                document.getElementById('ms-json-block').textContent = `// Request error: ${err.message}`;
+                statusPill.className = 'ms-status-pill ms-block';
+                statusPill.style.display = 'flex';
+                document.getElementById('ms-status-text').textContent = `Failed — ${err.message}`;
+            } finally {
+                btn.disabled = false;
+                spinner.classList.remove('active');
+            }
+        }
 
         // ── Demo / Audit Mode toggle ────────────────────────────────────────────
         function toggleDemoMode() {

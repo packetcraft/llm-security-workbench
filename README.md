@@ -94,6 +94,7 @@ For the full six-gate pipeline including LLM-Guard and Little-Canary, follow the
 | ↳ [`docs/GATE-SEMANTIC-GUARD.md`](docs/GATE-SEMANTIC-GUARD.md) | Semantic-Guard — LLM-as-judge, exact prompts, verdict schema, judge model guide |
 | ↳ [`docs/GATE-LITTLE-CANARY.md`](docs/GATE-LITTLE-CANARY.md) | Little-Canary — detection patterns, model recommendations, Flask API |
 | ↳ [`docs/GATE-AIRS.md`](docs/GATE-AIRS.md) | AIRS — REST API, SDK sidecar, DLP, enforcement modes |
+| ↳ [`docs/GATE-AIRS-MODEL-SECURITY.md`](docs/GATE-AIRS-MODEL-SECURITY.md) | AIRS Model Security — supply-chain scanning of HuggingFace models |
 | **Red Teaming** | |
 | ↳ [`docs/RED-TEAM-STATIC.md`](docs/RED-TEAM-STATIC.md) | Static Batch Runner — threat library, 6-gate pipeline execution, exports |
 | ↳ [`docs/RED-TEAM-DYNAMIC.md`](docs/RED-TEAM-DYNAMIC.md) | Dynamic Probe — PAIR algorithm, attacker/judge prompts, gate trace |

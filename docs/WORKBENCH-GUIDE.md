@@ -238,6 +238,7 @@ The guide covers:
 | ↳ [GATE-SEMANTIC-GUARD.md](GATE-SEMANTIC-GUARD.md) | Semantic-Guard — LLM-as-judge, exact prompts, verdict schema, judge model guide |
 | ↳ [GATE-LITTLE-CANARY.md](GATE-LITTLE-CANARY.md) | Little-Canary — detection patterns, model recommendations, Flask API |
 | ↳ [GATE-AIRS.md](GATE-AIRS.md) | AIRS — REST API, SDK sidecar, DLP, enforcement modes |
+| ↳ [GATE-AIRS-MODEL-SECURITY.md](GATE-AIRS-MODEL-SECURITY.md) | AIRS Model Security — supply-chain scanning of HuggingFace models |
 | **[Red Teaming]** | |
 | ↳ [RED-TEAM-STATIC.md](RED-TEAM-STATIC.md) | Static Batch Runner — threat library, 6-gate pipeline, exports |
 | ↳ [RED-TEAM-DYNAMIC.md](RED-TEAM-DYNAMIC.md) | Dynamic Probe — PAIR algorithm, attacker/judge prompts, gate trace |

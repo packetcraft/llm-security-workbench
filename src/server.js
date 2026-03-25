@@ -217,6 +217,34 @@ app.post("/api/airs-sdk/batch", async (req, res) => {
 });
 
 
+// 7. AIRS Model Security — scans a HuggingFace model for supply-chain threats and policy violations
+//    Endpoint: POST /v1/aiml/model/scan  (verify latest path at pan.dev/airs)
+app.post("/api/model-scan", async (req, res) => {
+  const modelScanEndpoint =
+    "https://api.aisecurity.paloaltonetworks.com/v1/aiml/model/scan";
+
+  const apiKey = process.env.AIRS_API_KEY || req.headers["x-pan-token"];
+  if (!apiKey) {
+    return res.status(401).json({ error: "Missing API key — set AIRS_API_KEY in .env" });
+  }
+  try {
+    const response = await fetch(modelScanEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-pan-token": apiKey,
+      },
+      body: JSON.stringify(req.body),
+    });
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json(data);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: "Model scan proxy error: " + error.message });
+  }
+});
+
+
 const PORT = 3080;
 app.listen(PORT, () => {
   console.log(`🚀 Workbench running at http://localhost:${PORT}`);
