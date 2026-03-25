@@ -58,68 +58,169 @@ server.js returns result to browser
 
 ## Setup
 
-### Step 1 — Get credentials
+> **Run all commands from the project root** (`llm-security-workbench/`) unless stated otherwise.
+> **Windows users:** use Git Bash for all shell commands below.
 
-Model Security uses **OAuth2 client credentials** — separate from the `AIRS_API_KEY` used for runtime security. Obtain from the Palo Alto AI Model Security console:
+---
+
+### Step 1 — Get credentials from the AIRS console
+
+Model Security uses **OAuth2 client credentials** — these are separate from the `AIRS_API_KEY` used for runtime security. Get them from the Palo Alto AI Model Security console:
 
 | Credential | Where to find it |
 | :--- | :--- |
 | `MODEL_SECURITY_CLIENT_ID` | Prisma Cloud → AI Model Security → API Credentials |
-| `MODEL_SECURITY_CLIENT_SECRET` | Same — shown once at creation |
+| `MODEL_SECURITY_CLIENT_SECRET` | Same page — shown once at creation time |
 | `TSG_ID` | Tenant Service Group ID — visible in the console URL or tenant settings |
-| `SECURITY_GROUP_UUID_HF` | AI Model Security → Security Groups → your HuggingFace group UUID |
+| `SECURITY_GROUP_UUID_HF` | AI Model Security → Security Groups → select your HuggingFace group → copy UUID |
+| `SECURITY_GROUP_UUID_LOCAL` | Same — select your local model scanning group → copy UUID (optional) |
 
-Add all four to your `.env`:
+---
+
+### Step 2 — Add credentials to `.env`
+
+Open `.env` in the project root (copy from `.env.example` if it doesn't exist yet) and add:
 
 ```env
 MODEL_SECURITY_CLIENT_ID=your-client-id
 MODEL_SECURITY_CLIENT_SECRET=your-client-secret
 TSG_ID=your-tsg-id
 SECURITY_GROUP_UUID_HF=your-hf-security-group-uuid
+SECURITY_GROUP_UUID_LOCAL=your-local-security-group-uuid
 MODEL_SECURITY_API_ENDPOINT=https://api.sase.paloaltonetworks.com/aims
 ```
 
-### Step 2 — Bootstrap private PyPI and install the SDK
+---
 
-The `model-security-client` package is **not on public PyPI**. It lives on an authenticated private index. Use the included `getPYPIurl.sh` script to get the URL (requires `jq` and `curl`):
-
-```bash
-# Load your .env first, then run the script
-export $(grep -v '^#' .env | xargs)
-PYPI_URL=$(bash services/airs-model-scan/getPYPIurl.sh)
-```
-
-> **Windows:** run in Git Bash or WSL. The script requires `jq` — install via `winget install jqlang.jq` or `choco install jq`.
-
-**Create the venv and install:**
+### Step 3 — Create the Python virtual environment
 
 ```bash
-# Windows (Git Bash or PowerShell)
 py -3.12 -m venv services/airs-model-scan/.venv
-services\airs-model-scan\.venv\Scripts\pip install flask python-dotenv
-services\airs-model-scan\.venv\Scripts\pip install model-security-client --extra-index-url "$PYPI_URL"
-
-# macOS / Linux
-python3.12 -m venv services/airs-model-scan/.venv
-services/airs-model-scan/.venv/bin/pip install flask python-dotenv
-services/airs-model-scan/.venv/bin/pip install model-security-client --extra-index-url "$PYPI_URL"
 ```
 
-> **Python version:** 3.12 required — the same as LLM-Guard. Do not use 3.13 or 3.14.
+> **Python 3.12 is required** — the same version as LLM-Guard. Do not use 3.13 or 3.14.
 
-### Step 3 — Start the sidecar
+Verify:
+```bash
+services/airs-model-scan/.venv/Scripts/python --version
+# Python 3.12.x
+```
+
+---
+
+### Step 4 — Install base dependencies
+
+```bash
+services/airs-model-scan/.venv/Scripts/pip install flask python-dotenv
+```
+
+---
+
+### Step 5 — Get the private PyPI URL
+
+The `model-security-client` SDK is **not on public PyPI** — it lives on an authenticated private index. The included script handles the OAuth2 flow to retrieve the URL.
+
+First load your credentials into the shell:
+```bash
+set -a && source .env && set +a
+```
+
+Then run the script:
+```bash
+PYPI_URL=$(bash services/airs-model-scan/getPYPIurl.sh)
+echo "PyPI URL: $PYPI_URL"
+```
+
+You should see a URL printed. If it prints empty or an error, check that `MODEL_SECURITY_CLIENT_ID`, `MODEL_SECURITY_CLIENT_SECRET`, and `TSG_ID` are all exported (re-run the `set -a && source .env && set +a` line).
+
+---
+
+### Step 6 — Install the SDK from the private index
+
+```bash
+services/airs-model-scan/.venv/Scripts/pip install model-security-client --extra-index-url "$PYPI_URL"
+```
+
+The real package is larger than the public stub (1.5 kB). Confirm the correct version installed:
+```bash
+services/airs-model-scan/.venv/Scripts/pip show model-security-client
+```
+
+---
+
+### Step 7 — Verify with the CLI scan tool
+
+Before starting the full sidecar, confirm the SDK and credentials work end-to-end:
+
+```bash
+services/airs-model-scan/.venv/Scripts/python services/airs-model-scan/hf-scan.py google/flan-t5-small
+```
+
+Expected output:
+```
+🚀 Initiating scan for: https://huggingface.co/google/flan-t5-small
+Scan completed: SAFE
+
+{
+  "eval_outcome": "SAFE",
+  ...
+}
+```
+
+Try the known-malicious model too:
+```bash
+services/airs-model-scan/.venv/Scripts/python services/airs-model-scan/hf-scan.py opendiffusion/sentimentcheck
+```
+
+Expected: `eval_outcome` is something other than `SAFE` with violations present.
+
+---
+
+### Step 8 — Start the sidecar
 
 ```bash
 npm run model-scan
 ```
 
-Verify it is running:
-```bash
-curl http://localhost:5004/health
-# → { "status": "ok", "service": "airs-model-scan", "sdk_available": true }
+Expected output:
+```
+🔍 AIRS Model Security sidecar running on http://localhost:5004
+   Base URL   : https://api.sase.paloaltonetworks.com/aims
+   HF UUID    : <your-uuid>
+   Local UUID : <your-uuid>
 ```
 
-The 🔍 icon in the 8b nav panel shows a **green dot** when the sidecar is online with the SDK loaded, and a **grey dot** when it is offline or the SDK is not installed.
+Verify health:
+```bash
+curl http://localhost:5004/health
+# → { "status": "ok", "service": "airs-model-scan", "sdk_available": true, "sdk_error": null }
+```
+
+The 🔍 icon in the 8b nav panel shows a **green dot** when the sidecar is online with the SDK loaded, and a **grey dot** when offline or the SDK is not installed.
+
+---
+
+### Step 9 — Use the UI
+
+1. Ensure `npm start` is running (Node proxy on `:3080`)
+2. Open `http://localhost:3080/dev/8b`
+3. Click the **🔍** icon in the left rail
+4. Click `google/flan-t5-small` → **Scan**
+
+Results appear in the status pill, metrics row, and raw JSON panel.
+
+---
+
+### Troubleshooting
+
+| Symptom | Likely cause | Fix |
+| :--- | :--- | :--- |
+| `PYPI_URL` is empty | Credentials not exported | Re-run `set -a && source .env && set +a` then retry |
+| `ModuleNotFoundError: No module named 'model_security_client.api'` | Stub from public PyPI installed | `pip uninstall model-security-client -y` then redo Steps 5–6 |
+| `sdk_available: false` in health response | SDK not installed in the venv | Redo Steps 5–6 and restart `npm run model-scan` |
+| `502` from `/api/model-scan` | Sidecar not running | Run `npm run model-scan` in a separate terminal |
+| `SECURITY_GROUP_UUID_HF not set` | Missing env var | Add to `.env` and restart sidecar |
+| `⚠️ An error occurred` in CLI scan | Wrong UUID or no entitlement | Verify UUID in AIRS console; confirm Model Security is enabled on your account |
 
 ---
 
