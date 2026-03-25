@@ -233,6 +233,7 @@ app.post("/api/model-scan", async (req, res) => {
       headers: {
         "Content-Type": "application/json",
         "x-pan-token": apiKey,
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify(req.body),
     });
