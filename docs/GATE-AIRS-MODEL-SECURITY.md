@@ -188,7 +188,10 @@ Scan completed: SAFE
 
 Try the known-malicious model too:
 ```bash
+# Windows
 services/airs-model-scan/.venv/Scripts/python services/airs-model-scan/hf-scan.py opendiffusion/sentimentcheck
+# MacOS
+services/airs-model-scan/.venv/bin/python services/airs-model-scan/hf-scan.py opendiffusion/sentimentcheck
 ```
 
 Expected: `eval_outcome` is something other than `SAFE` with violations present.
