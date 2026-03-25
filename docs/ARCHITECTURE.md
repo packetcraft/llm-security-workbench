@@ -231,7 +231,7 @@ This short-circuit is implemented by `runAIRSDualGate()` returning `true` on a s
 
 ---
 
-## UI Layout (dev/7c-debug-inspector)
+## UI Layout (dev/7c-sdk-api-inspector)
 
 The workbench uses a full-viewport horizontal flex shell (`#app-shell`) with five named regions:
 

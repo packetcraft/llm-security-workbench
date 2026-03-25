@@ -1,11 +1,11 @@
 <!--
   WHAT THIS FILE HOLDS:
-  Technical deep-dive on dev/7a-airs-sdk.html — the AIRS Python SDK evaluation build.
+  Technical deep-dive on dev/7a-airs-sdk-sidecar.html — the AIRS Python SDK evaluation build.
   Documents every 7a-specific addition: new functions, design decisions, data flows,
   trade-offs, and known optimisation opportunities.
 
   PRIMARY AUDIENCE:
-  A future Claude Code session running a code optimisation pass on dev/7a-airs-sdk.html.
+  A future Claude Code session running a code optimisation pass on dev/7a-airs-sdk-sidecar.html.
   Read this before touching the file.
 
   CROSS-REFERENCES:
@@ -15,11 +15,11 @@
   - docs/DYNAMIC-PROBE.md   — Dynamic Probe (PAIR) architecture (inherited from 6b)
 -->
 
-# dev/7a-airs-sdk — Technical Reference
+# dev/7a-airs-sdk-sidecar — Technical Reference
 
 ## What 7a Is
 
-`dev/7a-airs-sdk.html` is a direct copy of `dev/6b-dynamic-redteam.html` with three additions:
+`dev/7a-airs-sdk-sidecar.html` is a direct copy of `dev/6b-dynamic-redteam.html` with three additions:
 
 1. **Sidecar status dots** — a coloured dot in every gate's header row showing live service health
 2. **AIRS Python SDK sidecar** (`services/airs-sdk/airs_sdk_server.py`, port `:5003`) — wraps `pan-aisecurity` to expose batch scanning
@@ -54,7 +54,7 @@ The Node proxy injects `AIRS_API_KEY` from `.env` into the body before forwardin
 
 ## Function Map — 7a Additions Only
 
-All line numbers are approximate (±5 lines) and refer to `dev/7a-airs-sdk.html`.
+All line numbers are approximate (±5 lines) and refer to `dev/7a-airs-sdk-sidecar.html`.
 
 | Function | Line | Type | Purpose |
 | :--- | :--- | :--- | :--- |
@@ -352,7 +352,7 @@ AIRS-Dual scans the LLM's actual response text — not pre-scannable. It always 
 
 ## What a Code Optimisation Pass Should Focus On
 
-When running an optimisation routine against `dev/7a-airs-sdk.html`, the 7a-specific code is confined to:
+When running an optimisation routine against `dev/7a-airs-sdk-sidecar.html`, the 7a-specific code is confined to:
 
 1. **Lines ~2619–2756** — sidecar dot `<span>` elements in gate header HTML
 2. **Lines ~1683–1692** — `.sidecar-dot` CSS class

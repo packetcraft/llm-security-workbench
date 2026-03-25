@@ -21,7 +21,7 @@ This guide walks through a full from-scratch setup of the six-gate LLM security 
 | File | Description |
 |:---|:---|
 | `dev/8a-ux-improvements.html` | **Current development file.** `7c` + UX improvements (Demo/Audit mode, user bubble, alert→Inspector link) |
-| `dev/7c-debug-inspector.html` | `7a` + 🔍 API Inspector debug drawer — per-gate score, HTTP status, latency, trigger, config snapshot |
+| `dev/7c-sdk-api-inspector.html` | `7a` + 🔍 API Inspector debug drawer — per-gate score, HTTP status, latency, trigger, config snapshot |
 | `dev/6b-dynamic-redteam.html` | `6a` + 🚩 Red Teaming drawer — Static batch runner + Dynamic Probe (PAIR algorithm) |
 
 Use `8a` for current development and demos. `7c` and `6b` are stable references. Earlier files are archived in `dev/builds/`.
@@ -514,10 +514,10 @@ When the AIRS SDK sidecar is running (`npm run airs-sdk`), `dev/7a` pre-scans al
 ```
 llm-security-workbench/
 ├── dev/
-│   ├── 5d-rail-sidebar.html                         ← workbench UI (pre-refactor, previous iteration)
-│   ├── 6a-instrument-panel.html                     ← workbench UI (instrument panel)
 │   ├── 6b-dynamic-redteam.html                      ← 6a + Red Teaming drawer
-│   └── 7a-airs-sdk.html                             ← 6b + AIRS Python SDK evaluation (current)
+│   ├── 7c-sdk-api-inspector.html                    ← 6b + AIRS SDK sidecar + API Inspector drawer
+│   ├── 8a-ux-improvements.html                      ← 7c + UX improvements (current)
+│   └── builds/                                      ← archived iterations (5d, 6a, 7a, 7b, …)
 ├── services/
 │   ├── llm-guard/
 │   │   ├── .venv/                                   ← Python 3.12 venv (gitignored)

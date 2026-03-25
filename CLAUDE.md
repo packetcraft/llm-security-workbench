@@ -8,13 +8,11 @@ Project context and working conventions for Claude Code. Read this before making
 
 A browser-based LLM security testing workbench. A Node.js proxy (`src/server.js`) serves the UI and routes security scans. All LLM inference runs locally via Ollama. Security scanning uses a six-gate pipeline — some gates local (LLM-Guard, Semantic-Guard, Little-Canary), some cloud (AIRS).
 
-**Active workbench files:** `dev/5d`, `dev/6a`, `dev/6b`, `dev/7a`, and `dev/7c` — these are the ones users run and demo.
-- `7c` — `7a` + 🔍 full-featured API Inspector debug drawer — per-gate score, HTTP status, latency, trigger, config snapshot, modal popout — current development file
-- `7a` — `6b` + 🐍 AIRS Python SDK evaluation — batch pre-scan via `pan-aisecurity` sidecar (:5003) — stable reference
+**Active workbench files:** `dev/6b`, `dev/7c`, and `dev/8a` — these are the ones users run and demo.
+- `8a` — `7c` + UX improvements (Demo/Audit mode, user bubble, alert→Inspector link) — current development file
+- `7c` — `7a` + 🔍 full-featured API Inspector debug drawer — per-gate score, HTTP status, latency, trigger, config snapshot, modal popout — stable reference (`7c-sdk-api-inspector`)
 - `6b` — `6a` + 🚩 Red Teaming drawer (Static batch runner + Dynamic Probe / PAIR algorithm) — stable reference
-- `6a` — rail sidebar + live telemetry instrument panel (right panel, open by default) — stable reference
-- `5d` — same UI as 6a (rail sidebar, PacketCraft branding) but pre-refactor; retained as previous iteration reference
-- `5c` and earlier — archived in `dev/builds/`
+- `7a` and earlier — archived in `dev/builds/` (`7a-airs-sdk-sidecar` was the first SDK integration)
 
 ---
 
