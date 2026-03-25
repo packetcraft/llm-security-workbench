@@ -2166,6 +2166,34 @@
         body.demo-mode .scan-badge          { display: none !important; }
         body.demo-mode .message.security-alert { display: none !important; }
 
+        /* In demo mode: left and right panels become empty ghost columns.
+           Width is preserved so the chat column stays centred in the same
+           position — the flanking space shows as blank (no content visible).
+           This overrides both the expanded and the nav-collapsed / collapsed
+           states so the gutters are always present while demo mode is on. */
+        body.demo-mode #nav-panel,
+        body.demo-mode #nav-panel.nav-collapsed {
+            width: var(--nav-panel-width) !important;
+            transition: none;
+        }
+        body.demo-mode #nav-panel .nav-panel-header,
+        body.demo-mode #nav-panel .nav-panel-body {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        body.demo-mode #right-panel,
+        body.demo-mode #right-panel.collapsed {
+            width: 220px !important;
+            min-width: 220px !important;
+            transition: none;
+        }
+        body.demo-mode #right-panel .rp-header,
+        body.demo-mode #right-panel .rp-body {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
         #demo-toggle {
             font-size: 10px;
             font-weight: 700;
