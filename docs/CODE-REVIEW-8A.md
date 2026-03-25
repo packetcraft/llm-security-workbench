@@ -74,7 +74,7 @@ Findings from March 2026 review. Execute sequentially — each item is scoped to
 
 ## Pass 3 — Medium (DOM caching)
 
-### [ ] 10. 301 uncached `getElementById()` calls
+### [x] 10. 301 uncached `getElementById()` calls
 **Type:** Optimization
 **Location:** Throughout, hot paths in `rpUpdateGate()` (~4132–4163) and `rpFetchModelInfo()` (~4235)
 **Issue:** Telemetry bar elements (`rp-total-ms`, `wf-bar-*`, gate stat spans, etc.) are queried fresh on every pipeline tick. These elements are static — they never move or get replaced.

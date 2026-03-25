@@ -4086,6 +4086,8 @@ Respond ONLY with valid JSON, no other text:
         // Per-request telemetry state
         let _wfData = {};
         let _rpPipelineStart = 0;
+        // Cached waterfall DOM refs — populated by rpResetTelemetry after innerHTML rebuild
+        let _wfEls = {};
         // Context window size for fill bar
         let _rpCtxWindow = 0;
 
@@ -4117,12 +4119,20 @@ Respond ONLY with valid JSON, no other text:
                     </div>
                 </div>
             `).join('');
+            _wfEls = {};
+            WF_GATES.forEach(g => {
+                _wfEls[g.id] = {
+                    bar: document.getElementById('wf-bar-' + g.id),
+                    ms:  document.getElementById('wf-ms-' + g.id),
+                };
+            });
 
             // Reset summary stats
             setEl('rp-total-ms', '—');
             setEl('rp-gates-run', '—');
             setEl('rp-blocked-by', '—');
-            ['rp-total-ms', 'rp-blocked-by'].forEach(id => { const el = document.getElementById(id); if (el) el.style.color = ''; });
+            if (els.rpTotalMs) els.rpTotalMs.style.color = '';
+            if (els.rpBlockedBy) els.rpBlockedBy.style.color = '';
             setEl('rp-tok-prompt', '—');
             setEl('rp-tok-completion', '—');
             setEl('rp-tok-total', '—');
@@ -4145,38 +4155,30 @@ Respond ONLY with valid JSON, no other text:
             if (completedMs.length) _wfMax = Math.max(_wfMax, ...completedMs);
 
             // Update this gate's bar
-            const bar = document.getElementById('wf-bar-' + gateId);
-            const label = document.getElementById('wf-ms-' + gateId);
+            const { bar, ms: label } = _wfEls[gateId] || {};
             if (!bar || !label) return;
 
             const pct = latencyMs > 0 ? Math.min(100, (latencyMs / _wfMax) * 100) : 0;
             bar.style.width = pct + '%';
             bar.className = 'wf-bar-fill status-' + (status || 'safe');
             label.textContent = latencyMs > 0 ? latencyMs + 'ms' : (status === 'off' ? 'off' : '—');
-
-            const msEl = document.getElementById('wf-ms-' + gateId);
-            if (msEl && latencyMs > 0) {
-                msEl.style.color = latencyMs > 3000 ? 'var(--danger,#f7768e)'
+            if (latencyMs > 0) {
+                label.style.color = latencyMs > 3000 ? 'var(--danger,#f7768e)'
                     : latencyMs > 1000 ? 'var(--warn,#e0af68)'
                         : 'var(--safe,#9ece6a)';
             }
 
             // Re-normalise all existing bars relative to new max
             Object.entries(_wfData).forEach(([id, d]) => {
-                const b = document.getElementById('wf-bar-' + id);
+                const b = _wfEls[id]?.bar;
                 if (b && d.latencyMs > 0) b.style.width = Math.min(100, (d.latencyMs / _wfMax) * 100) + '%';
             });
 
             // Update pipeline summary
             const totalMs = Math.round(performance.now() - _rpPipelineStart);
-            setEl('rp-total-ms', totalMs + 'ms');
-            const totalEl = document.getElementById('rp-total-ms');
-            if (totalEl) totalEl.style.color = totalMs > 15000 ? 'var(--danger,#f7768e)' : totalMs > 7000 ? 'var(--warn,#e0af68)' : '';
-            setEl('rp-gates-run', Object.keys(_wfData).length + ' / ' + WF_GATES.length);
-            if (status === 'block') {
-                const blockedEl = document.getElementById('rp-blocked-by');
-                if (blockedEl) { blockedEl.textContent = gateId; blockedEl.style.color = 'var(--danger,#f7768e)'; }
-            }
+            if (els.rpTotalMs) { els.rpTotalMs.textContent = totalMs + 'ms'; els.rpTotalMs.style.color = totalMs > 15000 ? 'var(--danger,#f7768e)' : totalMs > 7000 ? 'var(--warn,#e0af68)' : ''; }
+            if (els.rpGatesRun) els.rpGatesRun.textContent = Object.keys(_wfData).length + ' / ' + WF_GATES.length;
+            if (status === 'block' && els.rpBlockedBy) { els.rpBlockedBy.textContent = gateId; els.rpBlockedBy.style.color = 'var(--danger,#f7768e)'; }
         }
 
         function rpUpdateTokens(promptTokens, completionTokens, tokensPerSec) {
@@ -4187,31 +4189,25 @@ Respond ONLY with valid JSON, no other text:
             setEl('rp-tok-speed', tokensPerSec != null ? tokensPerSec.toFixed(1) + ' t/s' : '—');
             const total = (promptTokens || 0) + (completionTokens || 0);
             if (total > 0) {
-                const pp = document.getElementById('rp-tok-bar-prompt');
-                const cp = document.getElementById('rp-tok-bar-completion');
-                if (pp) pp.style.width = ((promptTokens / total) * 100).toFixed(1) + '%';
-                if (cp) cp.style.width = ((completionTokens / total) * 100).toFixed(1) + '%';
+                if (els.rpTokBarPrompt) els.rpTokBarPrompt.style.width = ((promptTokens / total) * 100).toFixed(1) + '%';
+                if (els.rpTokBarCompletion) els.rpTokBarCompletion.style.width = ((completionTokens / total) * 100).toFixed(1) + '%';
             }
             if (_rpCtxWindow > 0 && promptTokens != null) {
-                const ctxBar = document.getElementById('rp-ctx-bar');
-                const ctxLabel = document.getElementById('rp-ctx-used-label');
                 const pct = Math.min(100, (promptTokens / _rpCtxWindow) * 100);
-                if (ctxBar) ctxBar.style.width = pct.toFixed(1) + '%';
-                if (ctxLabel) ctxLabel.textContent = `${promptTokens.toLocaleString()} / ${_rpCtxWindow.toLocaleString()} used`;
-                if (ctxBar) ctxBar.style.background = pct > 80 ? 'var(--danger,#f7768e)' : pct > 60 ? 'var(--warn,#e0af68)' : 'var(--purple,#9d7cd8)';
+                if (els.rpCtxBar) { els.rpCtxBar.style.width = pct.toFixed(1) + '%'; els.rpCtxBar.style.background = pct > 80 ? 'var(--danger,#f7768e)' : pct > 60 ? 'var(--warn,#e0af68)' : 'var(--purple,#9d7cd8)'; }
+                if (els.rpCtxUsedLabel) els.rpCtxUsedLabel.textContent = `${promptTokens.toLocaleString()} / ${_rpCtxWindow.toLocaleString()} used`;
             }
         }
 
         function rpUpdateOllamaTiming(loadNs, promptEvalNs, evalNs, totalNs, doneReason) {
             const ms = ns => ns ? Math.round(ns / 1e6) + 'ms' : '—';
-            const loadEl = document.getElementById('rp-ol-load');
-            if (loadEl) {
+            if (els.rpOlLoad) {
                 const loadMsVal = loadNs ? Math.round(loadNs / 1e6) : 0;
                 if (loadMsVal < 10) {
-                    loadEl.innerHTML = '<span style="color:var(--safe,#9ece6a);font-weight:700;">● HOT</span>';
+                    els.rpOlLoad.innerHTML = '<span style="color:var(--safe,#9ece6a);font-weight:700;">● HOT</span>';
                 } else {
-                    loadEl.textContent = loadMsVal + 'ms';
-                    loadEl.style.color = loadMsVal > 500 ? 'var(--warn,#e0af68)' : '';
+                    els.rpOlLoad.textContent = loadMsVal + 'ms';
+                    els.rpOlLoad.style.color = loadMsVal > 500 ? 'var(--warn,#e0af68)' : '';
                 }
             }
             setEl('rp-ol-prompt-eval', ms(promptEvalNs));
@@ -4223,10 +4219,10 @@ Respond ONLY with valid JSON, no other text:
             const genMs = evalNs ? Math.round(evalNs / 1e6) : 0;
             const barTotal = loadMs + promptMs + genMs;
             if (barTotal > 0) {
-                const setW = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = pct.toFixed(1) + '%'; };
-                setW('rp-ol-bar-load', (loadMs / barTotal) * 100);
-                setW('rp-ol-bar-prompt', (promptMs / barTotal) * 100);
-                setW('rp-ol-bar-gen', (genMs / barTotal) * 100);
+                const setW = (el, pct) => { if (el) el.style.width = pct.toFixed(1) + '%'; };
+                setW(els.rpOlBarLoad, (loadMs / barTotal) * 100);
+                setW(els.rpOlBarPrompt, (promptMs / barTotal) * 100);
+                setW(els.rpOlBarGen, (genMs / barTotal) * 100);
             }
         }
 
@@ -4243,12 +4239,11 @@ Respond ONLY with valid JSON, no other text:
 
                 const details = data.details || {};
                 const info = data.model_info || {};
-                const badgesEl = document.getElementById('rp-m-badges');
-                if (badgesEl) {
+                if (els.rpMBadges) {
                     const arch = details.family || '';
                     const params = details.parameter_size || '';
                     const quant = details.quantization_level || '';
-                    badgesEl.innerHTML = [
+                    els.rpMBadges.innerHTML = [
                         arch ? `<span class="rp-badge-pill" style="color:var(--purple,#9d7cd8)">${arch}</span>` : '',
                         params ? `<span class="rp-badge-pill" style="color:var(--primary,#7aa2f7)">${params}</span>` : '',
                         quant ? `<span class="rp-badge-pill" style="color:var(--warn,#e0af68)">${quant}</span>` : '',
@@ -4288,10 +4283,8 @@ Respond ONLY with valid JSON, no other text:
                     const ramVal = (entry.size || 0) - (entry.size_vram || 0);
                     setEl('rp-mem-ram', ramVal > 0 ? rpFormatBytes(ramVal) : '—');
                     const totalMem = entry.size || 1;
-                    const vramBar = document.getElementById('rp-mem-vram-bar');
-                    const ramBar = document.getElementById('rp-mem-ram-bar');
-                    if (vramBar) vramBar.style.width = Math.min(100, ((entry.size_vram || 0) / totalMem) * 100).toFixed(1) + '%';
-                    if (ramBar) ramBar.style.width = Math.min(100, (Math.max(0, ramVal) / totalMem) * 100).toFixed(1) + '%';
+                    if (els.rpMemVramBar) els.rpMemVramBar.style.width = Math.min(100, ((entry.size_vram || 0) / totalMem) * 100).toFixed(1) + '%';
+                    if (els.rpMemRamBar) els.rpMemRamBar.style.width = Math.min(100, (Math.max(0, ramVal) / totalMem) * 100).toFixed(1) + '%';
                     if (entry.expires_at) {
                         const secsLeft = Math.max(0, Math.round((new Date(entry.expires_at) - Date.now()) / 1000));
                         const mins = Math.floor(secsLeft / 60);
@@ -5890,6 +5883,21 @@ Respond ONLY with valid JSON, no other text:
                 staticSummary: document.getElementById("static-summary"),
                 // Modals
                 spModalBackdrop: document.getElementById("sp-modal-backdrop"),
+                // Right panel — static stat elements
+                rpTotalMs: document.getElementById("rp-total-ms"),
+                rpGatesRun: document.getElementById("rp-gates-run"),
+                rpBlockedBy: document.getElementById("rp-blocked-by"),
+                rpTokBarPrompt: document.getElementById("rp-tok-bar-prompt"),
+                rpTokBarCompletion: document.getElementById("rp-tok-bar-completion"),
+                rpCtxBar: document.getElementById("rp-ctx-bar"),
+                rpCtxUsedLabel: document.getElementById("rp-ctx-used-label"),
+                rpOlLoad: document.getElementById("rp-ol-load"),
+                rpOlBarLoad: document.getElementById("rp-ol-bar-load"),
+                rpOlBarPrompt: document.getElementById("rp-ol-bar-prompt"),
+                rpOlBarGen: document.getElementById("rp-ol-bar-gen"),
+                rpMBadges: document.getElementById("rp-m-badges"),
+                rpMemVramBar: document.getElementById("rp-mem-vram-bar"),
+                rpMemRamBar: document.getElementById("rp-mem-ram-bar"),
             };
 
             // Initialize App
