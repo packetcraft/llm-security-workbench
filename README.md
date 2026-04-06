@@ -56,7 +56,7 @@ npm install
 ```
 
 ```bash
-# Terminal 1 — Ollama (if not already running)
+# Terminal 1 — Ollama
 ollama serve
 
 # Terminal 2 — Node proxy
@@ -65,7 +65,23 @@ npm start
 
 Open **[http://localhost:3080/dev/8a](http://localhost:3080/dev/8a)**
 
-For the full six-gate pipeline including LLM-Guard and Little-Canary, follow the full setup guide below.
+---
+
+**Full six-gate pipeline** (LLM-Guard + Little-Canary sidecars):
+
+```bash
+pip install honcho
+
+# Terminal 1 — Ollama
+ollama serve
+
+# Terminal 2 — everything else
+PYTHONUTF8=1 python -m honcho start
+```
+
+> **Windows:** `PYTHONUTF8=1` is required. Add `export PYTHONUTF8=1` to `~/.bashrc` to avoid typing it each time.
+
+For venv setup and first-run model downloads, follow the full setup guide below.
 
 ---
 
@@ -111,6 +127,7 @@ For the full six-gate pipeline including LLM-Guard and Little-Canary, follow the
 | [Ollama](https://ollama.com/) | Local LLM runtime |
 | Python 3.12 | LLM-Guard sidecar (strict version requirement) |
 | Python 3.9+ | Little-Canary sidecar |
+| honcho (`pip install honcho`) | Optional — single-command startup via `Procfile` |
 | AIRS API key | Optional — only needed for AIRS-Inlet and AIRS-Dual cloud gates |
 
 ---
