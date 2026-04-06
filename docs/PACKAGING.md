@@ -82,14 +82,17 @@ canary:     npm run canary
 
 ```bash
 # Start everything (core gates)
-honcho start
+PYTHONUTF8=1 python -m honcho start
 
 # Start only specific services
-honcho start proxy llmguard canary
-
-# With cloud gates enabled (uncomment airs-sdk in Procfile first)
-honcho start
+PYTHONUTF8=1 python -m honcho start proxy llmguard canary
 ```
+
+> **Windows encoding note:** Honcho reads `.env` using the system default encoding (cp1252 on Windows), which fails on UTF-8 content. `PYTHONUTF8=1` forces UTF-8 and fixes this. Add it to `~/.bashrc` to avoid typing it each time:
+> ```bash
+> echo 'export PYTHONUTF8=1' >> ~/.bashrc
+> ```
+> After that, `python -m honcho start` works without the prefix.
 
 On Mac/Linux with Overmind:
 ```bash
@@ -561,7 +564,8 @@ Each `Dockerfile` lives **inside its service directory** (e.g. `services/llm-gua
 
 - [x] Create `Procfile` at project root
 - [x] Updated PACKAGING.md — corrected tool recommendation (honcho for Windows, Overmind for Mac/Linux)
-- [ ] Test with `honcho start` — verify all health indicators go green in the UI
+- [x] Test with `honcho start` — verified working (`PYTHONUTF8=1 python -m honcho start`)
+- [x] Windows encoding fix documented — `PYTHONUTF8=1` required due to cp1252/.env conflict
 - [ ] Add `honcho` install note to `docs/SETUP-GUIDE-FULL.md`
 
 ### Phase 2 — Docker Compose
