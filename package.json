@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "setup": "node scripts/setup.js",
+    "stop": "node scripts/stop.js",
     "start": "node src/server.js",
     "stage": "node scripts/stage.js",
     "stage:1a": "node scripts/stage.js 1a",
