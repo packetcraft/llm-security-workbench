@@ -48,44 +48,62 @@ A `Procfile` defines all services. `overmind` (or `foreman`) reads it and launch
 
 ### Prerequisites
 
-Install one of:
-- **Overmind** (recommended — better UX, tmux-based): `brew install overmind` / `go install github.com/DarthSim/overmind/v2@latest`
-- **Foreman** (simpler, Ruby-based): `gem install foreman`
-- **Honcho** (Python alternative): `pip install honcho`
+**On Windows (this project):** use `honcho` — it is Python-based and cross-platform. Overmind requires tmux, which is not available on native Windows.
+
+```bash
+pip install honcho
+```
+
+**On Mac/Linux:** any of the three work:
+- **Honcho** (Python): `pip install honcho`
+- **Foreman** (Ruby): `gem install foreman`
+- **Overmind** (tmux-based, best UX on Mac/Linux): `brew install overmind`
+
+All three read the same `Procfile` format.
 
 ### Implementation
 
-**Create `Procfile` at project root:**
+The `Procfile` delegates to the existing `npm run` scripts — this is intentional. Those scripts already handle Windows vs Unix venv paths and `.env` loading, so the Procfile stays clean and cross-platform.
+
+**`Procfile` at project root:**
 
 ```Procfile
-proxy:    npm start
-llmguard: python services/llm-guard/.venv/Scripts/python.exe services/llm-guard/llmguard_server.py
-canary:   python services/canary/.venv/Scripts/python.exe services/canary/canary_server.py
-airs-sdk: python services/airs-sdk/.venv/Scripts/python.exe services/airs-sdk/airs_sdk_server.py
-```
+# Ollama must be started separately: ollama serve
+# Comment out services you don't need
 
-> **Windows note:** Replace `Scripts/python.exe` with the actual venv python path. On Unix/Mac it becomes `bin/python`.
+proxy:      npm start
+llmguard:   npm run llmguard
+canary:     npm run canary
+# airs-sdk:   npm run airs-sdk
+# model-scan: npm run model-scan
+```
 
 **Usage:**
 
 ```bash
-overmind start          # starts all processes, colour-coded output
-overmind connect proxy  # attach to a specific process's terminal
-overmind restart llmguard  # restart one service without touching others
+# Start everything (core gates)
+honcho start
+
+# Start only specific services
+honcho start proxy llmguard canary
+
+# With cloud gates enabled (uncomment airs-sdk in Procfile first)
+honcho start
 ```
 
-Or with foreman:
-
+On Mac/Linux with Overmind:
 ```bash
-foreman start           # all processes, interleaved output
+overmind start              # colour-coded, tmux panes
+overmind connect llmguard   # attach to a specific service
+overmind restart llmguard   # restart one service without touching others
 ```
 
-**To skip optional gates** (e.g. no AIRS credentials), comment them out in the Procfile — no other changes needed.
+**To skip optional gates**, comment them out in the Procfile — no other changes needed.
 
 ### What this does NOT solve
 
 - Portability — still requires local Python venvs and Node installed
-- Ollama startup — Ollama must still be started separately (it runs as a system service on most setups)
+- Ollama startup — start `ollama serve` separately before running `honcho start`
 
 ---
 
@@ -541,10 +559,10 @@ Each `Dockerfile` lives **inside its service directory** (e.g. `services/llm-gua
 
 ### Phase 1 — Procfile (do first)
 
-- [ ] Create `Procfile` at project root
-- [ ] Test with `overmind start` (or `foreman start`)
-- [ ] Verify all health indicators go green in the UI
-- [ ] Document `overmind` install in `docs/SETUP-GUIDE-FULL.md`
+- [x] Create `Procfile` at project root
+- [x] Updated PACKAGING.md — corrected tool recommendation (honcho for Windows, Overmind for Mac/Linux)
+- [ ] Test with `honcho start` — verify all health indicators go green in the UI
+- [ ] Add `honcho` install note to `docs/SETUP-GUIDE-FULL.md`
 
 ### Phase 2 — Docker Compose
 
