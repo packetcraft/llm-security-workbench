@@ -233,6 +233,37 @@ Results appear in the status pill, metrics row, and raw JSON panel.
 
 ---
 
+### Docker Compose Setup
+
+If you are running the workbench using `docker compose`, you can install the private SDK into the running container using the following steps:
+
+1. **Get the private PyPI URL** (from your host shell):
+   ```bash
+   set -a && source .env && set +a
+   PYPI_URL=$(bash services/airs-model-scan/getPYPIurl.sh)
+   ```
+
+2. **Install the SDK into the running container**:
+   ```bash
+   docker compose exec model-scan pip install model-security-client --extra-index-url "$PYPI_URL"
+   ```
+
+3. **Restart the service to reload the SDK**:
+   ```bash
+   docker compose restart model-scan
+   ```
+
+4. **Verify**:
+   ```bash
+   curl http://localhost:5004/health
+   ```
+   `sdk_available` should be `true`.
+
+> [!NOTE]
+> This installation is **ephemeral**. If you rebuild the image (e.g., using `--build`), it will be lost and you will need to repeat these steps.
+
+---
+
 ### Troubleshooting
 
 | Symptom | Likely cause | Fix |
