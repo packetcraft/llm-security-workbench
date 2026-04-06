@@ -570,16 +570,16 @@ Each `Dockerfile` lives **inside its service directory** (e.g. `services/llm-gua
 
 ### Phase 2 — Docker Compose
 
-- [ ] Update `src/server.js`: replace hardcoded `localhost:500X` with `process.env.X_URL || 'http://localhost:500X'`
-- [ ] Create `Dockerfile.proxy`
-- [ ] Create `Dockerfile.python` (shared Python base)
-- [ ] Create `docker-compose.yml`
-- [ ] Create `.dockerignore`
+- [x] Update `src/server.js`: replace hardcoded `localhost:500X` with `process.env.X_URL || 'http://localhost:500X'`
+- [x] Create `Dockerfile.proxy`
+- [x] Create `Dockerfile.python` (shared Python base — `command:` in compose selects the per-service script)
+- [x] Create `docker-compose.yml`
+- [x] Create `.dockerignore`
 - [ ] Test local-only gates: `docker compose up`
 - [ ] Test cloud gates: `docker compose --profile cloud up`
 - [ ] Verify LLM-Guard volume persistence across restarts
 - [ ] Verify Ollama connectivity (host mode or container)
-- [ ] Update `docs/SETUP-GUIDE-FULL.md` with Docker Compose quickstart
+- [x] Update `docs/SETUP-GUIDE-FULL.md` with Docker Compose quickstart
 
 ---
 

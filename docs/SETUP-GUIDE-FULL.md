@@ -74,6 +74,8 @@ Each active gate appends a compact badge to the user message header as it comple
 
 ## Prerequisites
 
+### Option A / B — Local dev (honcho or manual terminals)
+
 | Requirement | Version | Notes |
 |:---|:---|:---|
 | Node.js | 18+ | Runs the proxy server |
@@ -85,6 +87,18 @@ Each active gate appends a compact badge to the user message header as it comple
 | honcho | Any | Optional — replaces multi-terminal startup with one command (`pip install honcho`) |
 
 > **Windows note:** If you have multiple Python versions installed, use `py -3.12` explicitly for the LLM-Guard venv.
+
+### Option C — Docker Compose
+
+| Requirement | Version | Notes |
+|:---|:---|:---|
+| Docker Desktop | Latest | Enables `docker compose` — Linux containers mode required |
+| Ollama | Latest | Still runs on the host — browser calls it directly at `localhost:11434` |
+| Git | Any | To clone the repo |
+
+> Node.js, Python, honcho, and `npm run setup` are **not needed** for the Docker path — all dependencies are built into the container images.
+
+> **Windows:** Open Docker Desktop → Settings → General → confirm **Use the WSL 2 based engine** is on. Switch to Linux containers if prompted (right-click tray icon).
 
 ---
 
@@ -249,6 +263,89 @@ Honcho reads the `Procfile` at the project root and launches `proxy`, `llmguard`
 
 ---
 
+### Option C — Docker Compose
+
+No Python venvs or npm scripts needed — everything runs in containers. Ollama still runs on the host (the browser calls it directly).
+
+**First run** (builds images and starts all core services):
+```bash
+docker compose up
+```
+
+On first run LLM-Guard downloads ~2–3 GB of HuggingFace models into the `hf-cache` Docker volume. This takes 5–20 minutes depending on your connection. Subsequent starts are fast — the volume persists across restarts.
+
+**Include cloud AIRS gates** (requires `AIRS_API_KEY` in `.env`):
+```bash
+docker compose --profile cloud up
+```
+
+**Include model scanning** (requires private PyPI setup — see `docs/GATE-AIRS-MODEL-SECURITY.md`):
+```bash
+docker compose --profile model-scan up
+```
+
+**Full stack** (core + cloud + model scan):
+```bash
+docker compose --profile cloud --profile model-scan up
+```
+
+**Run in the background:**
+```bash
+docker compose up -d
+```
+
+**Stop all containers:**
+```bash
+docker compose down
+```
+
+**Stop and wipe the HuggingFace model cache** (frees ~2–3 GB, next start re-downloads):
+```bash
+docker compose down -v
+```
+
+**Rebuild images after a code change** (required after editing any Python server or `src/server.js`):
+```bash
+docker compose up --build
+```
+
+**Rebuild a single service only:**
+```bash
+docker compose up --build llmguard
+docker compose up --build canary
+docker compose up --build node-proxy
+```
+
+**Tail logs for a specific service:**
+```bash
+docker compose logs -f llmguard
+docker compose logs -f canary
+docker compose logs -f node-proxy
+```
+
+**Check container status and health:**
+```bash
+docker compose ps
+```
+
+**Open a shell inside a running container** (useful for debugging):
+```bash
+docker compose exec llmguard bash
+docker compose exec canary bash
+```
+
+**Suppress LLM-Guard device/model-load noise** (optional — add to `docker-compose.yml` under `llmguard` → `environment`):
+```yaml
+environment:
+  TRANSFORMERS_VERBOSITY: error
+```
+
+> **Ollama note:** Ollama still runs on your host machine — not inside Docker. Set `OLLAMA_ORIGINS=*` on the host before launching Ollama (see Step 1). The browser fetches `localhost:11434` directly; Docker containers don't touch Ollama at all.
+
+Then open the workbench: http://localhost:3080/dev/8a
+
+---
+
 ### Option B — Manual multi-terminal
 
 If you prefer separate terminals (or don't want to install honcho):
@@ -367,7 +464,7 @@ TRANSFORMERS_OFFLINE=1
 
 ---
 
-## Quick Reference — npm Scripts
+## Quick Reference — npm Scripts (local dev)
 
 | Command | What it does |
 |:---|:---|
@@ -381,6 +478,25 @@ TRANSFORMERS_OFFLINE=1
 | `npm run stage 8a` | Copy `dev/8a-*.html` → `src/index.html` (makes it the default at `/`) |
 | `npm run stage 7c` | Copy `dev/7c-*.html` → `src/index.html` |
 | `npm run stage 6b` | Copy `dev/6b-*.html` → `src/index.html` |
+
+## Quick Reference — Docker Compose commands
+
+| Command | What it does |
+|:---|:---|
+| `docker compose up` | Build images (if needed) and start core services (node-proxy, llmguard, canary) |
+| `docker compose up -d` | Same, but run in background (detached) |
+| `docker compose up --build` | Force-rebuild all images then start (use after any code change) |
+| `docker compose up --build llmguard` | Rebuild and restart one service only |
+| `docker compose --profile cloud up` | Start core services + AIRS SDK (requires `.env` key) |
+| `docker compose --profile model-scan up` | Start core services + model-scan sidecar |
+| `docker compose --profile cloud --profile model-scan up` | Full stack |
+| `docker compose down` | Stop and remove all containers |
+| `docker compose down -v` | Stop containers and delete volumes (wipes HF model cache) |
+| `docker compose ps` | Show running containers and their health status |
+| `docker compose logs -f llmguard` | Tail LLM-Guard logs |
+| `docker compose logs -f canary` | Tail Little-Canary logs |
+| `docker compose logs -f node-proxy` | Tail Node proxy logs |
+| `docker compose exec llmguard bash` | Open a shell inside the llmguard container |
 
 ---
 
@@ -429,6 +545,48 @@ When the AIRS SDK sidecar is running (`npm run airs-sdk`), `dev/7a` pre-scans al
 ---
 
 ## Troubleshooting
+
+### Docker Compose
+
+**`failed to connect to the docker API` / `pipe/dockerDesktopLinuxEngine` error**
+- Docker Desktop isn't running or is using the Windows (not Linux) engine
+- Start Docker Desktop from the Start menu and wait for the whale tray icon to stop animating
+- Right-click the tray icon → **Switch to Linux containers...** if it shows "Switch to Windows containers"
+
+**Port 3080 already in use**
+- Your local `npm start` is still running — stop it first: `npm run stop`
+- Or find the PID: `netstat -ano | grep 3080` then `taskkill /PID <PID> /F`
+
+**LLM-Guard container stays unhealthy / never passes health check**
+- It takes 5–20 minutes on first run to download models — `docker compose ps` will show `starting` until done
+- Tail the logs to see progress: `docker compose logs -f llmguard`
+- The `hf-cache` volume persists the downloads — subsequent starts are instant
+- If it fails after models are downloaded, the Flask server may have crashed: `docker compose up --build llmguard`
+
+**Little-Canary health indicator intermittent**
+- Normal during startup — Docker waits for `service_healthy` before routing traffic, but the UI polls independently
+- If it stays intermittent after startup, tail logs: `docker compose logs -f canary`
+
+**LLM-Guard "Device set to use cpu" messages filling the log**
+- Informational only — PyTorch is logging which compute device each scanner model uses
+- To suppress: add `TRANSFORMERS_VERBOSITY: error` under `llmguard` → `environment` in `docker-compose.yml`
+
+**Changes to Python server code not reflected after restart**
+- Docker uses cached layers — you must rebuild: `docker compose up --build`
+- To rebuild a single service: `docker compose up --build llmguard`
+
+**`AIRS_API_KEY` not picked up in Docker**
+- Ensure `.env` exists at the project root (same level as `docker-compose.yml`)
+- The `airs-sdk` service requires `--profile cloud`: `docker compose --profile cloud up`
+
+**Ollama models not reachable from the workbench (Docker mode)**
+- Ollama runs on the host, not in Docker — the browser calls `localhost:11434` directly
+- Ensure `OLLAMA_ORIGINS=*` is set on the host before launching Ollama (see Step 1)
+- Verify Ollama is running: http://localhost:11434 should return `"Ollama is running"`
+
+---
+
+### Local dev
 
 **Ollama models not appearing in the dropdown**
 - Ensure `ollama serve` is running
@@ -517,7 +675,11 @@ llm-security-workbench/
 ├── docs/
 │   ├── SETUP-GUIDE-BASIC.md                        ← setup for dev/1a, 1b, 2a
 │   └── SETUP-GUIDE-FULL.md                         ← this file
-├── Procfile                                         ← honcho/foreman process definitions
+├── Procfile                                         ← honcho/foreman process definitions (local dev)
+├── docker-compose.yml                               ← Docker Compose stack definition
+├── Dockerfile.proxy                                 ← Docker image for Node proxy
+├── Dockerfile.python                                ← shared Docker base image for Python sidecars
+├── .dockerignore                                    ← excludes venvs, .env, build artifacts
 ├── .env                                             ← your API keys (gitignored)
 ├── .env.example                                     ← safe template to commit
 └── package.json

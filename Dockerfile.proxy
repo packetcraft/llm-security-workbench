@@ -1,0 +1,9 @@
+FROM node:18-slim
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY src/ ./src/
+COPY dev/ ./dev/
+COPY test/ ./test/
+EXPOSE 3080
+CMD ["node", "src/server.js"]

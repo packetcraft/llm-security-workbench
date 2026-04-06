@@ -1,0 +1,116 @@
+services:
+  node-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    ports:
+      - "3080:3080"
+    env_file: .env
+    environment:
+      CANARY_URL: http://canary:5001
+      LLMGUARD_URL: http://llmguard:5002
+      AIRS_SDK_URL: http://airs-sdk:5003
+      MODEL_SCAN_URL: http://model-scan:5004
+    depends_on:
+      canary:
+        condition: service_healthy
+      llmguard:
+        condition: service_healthy
+    networks:
+      - workbench
+
+  llmguard:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+      args:
+        SERVICE_DIR: services/llm-guard
+    command: ["python", "-u", "llmguard_server.py"]
+    expose:
+      - "5002"
+    volumes:
+      - hf-cache:/root/.cache/huggingface  # persist 2-3 GB model downloads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 300s   # LLM-Guard downloads ~2-3 GB of models on first run
+    networks:
+      - workbench
+
+  canary:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+      args:
+        SERVICE_DIR: services/canary
+    command: ["python", "-u", "canary_server.py"]
+    expose:
+      - "5001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - workbench
+
+  airs-sdk:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+      args:
+        SERVICE_DIR: services/airs-sdk
+    command: ["python", "-u", "airs_sdk_server.py"]
+    expose:
+      - "5003"
+    env_file: .env
+    profiles:
+      - cloud    # opt-in: `docker compose --profile cloud up`
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - workbench
+
+  model-scan:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+      args:
+        SERVICE_DIR: services/airs-model-scan
+    command: ["python", "-u", "model_scan_server.py"]
+    expose:
+      - "5004"
+    env_file: .env
+    profiles:
+      - model-scan    # opt-in: separate profile, needs private PyPI
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - workbench
+
+  # Optional: include Ollama in compose (expose port for browser access)
+  # ollama:
+  #   image: ollama/ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama-models:/root/.ollama
+  #   networks:
+  #     - workbench
+
+volumes:
+  hf-cache:          # LLM-Guard HuggingFace model cache (~2-3 GB, persists across restarts)
+  # ollama-models:   # Ollama model storage (uncomment if using Ollama container)
+
+networks:
+  workbench:
+    driver: bridge

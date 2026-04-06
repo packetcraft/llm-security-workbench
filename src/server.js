@@ -6,6 +6,12 @@ const fetch = require("node-fetch");
 const path = require("path");
 const fs = require("fs");
 
+// Service URLs — overridable via env vars for Docker Compose; fall back to localhost for local dev
+const CANARY_URL     = process.env.CANARY_URL     || 'http://localhost:5001';
+const LLMGUARD_URL   = process.env.LLMGUARD_URL   || 'http://localhost:5002';
+const AIRS_SDK_URL   = process.env.AIRS_SDK_URL   || 'http://localhost:5003';
+const MODEL_SCAN_URL = process.env.MODEL_SCAN_URL || 'http://localhost:5004';
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -62,7 +68,7 @@ app.get("/api/config", (req, res) => {
 // 3. Little Canary proxy — forwards to the local Python microservice on :5001
 app.post("/api/canary", async (req, res) => {
   try {
-    const response = await fetch("http://localhost:5001/check", {
+    const response = await fetch(`${CANARY_URL}/check`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req.body),
@@ -80,7 +86,7 @@ app.post("/api/canary", async (req, res) => {
 //    /api/llmguard-output → POST http://localhost:5002/scan/output
 app.post("/api/llmguard-input", async (req, res) => {
   try {
-    const response = await fetch("http://localhost:5002/scan/input", {
+    const response = await fetch(`${LLMGUARD_URL}/scan/input`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req.body),
@@ -95,7 +101,7 @@ app.post("/api/llmguard-input", async (req, res) => {
 
 app.post("/api/llmguard-output", async (req, res) => {
   try {
-    const response = await fetch("http://localhost:5002/scan/output", {
+    const response = await fetch(`${LLMGUARD_URL}/scan/output`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req.body),
@@ -147,7 +153,7 @@ app.post("/api/prisma", async (req, res) => {
 // 6a. Sidecar health checks — used by the Security Pipeline status dots in the UI
 app.get("/api/canary/health", async (req, res) => {
   try {
-    const response = await fetch("http://localhost:5001/health");
+    const response = await fetch(`${CANARY_URL}/health`);
     const data = await response.json();
     res.json(data);
   } catch (err) {
@@ -157,7 +163,7 @@ app.get("/api/canary/health", async (req, res) => {
 
 app.get("/api/llmguard/health", async (req, res) => {
   try {
-    const response = await fetch("http://localhost:5002/health");
+    const response = await fetch(`${LLMGUARD_URL}/health`);
     const data = await response.json();
     res.json(data);
   } catch (err) {
@@ -168,7 +174,7 @@ app.get("/api/llmguard/health", async (req, res) => {
 // 6b. AIRS SDK proxy — forwards to Python sidecar on :5003
 app.get("/api/airs-sdk/health", async (req, res) => {
   try {
-    const response = await fetch("http://localhost:5003/health");
+    const response = await fetch(`${AIRS_SDK_URL}/health`);
     const data = await response.json();
     res.json(data);
   } catch (err) {
@@ -183,7 +189,7 @@ app.post("/api/airs-sdk/sync", async (req, res) => {
   }
   try {
     const body = { ...req.body, api_key: apiKey };
-    const response = await fetch("http://localhost:5003/scan/sync", {
+    const response = await fetch(`${AIRS_SDK_URL}/scan/sync`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -203,7 +209,7 @@ app.post("/api/airs-sdk/batch", async (req, res) => {
   }
   try {
     const body = { ...req.body, api_key: apiKey };
-    const response = await fetch("http://localhost:5003/scan/batch", {
+    const response = await fetch(`${AIRS_SDK_URL}/scan/batch`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -220,7 +226,7 @@ app.post("/api/airs-sdk/batch", async (req, res) => {
 // 7. AIRS Model Security — proxies to the Python SDK sidecar on :5004
 app.get("/api/model-scan/health", async (req, res) => {
   try {
-    const response = await fetch("http://localhost:5004/health");
+    const response = await fetch(`${MODEL_SCAN_URL}/health`);
     const data = await response.json();
     res.json(data);
   } catch (err) {
@@ -230,7 +236,7 @@ app.get("/api/model-scan/health", async (req, res) => {
 
 app.post("/api/model-scan", async (req, res) => {
   try {
-    const response = await fetch("http://localhost:5004/scan/hf", {
+    const response = await fetch(`${MODEL_SCAN_URL}/scan/hf`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req.body),

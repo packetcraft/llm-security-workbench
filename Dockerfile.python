@@ -1,0 +1,10 @@
+FROM python:3.12-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+ARG SERVICE_DIR
+COPY ${SERVICE_DIR}/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+COPY ${SERVICE_DIR}/ ./
+EXPOSE 5000
+# CMD is overridden per-service via `command:` in docker-compose.yml
+CMD ["python", "-u", "server.py"]
