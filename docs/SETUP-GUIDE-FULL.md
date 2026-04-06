@@ -88,7 +88,7 @@ Each active gate appends a compact badge to the user message header as it comple
 
 > **Windows note:** If you have multiple Python versions installed, use `py -3.12` explicitly for the LLM-Guard venv.
 
-### Option C — Docker Compose
+### Option B — Docker Compose
 
 | Requirement | Version | Notes |
 |:---|:---|:---|
@@ -263,7 +263,7 @@ Honcho reads the `Procfile` at the project root and launches `proxy`, `llmguard`
 
 ---
 
-### Option C — Docker Compose
+### Option B — Docker Compose
 
 No Python venvs or npm scripts needed — everything runs in containers. Ollama still runs on the host (the browser calls it directly).
 
@@ -346,7 +346,7 @@ Then open the workbench: http://localhost:3080/dev/8a
 
 ---
 
-### Option B — Manual multi-terminal
+### Option C — Manual multi-terminal
 
 If you prefer separate terminals (or don't want to install honcho):
 
