@@ -348,6 +348,66 @@ Uncomment the `ollama` service in `docker-compose.yml`. Expose port `11434`. The
 
 ---
 
+## Ollama — Why It Lives Outside Docker
+
+### How the pipeline actually works
+
+The security gates are **browser-orchestrated**, not server-enforced. The browser JS calls each gate sequentially via the Node proxy, then calls Ollama directly for inference:
+
+```
+Browser JS
+  │
+  ├─ POST http://localhost:3080/api/llmguard-input   → Node proxy → LLM-Guard :5002
+  ├─ POST http://localhost:3080/api/canary           → Node proxy → Canary :5001
+  ├─ POST http://localhost:3080/api/prisma           → Node proxy → AIRS cloud
+  │
+  ├─ POST http://localhost:11434/api/chat            → Ollama DIRECT (no proxy)
+  │
+  └─ POST http://localhost:3080/api/llmguard-output  → Node proxy → LLM-Guard :5002
+```
+
+The Node proxy and Docker containers **never touch Ollama**. Only the browser does.
+
+### Impact on Docker Compose
+
+No impact for single-machine use. When `docker compose up` is running, the browser is still on the host and can reach both:
+- `localhost:3080` → mapped to the node-proxy container ✅
+- `localhost:11434` → host Ollama ✅
+
+The containers don't route anything to Ollama, so no changes are needed.
+
+### CORS is the only runtime requirement
+
+Ollama blocks cross-origin browser requests by default. `OLLAMA_ORIGINS=*` must be set on the host before launching Ollama (already documented in `docs/SETUP-GUIDE-FULL.md`). Without it, every LLM call silently fails in the browser.
+
+### Remote access / sharing breaks
+
+If someone opens the workbench from another machine on the network (e.g. `http://192.168.1.10:3080`), their browser tries to call `localhost:11434` — which points to **their own machine**, not the host running the workbench.
+
+```
+Remote browser
+  ├─ http://192.168.1.10:3080/api/...  ✅  reaches Node proxy on the host
+  └─ http://localhost:11434/...        ❌  hits their own machine — nothing there
+```
+
+The workbench is single-user, single-machine by design. This assumption is baked in at the architecture level.
+
+### The security pipeline is not server-enforceable
+
+Because gates are browser-orchestrated, a user who knows the architecture can call `localhost:11434` directly from DevTools — bypassing every gate. This is acceptable for a testing and demo tool but would not be appropriate for a production security enforcement layer.
+
+### Future: proxying Ollama through Node
+
+If the workbench ever needs remote access or multi-user sharing, the fix is to proxy Ollama through the Node server. The browser would call `localhost:3080/api/ollama` instead of Ollama directly, and Node forwards it. This would:
+
+- Fix remote sharing (everything routes through one host)
+- Make the Docker setup fully self-contained (Ollama can be a compose service)
+- Optionally make gate enforcement server-side
+
+This is a meaningful refactor of both `src/server.js` and the browser-side fetch logic — not a quick change. Track as a future phase if multi-user or remote demo use becomes a requirement.
+
+---
+
 ## Project Structure — Local Dev and Docker Coexisting
 
 Both setups live in the same repo and share the same source files. They use completely different entry points and never conflict.
