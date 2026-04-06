@@ -82,6 +82,7 @@ Each active gate appends a compact badge to the user message header as it comple
 | Python | 3.9+ | For Little-Canary and AIRS SDK sidecars (any modern Python works) |
 | Ollama | Latest | Local LLM runtime |
 | Git | Any | To clone the repo |
+| honcho | Any | Optional — replaces multi-terminal startup with one command (`pip install honcho`) |
 
 > **Windows note:** If you have multiple Python versions installed, use `py -3.12` explicitly for the LLM-Guard venv.
 
@@ -267,16 +268,39 @@ services\airs-sdk\.venv\Scripts\pip install -r services/airs-sdk/requirements.tx
 
 ## Step 6 — Start Everything
 
-You need **four terminal windows** for the full six-gate pipeline (five if running `dev/7a`).
+### Option A — Single command with honcho (recommended)
 
-### Terminal 1 — Ollama (if not running as a background service)
+Install honcho once:
+```bash
+pip install honcho
+```
+
+Then start all services from the project root:
+```bash
+# Terminal 1 — Ollama (still separate — browser calls it directly)
+ollama serve
+
+# Terminal 2 — everything else
+PYTHONUTF8=1 python -m honcho start
+```
+
+> **Windows encoding note:** `PYTHONUTF8=1` is required. Honcho reads `.env` using the Windows default encoding (cp1252), which fails on UTF-8 content. To avoid typing it each time, add `export PYTHONUTF8=1` to `~/.bashrc`.
+
+Honcho reads the `Procfile` at the project root and launches `proxy`, `llmguard`, and `canary` with colour-coded, interleaved output. To include the optional AIRS SDK sidecar, uncomment `airs-sdk` in the `Procfile` first.
+
+---
+
+### Option B — Manual multi-terminal
+
+If you prefer separate terminals (or don't want to install honcho):
+
+#### Terminal 1 — Ollama (if not running as a background service)
 ```bash
 ollama serve
 ```
 
-### Terminal 2 — Node.js proxy server
+#### Terminal 2 — Node.js proxy server
 ```bash
-cd llm-security-workbench
 npm start
 ```
 Expected output:
@@ -285,9 +309,8 @@ Expected output:
 🛡️ AIRS Proxy active on /api/prisma
 ```
 
-### Terminal 3 — LLM Guard sidecar (🔬 LLM-Guard input + output)
+#### Terminal 3 — LLM Guard sidecar (🔬 LLM-Guard input + output)
 ```bash
-cd llm-security-workbench
 npm run llmguard
 ```
 Expected output:
@@ -297,9 +320,8 @@ Expected output:
     Output scanners available: ['Sensitive', 'MaliciousURLs', 'NoRefusal', 'Bias', 'Relevance', 'LanguageSame']
 ```
 
-### Terminal 4 — Little Canary sidecar (🐦 Little-Canary)
+#### Terminal 4 — Little Canary sidecar (🐦 Little-Canary)
 ```bash
-cd llm-security-workbench
 npm run canary
 ```
 Expected output:
@@ -307,9 +329,8 @@ Expected output:
 🐦 Little Canary server starting on http://localhost:5001
 ```
 
-### Terminal 5 — AIRS SDK sidecar (🐍 dev/7a only)
+#### Terminal 5 — AIRS SDK sidecar (optional)
 ```bash
-cd llm-security-workbench
 npm run airs-sdk
 ```
 Expected output:
@@ -391,10 +412,12 @@ TRANSFORMERS_OFFLINE=1
 
 | Command | What it does |
 |:---|:---|
+| `PYTHONUTF8=1 python -m honcho start` | Start all services in one terminal (proxy + llmguard + canary) |
 | `npm start` | Start the Node.js proxy on :3080 |
 | `npm run llmguard` | Start the LLM Guard sidecar on :5002 |
 | `npm run canary` | Start the Little-Canary sidecar on :5001 |
-| `npm run airs-sdk` | Start the AIRS Python SDK sidecar on :5003 (7a only) |
+| `npm run airs-sdk` | Start the AIRS Python SDK sidecar on :5003 |
+| `npm run model-scan` | Start the AIRS Model Security sidecar on :5004 |
 | `npm run stage 8a` | Copy `dev/8a-*.html` → `src/index.html` (makes it the default at `/`) |
 | `npm run stage 7c` | Copy `dev/7c-*.html` → `src/index.html` |
 | `npm run stage 6b` | Copy `dev/6b-*.html` → `src/index.html` |
@@ -534,6 +557,7 @@ llm-security-workbench/
 ├── docs/
 │   ├── SETUP-GUIDE-BASIC.md                        ← setup for dev/1a, 1b, 2a
 │   └── SETUP-GUIDE-FULL.md                         ← this file
+├── Procfile                                         ← honcho/foreman process definitions
 ├── .env                                             ← your API keys (gitignored)
 ├── .env.example                                     ← safe template to commit
 └── package.json
