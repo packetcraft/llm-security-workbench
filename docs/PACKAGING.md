@@ -396,6 +396,52 @@ The workbench is single-user, single-machine by design. This assumption is baked
 
 Because gates are browser-orchestrated, a user who knows the architecture can call `localhost:11434` directly from DevTools — bypassing every gate. This is acceptable for a testing and demo tool but would not be appropriate for a production security enforcement layer.
 
+### Emergent architecture: centralised security server + distributed Ollama
+
+This is an important and useful side effect of the browser-direct Ollama design. Because the browser on a client machine calls `localhost:11434` — and localhost always resolves to the machine running the browser — the security pipeline and the LLM inference can run on completely separate machines with **no code changes**.
+
+```
+Machine A (shared server)             Machine B (each user's laptop)
+─────────────────────────────         ──────────────────────────────
+docker compose up                     ollama serve
+  node-proxy  :3080  ◀────────────── browser opens http://MachineA:3080
+  llmguard    :5002        │
+  canary      :5001        │          Browser JS calls:
+  airs-sdk    :5003        │
+                           ├────────▶ http://MachineA:3080/api/...  ✅ security gates
+                           └────────▶ http://localhost:11434/...     ✅ local Ollama
+```
+
+**What this enables:**
+
+- One Docker Compose security server shared across a team
+- Each user runs Ollama locally with whatever model they choose — inference is private to their machine
+- Heavy scanning infrastructure (LLM-Guard, 2-3 GB models) is centralised — team members don't each need to run it
+- No architectural change required — this works today with the current codebase
+
+**The one requirement on each client machine:**
+
+`OLLAMA_ORIGINS` must include the server's address, since the browser page is served from `MachineA` origin and Ollama on `MachineB` will see it as a cross-origin request:
+
+```bash
+# On each client machine (Machine B)
+OLLAMA_ORIGINS=http://192.168.1.10:3080   # point to the shared server
+# or keep it open:
+OLLAMA_ORIGINS=*
+```
+
+**Summary of what runs where:**
+
+| Component | Runs on | Why |
+| :--- | :--- | :--- |
+| Node proxy + Python sidecars | Server (shared) | Heavy, centralised — LLM-Guard alone is 2-3 GB |
+| Ollama | Each client machine | Local inference, private to each user |
+| Browser | Each client machine | Orchestrates both halves of the pipeline |
+
+This split is a good default target architecture for any team deployment of the workbench.
+
+---
+
 ### Future: proxying Ollama through Node
 
 If the workbench ever needs remote access or multi-user sharing, the fix is to proxy Ollama through the Node server. The browser would call `localhost:3080/api/ollama` instead of Ollama directly, and Node forwards it. This would:
