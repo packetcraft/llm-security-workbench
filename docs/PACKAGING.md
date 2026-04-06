@@ -348,6 +348,89 @@ Uncomment the `ollama` service in `docker-compose.yml`. Expose port `11434`. The
 
 ---
 
+## Project Structure — Local Dev and Docker Coexisting
+
+Both setups live in the same repo and share the same source files. They use completely different entry points and never conflict.
+
+```
+llm-security-workbench/
+│
+├── Procfile                        ← LOCAL DEV: overmind/foreman entry point
+├── docker-compose.yml              ← DOCKER: full stack, one command
+├── Dockerfile.proxy                ← DOCKER: Node proxy image
+├── Dockerfile.python               ← DOCKER: shared Python base image
+├── .dockerignore                   ← DOCKER: excludes venvs, .env, build artifacts
+│
+├── src/
+│   └── server.js                   ← SHARED — one small change makes it work for both
+│
+├── services/
+│   ├── llm-guard/
+│   │   ├── Dockerfile              ← DOCKER: sits next to the Python files
+│   │   ├── llmguard_server.py      ← SHARED
+│   │   ├── requirements.txt        ← SHARED (used by venv install AND Docker build)
+│   │   └── .venv/                  ← LOCAL DEV only (gitignored, dockerignored)
+│   │
+│   ├── canary/
+│   │   ├── Dockerfile
+│   │   ├── canary_server.py
+│   │   ├── requirements.txt
+│   │   └── .venv/
+│   │
+│   ├── airs-sdk/
+│   │   ├── Dockerfile
+│   │   ├── airs_sdk_server.py
+│   │   ├── requirements.txt
+│   │   └── .venv/
+│   │
+│   └── airs-model-scan/
+│       ├── Dockerfile
+│       ├── model_scan_server.py
+│       ├── requirements.txt
+│       └── .venv/
+│
+├── scripts/                        ← LOCAL DEV only (venv launchers, called by npm run)
+│   ├── llmguard.js
+│   ├── canary.js
+│   └── stage.js
+│
+├── dev/                            ← SHARED (UI files — Docker serves these too)
+├── test/                           ← SHARED
+└── .env                            ← SHARED (gitignored — read by both setups)
+```
+
+### Why this works without conflict
+
+| Artifact | Local dev | Docker | Note |
+| :--- | :--- | :--- | :--- |
+| `Procfile` | ✅ used | ignored | overmind/foreman only |
+| `docker-compose.yml` | ignored | ✅ used | Compose only |
+| `services/**/Dockerfile` | ignored | ✅ used | Docker build only |
+| `services/**/.venv/` | ✅ used | excluded | gitignored + dockerignored |
+| `scripts/*.js` | ✅ used | ignored | npm run launchers only |
+| `src/server.js` | ✅ used | ✅ used | shared — env var fallback handles both |
+| `services/**/requirements.txt` | ✅ used | ✅ used | single source of truth for deps |
+| `.env` | ✅ used | ✅ used | `dotenv` in Node, `env_file:` in Compose |
+
+### The one seam between both setups
+
+`src/server.js` currently hardcodes `localhost:500X`. Making those env-var-with-fallback means:
+
+- **Local dev** — env var unset → falls back to `localhost:5001` → works as today, no change
+- **Docker** — Compose injects `CANARY_URL=http://canary:5001` → service name routing works
+
+This is the single code change that unlocks Docker Compose without breaking anything locally.
+
+### Where to put the Dockerfiles
+
+Each `Dockerfile` lives **inside its service directory** (e.g. `services/llm-guard/Dockerfile`), not in a separate `docker/` folder. This is intentional:
+
+- Docker's build context is always the project root, so `COPY services/llm-guard/requirements.txt ./` works cleanly regardless
+- A separate `docker/` tree would require duplicating or symlinking the Python source files — a maintenance burden
+- Per-service Dockerfiles are the idiomatic Compose pattern and keep each service self-contained
+
+---
+
 ## Implementation Checklist
 
 ### Phase 1 — Procfile (do first)
