@@ -71,6 +71,7 @@ Open **[http://localhost:3080/dev/8a](http://localhost:3080/dev/8a)**
 
 ```bash
 pip install honcho
+npm run setup       # creates all Python venvs — run once after clone
 
 # Terminal 1 — Ollama
 ollama serve

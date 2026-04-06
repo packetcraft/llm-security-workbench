@@ -4,6 +4,7 @@
   "description": "I’ve updated the **README.md** to include the persona laboratory guide, the manual `curl` verification steps for both MacOS and Windows, and the expanded troubleshooting matrix.",
   "main": "src/server.js",
   "scripts": {
+    "setup": "node scripts/setup.js",
     "start": "node src/server.js",
     "stage": "node scripts/stage.js",
     "stage:1a": "node scripts/stage.js 1a",

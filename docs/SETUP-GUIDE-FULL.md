@@ -167,31 +167,54 @@ An `.env.example` template is included. If no `.env` is present, you can also en
 
 ---
 
-## Step 4 — Set Up the LLM Guard Sidecar (🔬 LLM-Guard input & output)
+## Step 4 — Set Up Python Sidecars
 
-LLM Guard runs as a Python Flask microservice on port 5002. It requires Python 3.12.
+All three local sidecars (LLM-Guard, Little-Canary, AIRS SDK) can be set up with one command:
 
-**Create a virtual environment:**
 ```bash
-# Windows
-py -3.12 -m venv services/llm-guard/.venv
-
-# macOS / Linux
-python3.12 -m venv services/llm-guard/.venv
+npm run setup
 ```
 
-**Install dependencies:**
-```bash
-# Windows
-services/llm-guard/.venv/Scripts/pip install -r services/llm-guard/requirements.txt
+This creates a separate Python venv for each service and installs its dependencies. Safe to re-run — it skips any venv that already exists.
 
-# macOS / Linux
-services/llm-guard/.venv/bin/pip install -r services/llm-guard/requirements.txt
+Expected output:
+```
+── LLM-Guard  (Python 3.12 required)
+   create venv...
+   ok     venv created
+   install dependencies...
+   ok     dependencies installed
+
+── Little-Canary  (Python 3.9+)
+   ...
+
+── AIRS SDK sidecar  (Python 3.9+)
+   ...
+
+── Summary ─────────────────────────
+   ✓ All 3 sidecars ready
 ```
 
-> **First install takes 5–10 minutes** — downloads PyTorch and Transformers (~3 GB total).
+> **First run for LLM-Guard takes 5–10 minutes** — downloads PyTorch and Transformers (~3 GB total). Subsequent runs are instant.
 
-**Optional — faster CPU inference (30–50% speedup):**
+> **AIRS Model Scan** (`services/airs-model-scan`) is excluded from `npm run setup` — it depends on a private PyPI package. See `docs/GATE-AIRS-MODEL-SECURITY.md` for its separate setup.
+
+### If setup fails for LLM-Guard
+
+LLM-Guard requires **Python 3.12 exactly** (not 3.13 or 3.14). If the venv step fails:
+
+```bash
+# Check what Python versions are available
+py -0          # Windows
+python3 --version  # macOS / Linux
+```
+
+If 3.12 is missing, download it from https://www.python.org/downloads/release/python-3129/ then re-run `npm run setup`.
+
+### Optional — faster CPU inference for LLM-Guard (30–50% speedup)
+
+After setup completes, install the ONNX runtime extension:
+
 ```bash
 # Windows
 services/llm-guard/.venv/Scripts/pip install llm-guard[onnxruntime]
@@ -199,70 +222,6 @@ services/llm-guard/.venv/Scripts/pip install llm-guard[onnxruntime]
 # macOS / Linux
 services/llm-guard/.venv/bin/pip install llm-guard[onnxruntime]
 ```
-
-**Verify the install:**
-```bash
-# Windows
-services/llm-guard/.venv/Scripts/pip show llm-guard
-
-# macOS / Linux
-services/llm-guard/.venv/bin/pip show llm-guard
-```
-Expected: `Version: 0.3.16`
-
----
-
-## Step 5 — Set Up the Little Canary Sidecar (🐦 Little-Canary)
-
-Little-Canary runs as a separate Flask microservice on port 5001. It requires a dedicated virtual environment — installing into the system Python or the LLM-Guard venv will cause import errors when `npm run canary` starts.
-
-**macOS / Linux:**
-```bash
-python3 -m venv services/canary/.venv
-source services/canary/.venv/bin/activate
-pip install -r services/canary/requirements.txt
-```
-
-**Windows:**
-```bash
-py -3 -m venv services/canary/.venv
-services\canary\.venv\Scripts\activate
-pip install -r services/canary/requirements.txt
-```
-
-> If you have multiple Python versions and want to be explicit, replace `py -3` with `py -3.12` (or whichever version you prefer — 3.9+ works).
-
-**Starting the sidecar:**
-
-```bash
-npm run canary
-```
-
-The launcher (`scripts/canary.js`) resolves the venv Python automatically on both macOS and Windows — no manual activation needed.
-
-**Verify:** http://localhost:5001/health should return `{"status":"ok","service":"little-canary"}`.
-
----
-
-## Step 5b — Set Up the AIRS Python SDK Sidecar (🐍 dev/7a only)
-
-The AIRS SDK sidecar exposes a local batch-scan endpoint used by `dev/7a` to pre-scan all batch threats 5-at-a-time via the `pan-aisecurity` Python SDK, before the main batch loop runs. This evaluates the SDK against the existing direct REST path.
-
-It runs on port 5003 and works with Python 3.9+.
-
-**macOS / Linux:**
-```bash
-python3 -m venv services/airs-sdk/.venv
-services/airs-sdk/.venv/bin/pip install -r services/airs-sdk/requirements.txt
-```
-
-**Windows:**
-```bash
-python -m venv services/airs-sdk/.venv
-services\airs-sdk\.venv\Scripts\pip install -r services/airs-sdk/requirements.txt
-```
-
-> A AIRS API key (`AIRS_API_KEY` in `.env`) is still required — the SDK wraps the same cloud API.
 
 ---
 
@@ -412,6 +371,7 @@ TRANSFORMERS_OFFLINE=1
 
 | Command | What it does |
 |:---|:---|
+| `npm run setup` | Create all Python venvs and install sidecar dependencies (run once after clone) |
 | `PYTHONUTF8=1 python -m honcho start` | Start all services in one terminal (proxy + llmguard + canary) |
 | `npm start` | Start the Node.js proxy on :3080 |
 | `npm run llmguard` | Start the LLM Guard sidecar on :5002 |
