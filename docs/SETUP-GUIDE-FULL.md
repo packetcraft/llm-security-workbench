@@ -234,7 +234,7 @@ After setup completes, install the ONNX runtime extension:
 services/llm-guard/.venv/Scripts/pip install llm-guard[onnxruntime]
 
 # macOS / Linux
-services/llm-guard/.venv/bin/pip install llm-guard[onnxruntime]
+services/llm-guard/.venv/bin/pip install "llm-guard[onnxruntime]"
 ```
 
 ---
